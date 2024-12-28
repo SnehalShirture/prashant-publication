@@ -76,4 +76,25 @@ const cancelSubscription = async (req, res) => {
     }
   };
 
-export {getActiveSubscription,createSubscription,cancelSubscription}
+  const getsubscriptionByUserId = async (req,res) => {
+    try {
+        const { user_id } = req.body;
+        const subscriptions = await Subscription.find({ user_id })
+
+        if (!subscriptions || subscriptions.length === 0) {
+            return res.status(404).json({ message: 'No subscriptions found for this user' });
+        }
+
+        res.status(200).json({
+            message: 'Subscriptions fetched successfully',
+            subscriptions,
+        });
+    } catch (error) {
+        console.error('Error fetching subscriptions:', error.message);
+        res.status(500).json({ message: 'Failed to fetch subscriptions', error: error.message });
+
+    }
+}
+
+export { getActiveSubscription, createSubscription, cancelSubscription,getsubscriptionByUserId }
+

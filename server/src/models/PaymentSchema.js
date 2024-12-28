@@ -7,6 +7,7 @@ const PaymentSchema = mongoose.Schema({
     },
     amount: {
         type: Number,
+        required: true
     },
     paymentDate: {
         type: Date,
@@ -15,6 +16,7 @@ const PaymentSchema = mongoose.Schema({
     paymentMethod: {
         type: String,
         enum: ['Credit Card', 'Debit Card', 'UPI'],
+        required: true
     },
     transactionId: {
         type: String,

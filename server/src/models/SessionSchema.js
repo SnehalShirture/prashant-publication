@@ -8,7 +8,7 @@ const SessionSchema = mongoose.Schema({
     },
     loginTime: {
         type: Date,
-        default: new Date(),
+        default: new Date()
     },
     logoutTime: {
         type: Date,
