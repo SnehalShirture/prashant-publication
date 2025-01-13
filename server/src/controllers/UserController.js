@@ -4,21 +4,27 @@ import jwt from 'jsonwebtoken'
 import { Session } from '../models/SessionSchema.js';
 import bcrypt from 'bcrypt'
 import { sendMessage } from '../middleware/MessageMiddleware.js';
+import { ApiError } from '../utils/ApiError.js';
+import { BadReqError } from '../utils/BadReqError.js';
+import { APiResponse } from '../utils/ApiResponse.js';
 
 const registerUser = async (req, res) => {
     try {
-
         let salt = await bcrypt.genSalt(10)
         let hashedPassword = await bcrypt.hash(req.body.password, salt)
         req.body.password = hashedPassword
 
         const newUser = await User.create(req.body);
         console.log(newUser);
-        res.status(200).json({ message: "User Registered Successfully. Please Login.", result: newUser });
+        res.status(200).json(new APiResponse(true, 200, newUser, "user created successfully.."));
     } catch (error) {
-        res.status(400).json({ error: error.message })
+
+        const status = error.statusCode || 500;
+        const message = error.message || "An unexpected error occurred.";
+        res.status(status).json(new APiResponse(false, status, null, message));
     }
 };
+
 
 const getUser = async (req, res) => {
     try {
@@ -29,22 +35,19 @@ const getUser = async (req, res) => {
     }
 }
 
+
 const userLogin = async (req, res) => {
     try {
-        console.log(req.body);
         const { email, password, ipAddress, userAgent } = req.body;
 
         const user = await User.findOne({ email })
-        console.log("user", user);
         if (!user) {
-            return res.status(401).json({ message: 'Invalid email or password' });
+            throw new ApiError("Invalid email or password", 401);
         }
 
-        let isCorrectPassword = await bcrypt.compare(password, user.password)
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) throw new ApiError("Invalid email or password", 401);
 
-        if (!isCorrectPassword) {
-            return res.status(401).json({ message: 'Invalid email or password' });
-        }
         const sessionResponse = await createSession({
             userId: user._id,
             ipAddress,
@@ -52,27 +55,31 @@ const userLogin = async (req, res) => {
         });
 
         if (!sessionResponse.success) {
-            return res.status(403).json({ message: sessionResponse.message });
+            throw new ApiError(sessionResponse.message, 403);
         }
 
+        const populatedSession = await sessionResponse.session.populate("user_id");
         // Generate token
-        const token = jwt.sign({ userId: user._id }, 'Secret Key', { expiresIn: '7d' });
+        const token = jwt.sign({ userId: user._id }, 'Secret Key', { expiresIn: '1d' });
 
-        res.status(200).json({
-            message: 'Login successful',
-            token,
-            session: sessionResponse.session,
-        });
+        res.status(200).json(new APiResponse(true, 200,
+            {
+                token,
+                session: populatedSession,
+            },
+            "Login successful"
+        ));
     } catch (error) {
-        console.error('Error during login:', error);
-        res.status(500).json({ message: 'An error occurred during login' });
+
+        const status = error.statusCode || 500;
+        const message = error.message || "An unexpected error occurred.";
+        res.status(status).json(new APiResponse(false, status, null, message));
     }
 };
 
 const userLogout = async (req, res) => {
     try {
         const { userId } = req.body;
-
 
         const session = await Session.findOneAndUpdate(
             { user_id: userId, isActive: true },
@@ -82,17 +89,17 @@ const userLogout = async (req, res) => {
             },
             { new: true }
         );
-        console.log("session", session);
 
-         if (!session) {
-             return res.status(400).json({ message: 'No active session found.' });
-         }
+        if (!session) {
+            throw new ApiError("No active session found.", 400);
+        }
 
-        res.status(200).json({ message: 'Successfully logged out.' });
+        res.status(200).json(new APiResponse(true, 200, null, "Successfully logged out."));
 
     } catch (error) {
-        console.error('Error during logout:', error);
-        res.status(500).json({ message: 'An error occurred during logout.' });
+        const status = error.statusCode || 500;
+        const message = error.message || "An error occurred during logout.";
+        res.status(status).json(new APiResponse(false, status, null, message));
     }
 };
 
@@ -102,52 +109,53 @@ const addBookToShelf = async (req, res) => {
 
         const user = await User.findByIdAndUpdate(
             userId,
-            { $push: { bookShelf: bookId } },
+            { $addToSet: { bookShelf: bookId } },
             { new: true }
         ).populate('bookShelf');
 
-        if (!user) {
-            return res.status(404).json({ message: 'User not found.' });
-        }
+        if (!user) throw new ApiError("User not found.", 404);
 
-        res.status(200).json({ message: 'Book added to shelf.', user });
+        res.status(200).json(new APiResponse(true, 200, { user }, "Book added to shelf."));
+
     } catch (error) {
-        res.status(500).json({ message: 'Error adding book to shelf.', error });
+        const status = error.statusCode || 500;
+        const message = error.message || "Error adding book to shelf.";
+        res.status(status).json(new APiResponse(false, status, null, message));
     }
-};
+}
+
 
 const sendOtp = async (req, res) => {
     const { email } = req.body;
     try {
         const user = await User.findOne({ email });
-        console.log(user);
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
+
+        if (!user) throw new ApiError("User not found.", 404);
+
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
         user.otp = otp;
         user.otpExpires = Date.now() + 15 * 60 * 1000;
         await user.save();
         const message = `Your OTP is ${otp}. It will expire in 15 minutes`;
-       const info= await sendMessage(user.email, message);
-        res.status(200).json({ message: 'OTP sent successfully' });
+        const info = await sendMessage(user.email, message);
+        res.status(200).json(new APiResponse(true, 200, null, "OTP sent successfully."));
 
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        const status = error.statusCode || 500;
+        const message = error.message || "An unexpected error occurred while sending OTP.";
+        res.status(status).json(new APiResponse(false, status, null, message));
     }
 }
 
 const resetPassword = async (req, res) => {
-    const { mobile, otp, newPassword } = req.body;
+    const { email, otp, newPassword } = req.body;
 
     try {
-        const user = await User.findOne({ mobile });
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
+        const user = await User.findOne({ email });
+        if (!user) throw new ApiError("User not found.", 404);
 
         if (user.otp !== otp || user.otpExpires < Date.now()) {
-            return res.status(400).json({ message: 'Invalid or expired OTP' });
+            throw new ApiError("Invalid or expired OTP.", 400);
         }
 
         console.log(`New Password: ${newPassword}`);
@@ -161,13 +169,37 @@ const resetPassword = async (req, res) => {
         user.otpExpires = undefined;
         await user.save();
 
-        res.status(200).json({ message: 'Password updated successfully' });
+        res.status(200).json(new APiResponse(true, 200, null, "Password updated successfully."));
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        const status = error.statusCode || 500;
+        const message = error.message || "An unexpected error occurred while sending OTP.";
+        res.status(status).json(new APiResponse(false, status, null, message));
     }
 }
 
-export { registerUser, getUser, userLogin, userLogout, addBookToShelf, sendOtp,resetPassword }
+const pageReadCounter = async (req, res) => {
+    const { userId, pagesRead } = req.body;
+    try {
+        const customer = await User.findByIdAndUpdate(
+            userId,
+            { $inc: { totalPagesRead: pagesRead } },
+            { new: true }
+        );
 
+        if (!customer) {
+            throw new ApiError("Customer not found.", 400);
+        }
+        console.log("Pages",customer.totalPagesRead);
+        res.status(200).json(new APiResponse(true, 200, customer, "Pages read updated successfully"));
+    } catch (error) {
+        const status = error.statusCode || 500;
+        const message = error.message || "An unexpected error occurred while sending OTP.";
+        res.status(status).json(new APiResponse(false, status, null, message));
+    }
+
+}
+
+
+export { registerUser, getUser, userLogin, userLogout, addBookToShelf, sendOtp, resetPassword, pageReadCounter }
 
 

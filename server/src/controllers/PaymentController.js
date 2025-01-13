@@ -1,62 +1,110 @@
 import { Payment } from "../models/PaymentSchema.js";
 import { User } from "../models/UserSchema.js";
+import { createSubscription } from "./SubscriptionController.js";
+import { APiResponse } from "../utils/ApiResponse.js";
+import { BadReqError } from "../utils/BadReqError.js";
+import Razorpay from 'razorpay'
+import shortid from 'shortid'
+import crypto from 'crypto'
 
-const createPayment = async (req, res) => {
+const razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET,
+})
+
+const createOrder = async (req, res) => {
     try {
-        const { userId, paymentMethod, transactionId } = req.body;
-
-        const userBookShelf = await User.findOne({ _id: userId }).populate("bookShelf");
-        const Shelf = userBookShelf.bookShelf;
-
-        let amount = 0;
-        for (let index = 0; index < Shelf.length; index++) {
-            const book = Shelf[index];
-            console.log(book);
-            amount += Number(book.price) 
-
+        const { userId, plan } = req.body;
+        console.log(userId,plan);
+        let amount;
+        if (plan === "6Months") {
+            amount = 999;
+        } else if (plan === "1Year") {
+            amount = 1999;
+        } else {
+            throw new BadReqError("Invalid subscription plan selected.");
         }
 
-        // Create a new payment record
+        // Create Razorpay order
+        const options = {
+            amount: amount * 100,
+            currency: "INR",
+            receipt: shortid.generate(),
+            payment_capture: 1, 
+        };
+
+        const razorpayOrder = await razorpay.orders.create(options);
+        console.log(razorpayOrder);
+      
         const payment = new Payment({
             user_id: userId,
-            amount,
-            paymentMethod,
-            transactionId,
-            status: 'Pending',
-        })
+            amount: amount * 100,
+            paymentMethod: "UPI",
+            transactionId: razorpayOrder.id, // Razorpay order ID
+            status: "Pending",
+        });
+        console.log(payment);
         await payment.save();
 
-        res.status(201).json({
-            message: 'Payment created successfully.',
-            payment,
-        });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(201).json(
+            new APiResponse(true, 201, { razorpayOrder, payment }, "Payment initiated successfully.")
+        );
     }
-};
+    catch (error) {
+        const status = error.statusCode || 500;
+        const message = error.message || "An unexpected error occurred.";
+        res.status(status).json(new APiResponse(false, status, null, message));
+    }
 
-const updatePaymentStatus = async (req, res) => {
+}
+
+
+const verifyRazorPay = async (req, res) => {
     try {
-        const { paymentId, status } = req.body;
+        const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
 
-        const payment = await Payment.findById(paymentId)
-            .populate("user_id")
+        const shasum = crypto.createHmac("sha256", secret);
+        shasum.update(JSON.stringify(req.body));
+        const digest = shasum.digest("hex");
 
-        if (!payment) {
-            return res.status(404).json({ message: 'Payment not found.' });
+        console.log(digest, req.headers["x-razorpay-signature"]);
+
+        if (shasum !== req.headers["x-razorpay-signature"]) {
+            throw new BadReqError("Invalid Razorpay signature.");
         }
 
-        payment.status = status;
-        await payment.save();
+        const event = req.body; //from razorpay's webhook request
+        console.log("event", event);
+        // Handle payment captured event
+        if (event.event === "payment.captured") {
+            const { order_id, payment_id } = event.payload.payment.entity;
 
-        res.status(200).json({
-            message: 'Payment status updated successfully.',
-            payment,
-        });
+            const payment = await Payment.findOneAndUpdate(
+                { transactionId: order_id },
+                { status: "Paid", transactionId: payment_id },
+                { new: true }
+            );
+
+            if (!payment) {
+                throw new BadReqError("Payment record not found for order ID.");
+            }
+
+            const subscription = await createSubscription({
+                userId: payment.user_id,
+                plan: payment.amount === 99900 ? "6Months" : "1Year",
+                paymentId: payment._id
+            })
+            console.log("Subscription saved successfully", subscription);
+        }
+
+        res.status(200).json(new APiResponse(true, 200, null, "Webhook verified and processed."));
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        const status = error.statusCode || 500;
+        const message = error.message || "An unexpected error occurred.";
+        res.status(status).json(new APiResponse(false, status, null, message));
     }
-};
+}
+
 
 const getPaymentDetailsByUserId = async (req, res) => {
     try {
@@ -64,15 +112,18 @@ const getPaymentDetailsByUserId = async (req, res) => {
 
         const payment = await Payment.findOne({ user_id: userId })
             .populate("user_id")
-            
+
         if (!payment) {
-            return res.status(404).json({ message: 'Payment not found.' });
+            throw new BadReqError("No payments found for this user.");
         }
 
-        res.status(200).json(payment);
+        res.status(200).json(new APiResponse(true, 200, payment, "Payments fetched successfully."));
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        const status = error.statusCode || 500;
+        const message = error.message || "An unexpected error occurred.";
+        res.status(status).json(new APiResponse(false, status, null, message));
     }
 };
 
-export { getPaymentDetailsByUserId, updatePaymentStatus, createPayment }
+
+export { getPaymentDetailsByUserId, createOrder, verifyRazorPay }

@@ -1,5 +1,7 @@
 import { Payment } from "../models/PaymentSchema.js";
 import { Subscription } from "../models/SubscriptionSchema.js";
+import { APiResponse } from "../utils/ApiResponse.js";
+import {ApiError} from "../utils/ApiError.js"
 
 const createSubscription = async (req, res) => {
     try {
@@ -8,20 +10,20 @@ const createSubscription = async (req, res) => {
         // Validate payment
         const payment = await Payment.findById(paymentId)
 
-        if (!payment || payment.status !== 'Success') {
-            return res.status(400).json({ message: 'Invalid or unsuccessful payment.' });
+        if (!payment || payment.status !== 'Paid') {
+            throw new ApiError("Invalid or unsuccessful payment.", 400);
         }
         // Define plan duration
         let duration;
-        if (plan === '6Months') duration = 182; // 6 months
-        else if (plan === '1Year') duration = 365; // 1 year
-        else return res.status(400).json({ message: 'Invalid subscription plan.' });
+        if (plan === '6Months') duration = 182;
+        else if (plan === '1Year') duration = 365;
+        else throw new ApiError("Invalid subscription plan.", 400);
 
         const endDate = new Date();
         endDate.setDate(endDate.getDate() + duration);
 
         const subscription = new Subscription({
-           user_id: userId,
+            user_id: userId,
             plan,
             endDate,
             paymentId,
@@ -29,12 +31,9 @@ const createSubscription = async (req, res) => {
 
         await subscription.save();
 
-        res.status(201).json({
-            message: 'Subscription created successfully.',
-            subscription,
-        });
+        return new APiResponse(true, 200, subscription, "Subscription created successfully.");
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        throw new ApiError("Error Creating Subscription",500);
     }
 };
 
@@ -49,52 +48,50 @@ const getActiveSubscription = async (req, res) => {
         });
 
         if (!subscription) {
-            return res.status(404).json({ message: 'No active subscription found.' });
+            throw new ApiError("No active subscription found.", 404);
         }
 
-        res.status(200).json(subscription);
+
+        res.status(200).json(new APiResponse(true, 200, subscription, "Active subscription fetched successfully.")); es.status(200).json(subscription);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        const status = error.statusCode || 500;
+        res.status(status).json(new APiResponse(false, status, null, error.message || "An error occurred."));
     }
 };
 
 const cancelSubscription = async (req, res) => {
     try {
-      const { subscriptionId } = req.body;
-  
-      const subscription = await Subscription.findById(subscriptionId);
-      if (!subscription || !subscription.isActive) {
-        return res.status(404).json({ message: 'Subscription not found or already canceled.' });
-      }
-  
-      subscription.isActive = false;
-      await subscription.save();
-  
-      res.status(200).json({ message: 'Subscription canceled successfully.' });
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
-  };
+        const { subscriptionId } = req.body;
 
-  const getsubscriptionByUserId = async (req,res) => {
+        const subscription = await Subscription.findById(subscriptionId);
+        if (!subscription || !subscription.isActive) {
+            throw new ApiError("Subscription not found or already canceled.", 404);
+        }
+
+        subscription.isActive = false;
+        await subscription.save();
+
+        res.status(200).json(new APiResponse(true, 200, null, "Subscription canceled successfully."));
+    } catch (error) {
+        const status = error.statusCode || 500;
+        res.status(status).json(new APiResponse(false, status, null, error.message || "An error occurred."));
+    }
+};
+
+const getsubscriptionByUserId = async (req, res) => {
     try {
         const { user_id } = req.body;
         const subscriptions = await Subscription.find({ user_id })
 
         if (!subscriptions || subscriptions.length === 0) {
-            return res.status(404).json({ message: 'No subscriptions found for this user' });
+            throw new ApiError("No subscriptions found for this user.", 404);
         }
 
-        res.status(200).json({
-            message: 'Subscriptions fetched successfully',
-            subscriptions,
-        });
+        res.status(200).json(new APiResponse(true, 200, subscriptions, "Subscriptions fetched successfully."));
     } catch (error) {
-        console.error('Error fetching subscriptions:', error.message);
-        res.status(500).json({ message: 'Failed to fetch subscriptions', error: error.message });
-
+        const status = error.statusCode || 500;
+        res.status(status).json(new APiResponse(false, status, null, error.message || "An error occurred."));
     }
 }
 
-export { getActiveSubscription, createSubscription, cancelSubscription,getsubscriptionByUserId }
-
+export { getActiveSubscription, createSubscription, cancelSubscription, getsubscriptionByUserId }
