@@ -1,5 +1,5 @@
 import express from "express";
-import { registerUser,getUser,userLogin, userLogout ,addBookToShelf,sendOtp,resetPassword} from "../controllers/UserController.js";
+import { registerUser,getUser,userLogin, userLogout ,addBookToShelf,sendOtp,resetPassword, pageReadCounter} from "../controllers/UserController.js";
 import { authenticate } from "../middleware/auth.js";
 
 const userRouter=express.Router();
@@ -11,6 +11,6 @@ userRouter.post("/logout",userLogout)
 userRouter.post("/addToShelf",authenticate,addBookToShelf)
 userRouter.post("/sendOTP",sendOtp)
 userRouter.post("/resetPassword",resetPassword)
+userRouter.post("/pagesReadCounter",pageReadCounter)
 
 export {userRouter}
-

@@ -10,16 +10,19 @@ const UserSchema = mongoose.Schema({
             index: true,
             validate: [validator.isEmail, "Invalid Email Address"]
     },
-    password: { type: String, required: true },
+    password: { type: String,
+         required: true,
+         match:["(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}","Password Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters"] 
+         },
     mobile: { type: String, 
-            minLength: [10, "no should have minimum 10 digit"],
-            maxLength: [10, "no should have maximum 10 digit"],
-            match: [/\d{10}/, "no should only have digit"],
+            minLength: [10, "number should have minimum 10 digit"],
+            maxLength: [10, "number should have maximum 10 digit"],
+            match: [/\d{10}/, "number should only have digit"],
             required: true,
             unique: true,
     },
     isBLock: { type: Boolean, default: false },
-    role: { type: String, enum: ["SuperAdmin", "CollegeAdmin"] },
+    role: { type: String, enum: ["SuperAdmin", "CollegeAdmin","user"] },
     totalRevenue: { type: Number, default: 0 },
     bookShelf: [
         {
@@ -41,6 +44,7 @@ const UserSchema = mongoose.Schema({
         type: Date,
         default: null
     },
+    totalPagesRead: { type: Number, default: 0 }
 })
 
 export const User = mongoose.model("User", UserSchema)

@@ -1,6 +1,7 @@
 import express from 'express'
-import { createBook, getAllBook } from '../controllers/BookController.js'
+import { createBook, getAllBook, updateBook, deleteBook } from '../controllers/BookController.js'
 import { upload } from '../middleware/MulterMiddleware.js';
+
 
 const bookRouter = express.Router()
 
@@ -12,5 +13,7 @@ const uploadFields = upload.fields([
 ]);
 bookRouter.post("/addBook", uploadFields, createBook);
 bookRouter.get("/getBook", getAllBook);
+bookRouter.get("/updateBook", updateBook);
+bookRouter.get("/deleteBook", deleteBook);
 
 export { bookRouter }
