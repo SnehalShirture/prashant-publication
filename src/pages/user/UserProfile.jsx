@@ -3,7 +3,7 @@ import { Avatar, Box, Button, Paper, Typography, Grid } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../../reduxwork/UserSlice";
-import { userlogout } from "../../apiCalls/userApi";
+import { userlogout } from "../../apiCalls/UserApi";
 
 const UserProfile = () => {
   const dispatch = useDispatch();

@@ -56,7 +56,7 @@ const Login = () => {
       const response = await loginuser(reqData);
       console.log("Login Response:", response);
 
-      const user = response.session?.user_id || {};
+      const user = response.data.session?.user_id || {};
       const userRole = user.role;
       console.log("User Role:", userRole);
 
