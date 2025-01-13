@@ -1,35 +1,43 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React from "react";
+import { Navigate, Route, Routes } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { User_Routes, Librarian_Routes , SAdmin_Routes} from "./utility/RouteList";
+import Login from "./components/auth/Login";
+import SignUp from "./components/auth/Signup";
+import ErrorPage from "./components/common/ErrorPage";
+import Header from "./layout/MainHeader";
+import ResetPassword from "./components/common/ResetPassword";
 
-function App() {
-  const [count, setCount] = useState(0)
+const App = () => {
+
+  // Define public routes
+  const publicRoutes = [
+    { path: "/signup", element: <SignUp />, label: "SignUp" },
+    { path: "/", element: <Login />, label: "Login" },
+    { path: "*", element: <ErrorPage />, label: "ErrorPage" },
+    // { path: "/profile", element: <Profile />, label: "Profile" }, 
+    { path: "/resetpassword", element: <ResetPassword/>, label: 'resetPassword' }
+  ];
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <Header />
+      {/* Define Routes */}
+      <Routes>
+        {[...User_Routes, ...Librarian_Routes, ...SAdmin_Routes , ...publicRoutes].map((route, index) =>
+        (
+          <Route
+            exact
+            key={index}
+            path={route.path}
+            element={route.element}
+          />
+        ))
+        }
+      </Routes>
     </>
-  )
-}
+  );
+};
 
-export default App
+export default App;
+
