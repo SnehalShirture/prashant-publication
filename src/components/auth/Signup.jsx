@@ -34,13 +34,15 @@ const SignUp = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form Submitted:', formData);
+    const registerData = new FormData(e.target);
+    const reqData = Object.fromEntries(registerData);
+    console.log('Form Submitted:', reqData);
 
     try {
-      const response = await registeruser(formData);
+      const response = await registeruser(reqData);
       console.log(response);
       alert('User Registered Successfully');
-      dispatch(register(response.data));
+      dispatch(register(response));
       nav('/');
     } catch (error) {
       if (error.response) {

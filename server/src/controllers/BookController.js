@@ -137,7 +137,7 @@ const updateBook = async (req, res) => {
 
 const deleteBook = async (req, res) => {
     try {
-        const deleteBook = await Book.findByIdAndDelete(req.params.id);
+        const deleteBook = await Book.findByIdAndDelete(req.body._id);
         res.status(200).json(
             new APiResponse(true, 200, deleteBook, "Book deleted successfully.")
         );
