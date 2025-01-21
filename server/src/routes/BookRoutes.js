@@ -14,6 +14,6 @@ const uploadFields = upload.fields([
 bookRouter.post("/addBook", uploadFields, createBook);
 bookRouter.get("/getBook", getAllBook);
 bookRouter.get("/updateBook", updateBook);
-bookRouter.get("/deleteBook", deleteBook);
+bookRouter.post("/deleteBook", deleteBook);
 
 export { bookRouter }

@@ -56,13 +56,14 @@ const Login = () => {
       const response = await loginuser(reqData);
       console.log("Login Response:", response);
 
-      const user = response.data.session?.user_id || {};
-      const userRole = user.role;
+      const user = response.data.session;
+      const userRole = user.user_id.role;
       console.log("User Role:", userRole);
+      console.log("userdata" ,  user)
 
       dispatch(
         login({
-          ...response.data.session.user_id,
+          ...response.data.session,
           token: response.data.token,
         })
       );

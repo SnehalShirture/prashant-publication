@@ -7,6 +7,7 @@ import CollegeAppbar from "../pages/collegeAdmin/CollegeAppbar"; // College Admi
 import CommonAppBar from "../components/common/CommonAppbar"; // Common AppBar
 import { Typography } from "@mui/material";
 import SAdminDashboard from "../pages/sAdmin/SAdminDashboard";
+import SuperAdminAppBar from "../pages/sAdmin/SAdminAppbar";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -14,7 +15,7 @@ const Header = () => {
 
   const { UserData } = useSelector((state) => state.user); 
   console.log(UserData)
-  const userRole = UserData?.role; // Use optional chaining and provide a fallback
+  const userRole = UserData.user_id?.role; // Use optional chaining and provide a fallback
   const userIsBlocked = UserData?.isBlock || false; // Use optional chaining and provide a fallback
 
   const handleLogout = () => {
@@ -32,7 +33,7 @@ const Header = () => {
     case "CollegeAdmin":
       return <CollegeAppbar />;
     case "SuperAdmin":
-      return <SAdminDashboard/>;
+      return <SuperAdminAppBar/>;
     default:
       return <CommonAppBar />;
   }

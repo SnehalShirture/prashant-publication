@@ -4,7 +4,6 @@ const initialState = {
   UserData: {},
   isRegistered: false,
   islogin: false,
-  
 };
 
 const UserSlice = createSlice({

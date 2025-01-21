@@ -8,6 +8,7 @@ import AllUsers from "../pages/collegeAdmin/AllUsers";
 import CAdminProfile from "../pages/collegeAdmin/CAdminProfile";
 import UserProfile from "../pages/user/UserProfile";
 import SAdminDashboard from "../pages/sAdmin/SAdminDashboard";
+import Collegebooks from "../pages/collegeAdmin/Collegebooks";
 
 export const User_Routes = [
   { path: "/user/dashboard", element: <Dashboard />, label: "Dashboard" },
@@ -20,7 +21,7 @@ export const User_Routes = [
 export const Librarian_Routes = [
   { path: "/librarydashboard", element: <LibraryAdminDashboard />, label: "Library Dashboard" },
   { path: "/library/all-users", element: <AllUsers />, label: "All Users" },
-  { path: "/library/books", element: <UserBooks />, label: "Books" },
+  { path: "/library/books", element: <Collegebooks />, label: "Books" },
   { path: "/library/subscription", element: <LibrarySubscription />, label: "Subscription" },
   { path: "/library/profile", element: <CAdminProfile />, label: "CAdminProfile" },
 ];

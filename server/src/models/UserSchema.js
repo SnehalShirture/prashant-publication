@@ -12,7 +12,6 @@ const UserSchema = mongoose.Schema({
     },
     password: { type: String,
          required: true,
-         match:["(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}","Password Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters"] 
          },
     mobile: { type: String, 
             minLength: [10, "number should have minimum 10 digit"],

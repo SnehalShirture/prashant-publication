@@ -3,8 +3,9 @@ import axios from "axios";
 
 axios.defaults.withCredentials = true;
 
-export const addbook = async (formData) => {
+export const addnewbook = async (formData) => {
     let aInstance = createInstance()
+    console.log(formData)
     try {
         const response = await aInstance.post("addBook", formData, {
             headers: {
@@ -18,7 +19,7 @@ export const addbook = async (formData) => {
     }
 }
 
- export const getBooks = async () => {
+export const getBooks = async () => {
     let aInstance = createInstance()
     try {
         const response = await aInstance.get("getBook");
@@ -26,5 +27,16 @@ export const addbook = async (formData) => {
     } catch (error) {
         console.log("Error getting books:", error.message);
         throw new Error(error.response?.data?.message || "An error occurred during getting books");
+    }
+};
+export const deleteBook = async (reqdeldata) => {
+    const aInstance = createInstance(); // Ensure `createInstance` initializes Axios.
+    try {
+        console.log("Deleting book with ID:", reqdeldata);
+        const response = await aInstance.post('deleteBook' , reqdeldata); // Use DELETE with ID in the URL.
+        return response.data; // Return the response data.
+    } catch (error) {
+        console.error("Error deleting book:", error.message);
+        throw new Error(error.response?.data?.message || "An error occurred while deleting the book");
     }
 };

@@ -17,7 +17,7 @@ const CAdminProfile = () => {
   const handleLogout = async () => {
     try {
       let userdata = {
-        userId: UserData
+        userId: UserData.user_id._id
       }
       const res = await userlogout(userdata);
       console.log(res)
@@ -26,7 +26,6 @@ const CAdminProfile = () => {
 
     } catch (error) {
       console.log(error.message)
-
     }
   }
 
@@ -48,16 +47,16 @@ const CAdminProfile = () => {
 
           <Grid item xs={12} sm={8} md={9}>
             <Typography variant="h5" fontWeight="bold">
-              Username: {UserData.name}
+              Username: {UserData.user_id.name}
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              Email: {UserData.email}
+              Email: {UserData.user_id.email}
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              Phone: {UserData.mobile}
+              Phone: {UserData.user_id.mobile}
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              Role: {UserData.role}
+              Role: {UserData.user_id.role}
             </Typography>
 
 
