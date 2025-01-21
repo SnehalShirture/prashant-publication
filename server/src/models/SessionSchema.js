@@ -23,6 +23,10 @@ const SessionSchema = mongoose.Schema({
         type: Boolean,
         default: true,  // Indicates if the session is active
     },
+    pageCounter: {
+        type: Number,
+        default: 0
+    }
 }   
 )
 

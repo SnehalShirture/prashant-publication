@@ -177,29 +177,9 @@ const resetPassword = async (req, res) => {
     }
 }
 
-const pageReadCounter = async (req, res) => {
-    const { userId, pagesRead } = req.body;
-    try {
-        const customer = await User.findByIdAndUpdate(
-            userId,
-            { $inc: { totalPagesRead: pagesRead } },
-            { new: true }
-        );
-
-        if (!customer) {
-            throw new ApiError("Customer not found.", 400);
-        }
-        console.log("Pages",customer.totalPagesRead);
-        res.status(200).json(new APiResponse(true, 200, customer, "Pages read updated successfully"));
-    } catch (error) {
-        const status = error.statusCode || 500;
-        const message = error.message || "An unexpected error occurred while sending OTP.";
-        res.status(status).json(new APiResponse(false, status, null, message));
-    }
-
-}
 
 
-export { registerUser, getUser, userLogin, userLogout, addBookToShelf, sendOtp, resetPassword, pageReadCounter }
+
+export { registerUser, getUser, userLogin, userLogout, addBookToShelf, sendOtp, resetPassword }
 
 
