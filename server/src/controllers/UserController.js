@@ -124,6 +124,20 @@ const addBookToShelf = async (req, res) => {
     }
 }
 
+const getBookShelfByUserId = async (req, res) => {
+    try {
+        const { userId } = req.body;
+
+        const bookshelf = await User.findOne({ _id: userId })
+        .populate("bookShelf")
+        if (!bookshelf) throw new ApiError("User not found.", 404);
+        res.status(200).json(new APiResponse(true, 200, bookshelf, "Bookshelf"));
+    } catch (error) {
+        const status = error.statusCode || 500;
+        const message = error.message || "Error adding book to shelf.";
+        res.status(status).json(new APiResponse(false, status, null, message));
+    }
+}
 
 const sendOtp = async (req, res) => {
     const { email } = req.body;
@@ -180,6 +194,6 @@ const resetPassword = async (req, res) => {
 
 
 
-export { registerUser, getUser, userLogin, userLogout, addBookToShelf, sendOtp, resetPassword }
+export { registerUser, getUser, userLogin, userLogout, addBookToShelf,getBookShelfByUserId, sendOtp, resetPassword }
 
 
