@@ -1,7 +1,7 @@
 import axios from "axios";
 import { createInstance } from "./axiosInstance";
 
-axios.defaults.withCredentials = true;
+// axios.defaults.withCredentials = true;
 
 // const BASE_URL = "mongodb+srv://prashantbooks2025:kvPiegjdlRsOLBxA@prashant.0d7z5.mongodb.net/?retryWrites=true&w=majority&appName=Prashant";
 

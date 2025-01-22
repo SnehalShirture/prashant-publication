@@ -12,20 +12,22 @@ dotenv.config();
 let Server = express();
 
 ConnectDB();
-Server.use(cors({
-    origin: ["http://localhost:5173"],
-    credentials: true,
-}));
+// Server.use(cors({
+//     origin: '*'
+// //     credentials: true,
+// }));
+
+Server.use(cors())
 Server.use(bodyParser.json());
 Server.use(express.json())
 
-Server.use("/uploads",express.static("uploads"));
+Server.use("/uploads", express.static("uploads"));
 
-Server.use("/api",userRouter);
-Server.use("/api",bookRouter);
-Server.use("/api",PaymentRouter);
-Server.use("/api",SubscriptionRouter);
+Server.use("/api", userRouter);
+Server.use("/api", bookRouter);
+Server.use("/api", PaymentRouter);
+Server.use("/api", SubscriptionRouter);
 
 Server.listen(process.env.PORT, () => {
-    console.log("Server Started...",process.env.PORT);
+    console.log("Server Started...", process.env.PORT);
 })

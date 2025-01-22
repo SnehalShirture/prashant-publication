@@ -71,6 +71,7 @@ const userLogin = async (req, res) => {
         ));
     } catch (error) {
 
+        // console.log(error);
         const status = error.statusCode || 500;
         const message = error.message || "An unexpected error occurred.";
         res.status(status).json(new APiResponse(false, status, null, message));
