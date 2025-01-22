@@ -84,7 +84,7 @@ const Login = () => {
       }
       else if (userRole === "SuperAdmin"){
         console.log("Navigating to /admin/dashboard");
-        navigate("/sadmin/dashboard");
+        navigate("/sadmin/appbar");
       }
       else {
         console.log("Navigating to /profile");

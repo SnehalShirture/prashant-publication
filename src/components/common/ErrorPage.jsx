@@ -11,7 +11,7 @@ const ErrorPage = () => {
                 <div className='error-page'>
                     <DangerousIcon size={55} color="#F50000" />
                     <p> <strong>404&nbsp;</strong> || Page not found</p>
-                    <button className='back-button' onClick={() => { navigate("/") }}  >
+                    <button className='back-button' onClick={() => {navigate("/") }}  >
                         <ArrowBackIcon size={18} />
                         back
                     </button>

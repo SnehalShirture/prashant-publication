@@ -2,7 +2,7 @@ import { combineReducers, configureStore } from "@reduxjs/toolkit"
 import { persistReducer, FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER } from "redux-persist"
 import storage from "redux-persist/lib/storage";
 import UserSlice from "./UserSlice"
-
+import ShelfSlice from "./ShelfSlice";
 
 const timeoutMiddleware = store => next => action => {
     const result = next(action);
@@ -21,7 +21,8 @@ const persistConfig = {
 }
 
 const rootReducer = combineReducers({
-    user : UserSlice
+    user : UserSlice,
+    shelf: ShelfSlice,
   });
 
   const persistedReducer = persistReducer(persistConfig, rootReducer);

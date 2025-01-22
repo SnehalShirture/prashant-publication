@@ -7,8 +7,8 @@ import UserSubscription from "../pages/user/UserSubscription";
 import AllUsers from "../pages/collegeAdmin/AllUsers";
 import CAdminProfile from "../pages/collegeAdmin/CAdminProfile";
 import UserProfile from "../pages/user/UserProfile";
-import SAdminDashboard from "../pages/sAdmin/SAdminDashboard";
 import Collegebooks from "../pages/collegeAdmin/Collegebooks";
+import SuperAdminAppBar from "../pages/sAdmin/SAdminAppbar";
 
 export const User_Routes = [
   { path: "/user/dashboard", element: <Dashboard />, label: "Dashboard" },
@@ -27,6 +27,5 @@ export const Librarian_Routes = [
 ];
 
 export const SAdmin_Routes = [
-  { path: "/sadmin/dashboard", element: <SAdminDashboard />, label: "superAdmin Dashboard" },
-
+  { path: "/sadmin/appbar", element: <SuperAdminAppBar />, label: "superAdmin Dashboard" },
 ]
