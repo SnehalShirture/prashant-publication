@@ -21,6 +21,7 @@ export const registeruser = async (userReqData) => {
 }
 export const loginuser = async (reqLoginData) => {
     let aInstance = createInstance()
+    console.log(reqLoginData)
     try {
         const response = await aInstance.post("login", reqLoginData);
         return response.data; // Return the successful response data
@@ -71,4 +72,17 @@ export const resetPassword = async (data) => {
     
    }
   };
+
+  export const getreadingdatabytuserid = async(getreqdata) =>{
+    let aInstance = createInstance()
+    console.log(getreqdata)
+    try {
+        const response = await aInstance.post("getUserReadData" , getreqdata);
+        return response.data;
+    } catch (error) {
+        console.error("Error Response:", error.response?.data);
+        throw new Error(error.response?.data?.message || "An error occurred during reading data retrieval.");
+
+    }
+  }
 

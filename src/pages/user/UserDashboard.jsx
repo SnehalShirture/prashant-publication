@@ -1,14 +1,4 @@
-import React, { useState } from 'react';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from 'recharts';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -17,16 +7,13 @@ import {
   Container,
   Tabs,
   Tab,
-  CardContent,
-  Pagination,
-  Grid2
+  IconButton,
 } from '@mui/material';
 import EastIcon from '@mui/icons-material/East';
-import IconButton from '@mui/material/IconButton';
 import TooltipComponent from '@mui/material/Tooltip';
 import CustomTable from '../../custom/CustomTable';
 import PropTypes from 'prop-types';
-
+import { getBooks } from '../../apiCalls/BooksApi'; // Import getBooks API
 
 // TabPanel Component
 const TabPanel = (props) => {
@@ -40,9 +27,7 @@ const TabPanel = (props) => {
       aria-labelledby={`tab-${index}`}
       {...other}
     >
-      {value === index && (
-        <Box p={2}>{children}</Box>
-      )}
+      {value === index && <Box p={2}>{children}</Box>}
     </div>
   );
 };
@@ -50,21 +35,18 @@ const TabPanel = (props) => {
 TabPanel.propTypes = {
   children: PropTypes.node,
   value: PropTypes.number.isRequired,
-  index: PropTypes.number.isRequired
+  index: PropTypes.number.isRequired,
 };
-
 
 const Dashboard = () => {
   const [value, setValue] = useState(0);
-  const [page, setPage] = useState(1);
-  const booksPerPage = 2;
-  const [open, setOpen] = useState(false);
-
+  const [books, setBooks] = useState([]); // State to store book data
+  const [loading, setLoading] = useState(true); // Loading state
   const categories = ["All", "Science", "Arts", "Engineering", "Commerce"];
+
   const handleChange = (event, newValue) => {
     setValue(newValue);
-  }
-
+  };
 
   const columns = [
     { header: 'Sr.No', accessorFn: (row, index) => index + 1 },
@@ -79,9 +61,9 @@ const Dashboard = () => {
       accessorFn: (row) => row,
       Cell: ({ cell }) => (
         <Box>
-          <TooltipComponent title="Details">
+          <TooltipComponent title="View Details">
             <IconButton
-              onClick={() => navigate('', { state: cell.getValue() })}
+              onClick={() => console.log("View Book", cell.getValue())}
               color="secondary"
             >
               <EastIcon fontSize="small" />
@@ -91,113 +73,29 @@ const Dashboard = () => {
       ),
     },
   ];
-  const bookData = [
-    {
-      name: "The Hobbit",
-      author: "J.R.R. Tolkien",
-      category: "Arts",
-      price: "15.99",
-      publisher: "George Allen & Unwin",
-      yearPublished: 1937,
-    },
-    {
-      name: "1984",
-      author: "George Orwell",
-      category: "Science",
-      price: "12.99",
-      publisher: "Secker & Warburg",
-      yearPublished: 1949,
-    },
-    {
-      name: "To Kill a Mockingbird",
-      author: "Harper Lee",
-      category: "Commerce",
-      price: "10.99",
-      publisher: "J.B. Lippincott & Co.",
-      yearPublished: 1960,
-    },
-    {
-      name: "To Kill a Mockingbird",
-      author: "Harper Lee",
-      category: "Engineering",
-      price: "11.00",
-      publisher: "Secker & Warburg.",
-      yearPublished: 1898,
-    },
-    {
-      name: "Pride and Prejudice",
-      author: "Jane Austen",
-      category: "Arts",
-      price: "10.99",
-      publisher: "T. Egerton, Whitehall",
-      yearPublished: 1813,
-    },
-    {
-      name: "Hamlet",
-      author: "William Shakespeare",
-      category: "Arts",
-      price: "12.50",
-      publisher: "The Folger Shakespeare Library",
-      yearPublished: 1609,
-    },
-    {
-      name: "The Selfish Gene",
-      author: "Richard Dawkins",
-      category: "Science",
-      price: "15.99",
-      publisher: "Oxford University Press",
-      yearPublished: 1976,
-    },
-    {
-      name: "The Origin of Species",
-      author: "Charles Darwin",
-      category: "Science",
-      price: "20.00",
-      publisher: "John Murray",
-      yearPublished: 1859,
-    },
-    {
-      name: "Mechanics of Materials",
-      author: "Ferdinand Beer",
-      category: "Engineering",
-      price: "24.99",
-      publisher: "McGraw-Hill Education",
-      yearPublished: 2015,
-    },
-    {
-      name: "Rich Dad Poor Dad",
-      author: "Robert T. Kiyosaki",
-      category: "Commerce",
-      price: "12.99",
-      publisher: "Warner Books Ed",
-      yearPublished: 1997,
-    },
-    {
-      name: "The Intelligent Investor",
-      author: "Benjamin Graham",
-      category: "Commerce",
-      price: "22.99",
-      publisher: "Harper & Brothers",
-      yearPublished: 1949,
-    },
-    {
-      name: "Principles: Life and Work",
-      author: "Ray Dalio",
-      category: "Commerce",
-      price: "19.99",
-      publisher: "Simon & Schuster",
-      yearPublished: 2017,
-    }
-  ];
 
-  const totalBooks = 123;
-  const recentlyViewedBooks = ['React Made Easy', 'Advanced React Patterns', 'JavaScript Mastery'];
-  // const navigate = useNavigate();
+  // Fetch book data on component mount
+  useEffect(() => {
+    const fetchBooks = async () => {
+      setLoading(true);
+      try {
+        const response = await getBooks(); // Fetch books from API
+        setBooks(response.data); // Assuming API response contains a 'data' field with books
+      } catch (error) {
+        console.error("Error fetching books:", error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
 
+    fetchBooks();
+  }, []);
 
-  const filteredBooks = value === 0
-    ? bookData
-    : bookData.filter(book => book.category === categories[value]);
+  // Filter books based on selected category
+  const filteredBooks =
+    value === 0
+      ? books
+      : books.filter((book) => book.category === categories[value]);
 
   return (
     <Box sx={{ p: 2, backgroundColor: '#e7e7ff' }}>
@@ -215,7 +113,7 @@ const Dashboard = () => {
               }}
             >
               <Typography variant="h6">All Books</Typography>
-              <Typography variant="h4">{totalBooks}</Typography>
+              <Typography variant="h4">{books.length}</Typography>
             </Card>
           </Grid>
           <Grid item xs={12} sm={6} md={4}>
@@ -229,16 +127,13 @@ const Dashboard = () => {
               }}
             >
               <Typography variant="h6">Recently Viewed</Typography>
-              {recentlyViewedBooks.map((book, index) => (
-                <Typography key={index}>{book}</Typography>
-              ))}
+              <Typography>Recently viewed books will appear here</Typography>
             </Card>
           </Grid>
         </Grid>
 
-
-        {/* Books Caterories Tabs */}
-        <Box sx={{ p: 2}}>
+        {/* Book Categories Tabs */}
+        <Box sx={{ p: 2 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Typography variant='h4' fontWeight={550} sx={{ mb: 0.4 }}>Book Categories</Typography>
           </Box>
@@ -256,7 +151,11 @@ const Dashboard = () => {
             </Tabs>
           </Box>
           <TabPanel value={value} index={value}>
-            <CustomTable data={filteredBooks} columns={columns} />
+            {loading ? (
+              <Typography>Loading books...</Typography>
+            ) : (
+              <CustomTable data={filteredBooks} columns={columns} />
+            )}
           </TabPanel>
         </Box>
       </Container>
@@ -265,5 +164,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
-
