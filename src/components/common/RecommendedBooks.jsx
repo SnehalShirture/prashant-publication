@@ -15,14 +15,19 @@ import {
   Select,
   Pagination,
 } from "@mui/material";
-import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
-import { getBooks } from "../../apiCalls/BooksApi";
+import { getBooks, addToShelf } from "../../apiCalls/BooksApi";
 import PDFReader from "./PDFReader";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { addShelf } from "../../reduxwork/ShelfSlice"; // Import addShelf action
 
 const RecommendedBooks = () => {
+  const dispatch = useDispatch();
   const { UserData } = useSelector((state) => state.user);
+  const { shelves } = useSelector((state) => state.shelf); // Access shelves from Redux state
+
+  const userid = UserData.user_id._id;
   const sessionId = UserData._id;
+  const token = UserData.token;
 
   const [books, setBooks] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -35,8 +40,6 @@ const RecommendedBooks = () => {
     const fetchBooks = async () => {
       try {
         const response = await getBooks();
-        console.log(response.data)
-        console.log(response.data.coverImage)
         setBooks(response.data);
       } catch (error) {
         console.error("Error fetching books:", error);
@@ -74,10 +77,40 @@ const RecommendedBooks = () => {
     setPage(value);
   };
 
+  // Handle Add to Shelf (Redux + API)
+  const handleAddToShelf = async (book) => {
+    // Check if the book is already in the shelf
+    const isAlreadyAdded = shelves.some((shelf) => shelf.bookId === book._id);
+    if (isAlreadyAdded) {
+      alert(`${book.name} is already in your shelf.`);
+      return;
+    }
+
+    try {
+      // Add to server-side shelf
+      const data = {
+        bookId: book._id,
+        userId: userid,
+      };
+      const shelfRes = await addToShelf(data, token);
+
+      // Dispatch Redux action to add the book locally
+      dispatch(addShelf({ bookId: book._id, name: book.name }));
+
+      console.log("Add to shelf response:", shelfRes);
+      alert(`${book.name} has been added to your shelf!`);
+    } catch (error) {
+      console.error("Error adding book to shelf:", error.message);
+      alert(error.response?.data?.message || "Failed to add book to shelf.");
+    }
+  };
+
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
       {/* Filters Section */}
-      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3, gap: 2 }}>
+      <Box
+        sx={{ display: "flex", justifyContent: "space-between", mb: 3, gap: 2 }}
+      >
         <TextField
           label="Search Author"
           variant="outlined"
@@ -135,7 +168,9 @@ const RecommendedBooks = () => {
                 >
                   View PDF
                 </Button>
-                <FavoriteBorderIcon style={{ color: "red" }} />
+                <Button size="small" onClick={() => handleAddToShelf(book)}>
+                  Add to Shelf
+                </Button>
               </CardActions>
             </Card>
           </Grid>
@@ -143,7 +178,7 @@ const RecommendedBooks = () => {
       </Grid>
 
       {/* Pagination Section */}
-      {/* <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
         <Pagination
           count={Math.ceil(filteredBooks.length / itemsPerPage)}
           page={page}
@@ -151,7 +186,7 @@ const RecommendedBooks = () => {
           variant="outlined"
           shape="rounded"
         />
-      </Box> */}
+      </Box>
 
       {/* PDF Reader Modal */}
       {selectedBook && (

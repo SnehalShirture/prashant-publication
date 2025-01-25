@@ -109,6 +109,7 @@ const getReadCounterByUserId = async (req, res) => {
                 }
             }
         ])
+        console.log(readCounter)
 
         res.status(200).json(new APiResponse(true, 200, readCounter, "Page reading data"))
     } catch (error) {

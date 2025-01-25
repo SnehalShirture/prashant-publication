@@ -9,6 +9,8 @@ import { persistStore } from "redux-persist"
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from "react-query";
 
+import "./index.css"
+
 const queryClient = new QueryClient();
 let persistor = persistStore(MainStore);
 const root = createRoot(document.getElementById('root')).render(
