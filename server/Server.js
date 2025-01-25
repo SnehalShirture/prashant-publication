@@ -17,7 +17,10 @@ ConnectDB();
 // //     credentials: true,
 // }));
 
-Server.use(cors())
+Server.use(cors({
+    origin:["http://localhost:5173"],
+    credentials:true
+}));
 Server.use(bodyParser.json());
 Server.use(express.json())
 
