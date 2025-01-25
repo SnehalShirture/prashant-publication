@@ -1,6 +1,6 @@
 import express from "express";
-import { registerUser, getUser, userLogin, userLogout, addBookToShelf,getBookShelfByUserId, sendOtp, resetPassword } from "../controllers/UserController.js";
-import { updatePageCounter, getReadCounterByUserId } from "../controllers/SessionController.js";
+import { registerUser, getUser, userLogin, userLogout, addBookToShelf, getBookShelfByUserId, sendOtp, resetPassword } from "../controllers/UserController.js";
+import { updatePageCounter, getReadCounterByUserId, getTotalPagesReadByMonth } from "../controllers/SessionController.js";
 import { authenticate } from "../middleware/auth.js";
 
 const userRouter = express.Router();
@@ -18,4 +18,6 @@ userRouter.post("/resetPassword", resetPassword)
 //session routes
 userRouter.post("/updatePageCounter", updatePageCounter)
 userRouter.post("/getUserReadData", getReadCounterByUserId)
+userRouter.get("/getTotalPagesByMonth", getTotalPagesReadByMonth)
+
 export { userRouter }
