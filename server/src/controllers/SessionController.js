@@ -119,10 +119,59 @@ const getReadCounterByUserId = async (req, res) => {
     }
 }
 
+const getTotalPagesReadByMonth = async (req, res) => {
+    try {
+        const Result = await Session.aggregate([
+            {
+                $addFields: {
+                    monthYear: {
+                        $dateToString: {
+                            format: "%b %Y",
+                            date: "$loginTime"
+                        }
+                    }
+                }
+            },
+    
+            {
+                $group: {
+                    _id: "$monthYear",
+                    totalPagesRead: { $sum: "$pageCounter" },
+                    totalUsers: { $addToSet: "$user_id" } // Collect unique users
+                }
+            },
+            {
+                $addFields: {
+                    totalUsers: { $size: "$totalUsers" }
+                }
+            },
+            {
+                $sort: {
+                    _id: 1
+                }
+            },
+            {
+                $project: {
+                    monthYear: "$_id",
+                    totalPagesRead: 1,
+                    totalUsers: 1,
+                    _id: 0
+                }
+            }
+        ])
+
+        res.status(200).json(new APiResponse(true, 200, Result, "data by month"))
+
+    } catch (error) {
+        const status = error.status;
+        const message = error.message;
+        res.status(status).json(new APiResponse(false, status, null, message))
+    }
+}
 
 
 
-export { createSession, getSession, updatePageCounter ,getReadCounterByUserId }
+export { createSession, getSession, updatePageCounter ,getReadCounterByUserId,getTotalPagesReadByMonth }
 
 
 

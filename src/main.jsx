@@ -13,6 +13,8 @@ import { AlertProvider } from './custom/CustomAlert.jsx';
 
 
 
+import "./index.css"
+
 const queryClient = new QueryClient();
 let persistor = persistStore(MainStore);
 const root = createRoot(document.getElementById('root')).render(
