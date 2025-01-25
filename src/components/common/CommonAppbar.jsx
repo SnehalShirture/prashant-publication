@@ -6,7 +6,7 @@ const CommonAppBar = () => {
     <AppBar position="static">
       <Toolbar>
         <Typography variant="h6" sx={{ flexGrow: 1, textAlign: "center" }}>
-          Digital Library
+          Prashant Digital Library
         </Typography>
       </Toolbar>
     </AppBar>

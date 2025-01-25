@@ -18,12 +18,14 @@ import {
 import { getBooks, addToShelf } from "../../apiCalls/BooksApi";
 import PDFReader from "./PDFReader";
 import { useDispatch, useSelector } from "react-redux";
-import { addShelf } from "../../reduxwork/ShelfSlice"; // Import addShelf action
+import { addShelf } from "../../reduxwork/ShelfSlice";
+import { useAlert } from "../../custom/CustomAlert";
 
-const RecommendedBooks = () => {
+const RecommendedBooks = () => { 
+
+  const { showAlert } = useAlert();
   const dispatch = useDispatch();
   const { UserData } = useSelector((state) => state.user);
-  const { shelves } = useSelector((state) => state.shelf); // Access shelves from Redux state
 
   const userid = UserData.user_id._id;
   const sessionId = UserData._id;
@@ -35,6 +37,11 @@ const RecommendedBooks = () => {
   const [page, setPage] = useState(1);
   const [selectedBook, setSelectedBook] = useState(null);
   const itemsPerPage = 4;
+
+  const primaryColor = "#4A90E2";
+  const backgroundColor = "#F9FAFB";
+  const cardBackground = "#FFFFFF";
+  const buttonColor = "#F37A24";
 
   useEffect(() => {
     const fetchBooks = async () => {
@@ -49,9 +56,12 @@ const RecommendedBooks = () => {
   }, []);
 
   const filteredBooks = books.filter((book) => {
-    const matchesQuery = book.author
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
+    const matchesQuery = searchQuery
+      ? [book.name, book.author, book.category]
+          .join(" ")
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase())
+      : true;
     const matchesCategory = selectedCategory
       ? book.category === selectedCategory
       : true;
@@ -77,48 +87,58 @@ const RecommendedBooks = () => {
     setPage(value);
   };
 
-  // Handle Add to Shelf (Redux + API)
   const handleAddToShelf = async (book) => {
-    // Check if the book is already in the shelf
-    const isAlreadyAdded = shelves.some((shelf) => shelf.bookId === book._id);
-    if (isAlreadyAdded) {
-      alert(`${book.name} is already in your shelf.`);
-      return;
-    }
-
     try {
-      // Add to server-side shelf
       const data = {
         bookId: book._id,
         userId: userid,
       };
       const shelfRes = await addToShelf(data, token);
 
-      // Dispatch Redux action to add the book locally
       dispatch(addShelf({ bookId: book._id, name: book.name }));
-
-      console.log("Add to shelf response:", shelfRes);
-      alert(`${book.name} has been added to your shelf!`);
+      showAlert(`${book.name} has been added to your shelf!`, "success");
     } catch (error) {
-      console.error("Error adding book to shelf:", error.message);
-      alert(error.response?.data?.message || "Failed to add book to shelf.");
+      showAlert(error.response?.data?.message || "Failed to add book to shelf.","error");
     }
   };
 
   return (
-    <Box sx={{ flexGrow: 1, p: 3 }}>
+    <Box
+      sx={{
+        margin: 0,
+        flexGrow: 1,
+        bgcolor: backgroundColor,
+        minHeight: "80vh",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+      }}
+    >
       {/* Filters Section */}
       <Box
-        sx={{ display: "flex", justifyContent: "space-between", mb: 3, gap: 2 }}
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          mb: 3,
+          gap: 2,
+          p: 2,
+          borderRadius: 2,
+          bgcolor: "#E4F1FD",
+        }}
       >
         <TextField
-          label="Search Author"
+          label="Search"
           variant="outlined"
           value={searchQuery}
           onChange={handleSearchChange}
-          sx={{ flex: 1 }}
+          placeholder="Search by book name, author, or category"
+          sx={{
+            flex: 1,
+            bgcolor: "#FFFFFF",
+            borderRadius: 1,
+          }}
         />
-        <FormControl sx={{ minWidth: 200 }}>
+        <FormControl sx={{ minWidth: 200, bgcolor: "#FFFFFF", borderRadius: 1 }}>
           <InputLabel>Category</InputLabel>
           <Select
             value={selectedCategory}
@@ -138,15 +158,31 @@ const RecommendedBooks = () => {
       <Grid container spacing={3}>
         {paginatedBooks.map((book) => (
           <Grid item xs={12} sm={6} md={4} lg={3} key={book._id}>
-            <Card sx={{ maxWidth: 345, boxShadow: 3, borderRadius: 2 }}>
+            <Card
+              sx={{
+                maxWidth: 345,
+                boxShadow: 3,
+                borderRadius: 2,
+                bgcolor: cardBackground,
+                "&:hover": {
+                  transform: "scale(1.02)",
+                  transition: "transform 0.3s ease-in-out",
+                },
+              }}
+            >
               <CardMedia
                 component="img"
                 height="200"
-                image={book.coverImage}
+                image={`http://localhost:5000/${book.coverImage}`}
                 alt={book.name}
               />
               <CardContent>
-                <Typography gutterBottom variant="h6" component="div">
+                <Typography
+                  gutterBottom
+                  variant="h6"
+                  component="div"
+                  sx={{ color: primaryColor }}
+                >
                   {book.name}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
@@ -163,12 +199,24 @@ const RecommendedBooks = () => {
                 <Button
                   size="small"
                   variant="contained"
-                  color="primary"
+                  sx={{ bgcolor: buttonColor, "&:hover": { bgcolor: "#d8681c" } }}
                   onClick={() => setSelectedBook(book)}
                 >
                   View PDF
                 </Button>
-                <Button size="small" onClick={() => handleAddToShelf(book)}>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  sx={{
+                    color: primaryColor,
+                    borderColor: primaryColor,
+                    "&:hover": {
+                      bgcolor: primaryColor,
+                      color: "#FFFFFF",
+                    },
+                  }}
+                  onClick={() => handleAddToShelf(book)}
+                >
                   Add to Shelf
                 </Button>
               </CardActions>
@@ -178,7 +226,7 @@ const RecommendedBooks = () => {
       </Grid>
 
       {/* Pagination Section */}
-      <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+      <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 4 }}>
         <Pagination
           count={Math.ceil(filteredBooks.length / itemsPerPage)}
           page={page}

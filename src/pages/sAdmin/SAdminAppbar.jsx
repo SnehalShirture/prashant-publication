@@ -16,8 +16,11 @@ import { userlogout } from "../../apiCalls/UserApi";
 import SAdminDashboard from "./SAdminDashboard";
 import AddBookForm from "./AddBook";
 import AllBooks from "./AllBooks";
+import { useAlert } from "../../custom/CustomAlert";
+
 
 const SuperAdminAppBar = () => {
+  const { showAlert } = useAlert();
   const [tabValue, setTabValue] = React.useState("dashboard");
   const [anchorEl, setAnchorEl] = React.useState(null);
 
@@ -47,11 +50,12 @@ const SuperAdminAppBar = () => {
       const userdata = { userId: UserData.user_id._id};
       const res = await userlogout(userdata);
       console.log("Logout Response:", res);
-
+      showAlert("You have been logged out successfully","success")
       dispatch(logout());
       navigate("/");
     } catch (error) {
       console.error("Logout Error:", error.message);
+      showAlert("Error logging out. Please try again later","error")
     }
   };
 

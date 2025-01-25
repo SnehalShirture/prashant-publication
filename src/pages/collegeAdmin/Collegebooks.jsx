@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Box, Tabs, Tab, Typography, Container, IconButton, Tooltip } from "@mui/material";
+import { Box, Tabs, Tab, Typography, Container, Tooltip } from "@mui/material";
 import EastIcon from "@mui/icons-material/East";
-import AddIcon from "@mui/icons-material/Add";
 import CustomTable from "../../custom/CustomTable";
 import { getBooks } from "../../apiCalls/BooksApi"; // Import your API methods
-import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 
 const Collegebooks = () => {
   const [tabValue, setTabValue] = useState(0);
@@ -33,10 +31,6 @@ const Collegebooks = () => {
   useEffect(() => {
     fetchBooks();
   }, []);
-
-  // delete book api call
-  
-  
   
 
   // Table columns

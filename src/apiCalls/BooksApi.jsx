@@ -45,10 +45,10 @@ export const addToShelf = async (data, token) => {
   const aInstance = createInstance();
   try {
     console.log("Data:", data);
-    console.log("Token:", token); // Debug token value
+    console.log("Token:", token); 
     const response = await aInstance.post("addToShelf", data, {
       headers: {
-        Authorization: `Bearer ${token}`, // Ensure token is properly prefixed
+        Authorization: `Bearer ${token}`,
       },
     });
     console.log(response);

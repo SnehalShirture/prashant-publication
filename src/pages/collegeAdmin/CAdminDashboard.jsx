@@ -4,9 +4,14 @@ import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import Groups2Icon from '@mui/icons-material/Groups2';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
-import CustomTable from '../../custom/CustomTable'; // Import the CustomTable component
+import CustomTable from '../../custom/CustomTable';
+import { useSelector } from 'react-redux';
 
 const LibraryAdminDashboard = () => {
+
+    // Access user data from Redux store
+    const { UserData } = useSelector((state) => state.user);
+
     const [tableData] = useState([
         { id: 1, studentName: "Alice Smith", action: "Borrowed 'Advanced Mathematics'", date: "2023-12-25" },
         { id: 2, studentName: "Bob Johnson", action: "Returned 'Physics Vol 1'", date: "2023-12-24" },
@@ -15,13 +20,11 @@ const LibraryAdminDashboard = () => {
         { id: 5, studentName: "Eva Green", action: "Reserved 'Modern Biology'", date: "2023-12-21" },
     ]);
 
-    const tableColumns = [
+    const tableColumns = [        
         { accessorKey: 'studentName', header: 'Student Name', size: 200 },
         { accessorKey: 'action', header: 'Activity', size: 300 },
         { accessorKey: 'date', header: 'Date', size: 150 },
     ];
-
-    const AdminData = { name: "John Doe" };
     const dashboardData = [
         { title: "Total Books", value: 1200, icon: <LibraryBooksIcon fontSize="large" />, color: "#3f51b5" },
         { title: "Total Students", value: 350, icon: <Groups2Icon fontSize="large" />, color: "#4caf50" },
@@ -32,7 +35,7 @@ const LibraryAdminDashboard = () => {
     return (
         <Box sx={{ padding: 4, bgcolor: "#f5f5f5", minHeight: "100vh" }}>
             <Typography variant="h4" gutterBottom>
-                Welcome, <strong>{AdminData.name}</strong>
+                Welcome, <strong>{UserData.user_id.name}</strong>
             </Typography>
             <Typography variant="subtitle1" color="textSecondary" gutterBottom>
                 Manage your library efficiently with the admin dashboard.

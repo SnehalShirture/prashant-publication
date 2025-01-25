@@ -12,8 +12,11 @@ import {
 } from "@mui/material";
 import { CloudUpload } from "@mui/icons-material";
 import { addnewbook } from "../../apiCalls/BooksApi";
+import { useAlert } from "../../custom/CustomAlert";
+
 
 const AddBookForm = () => {
+  const { showAlert } =useAlert();
   const [formData, setFormData] = useState({
     name: "",
     author: "",
@@ -70,11 +73,11 @@ const AddBookForm = () => {
       });
 
       console.log("Book Added Successfully:", res);
-      alert("Book added successfully!"); // Provide user feedback
+      showAlert("Book added successfully!" , "success"); // Provide user feedback
       resetForm(); // Clear the form after successful submission
     } catch (error) {
       console.error("Error Adding Book:", error.message);
-      alert("Failed to add book. Please try again.");
+      showAlert("Failed to add book. Please try again.", "error"); 
     }
   };
 

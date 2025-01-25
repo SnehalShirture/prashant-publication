@@ -34,7 +34,6 @@ export const loginuser = async (reqLoginData) => {
 };
 export const userlogout = async (reqLogout) => {
     let aInstance = createInstance()
-
     try {
         console.log("Logging out with data:", reqLogout);
         const response = await aInstance.post("logout", reqLogout);

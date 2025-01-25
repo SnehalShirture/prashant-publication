@@ -9,6 +9,8 @@ import {
 import { styled } from "@mui/system";
 import { useNavigate, useLocation } from "react-router-dom";
 import { resetPassword } from "../../apiCalls/UserApi";
+import { useAlert } from "../../custom/CustomAlert";
+
 
 const StyledContainer = styled(Container)(() => ({
   borderRadius: "8px",
@@ -17,6 +19,7 @@ const StyledContainer = styled(Container)(() => ({
 }));
 
 const ResetPassword = () => {
+  const { showAlert } = useAlert()
   const navigate = useNavigate();
   const location = useLocation(); // To get the passed email from navigation
   const { email } = location.state || {}; // Get the email passed through navigation
@@ -26,7 +29,7 @@ const ResetPassword = () => {
   // Redirect if no email is passed from the previous page
   useEffect(() => {
     if (!email) {
-      alert("No email provided. Please start the password reset flow again.");
+      showAlert("No email provided. Please start the password reset flow again." , "error");
       navigate("/");
     }
   }, [email, navigate]);
@@ -36,11 +39,11 @@ const ResetPassword = () => {
       // Assuming OTP and email are sent/validated on the server
       const response = await resetPassword({ email, otp, newPassword });
       console.log(response);
-      alert("Password reset successfully! Redirecting to login.");
+      showAlert("Password reset successfully! Redirecting to login.", "success");
       navigate("/");
     } catch (error) {
       console.error("Failed to reset password:", error.message);
-      alert("Failed to reset password.");
+      showAlert("Failed to reset password. Please try again.", "error");
     }
   };
 

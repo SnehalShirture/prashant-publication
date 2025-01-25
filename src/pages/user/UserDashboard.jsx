@@ -8,29 +8,26 @@ import {
   Tabs,
   Tab,
   IconButton,
+  CircularProgress,
 } from '@mui/material';
 import EastIcon from '@mui/icons-material/East';
-import TooltipComponent from '@mui/material/Tooltip';
+import Tooltip from '@mui/material/Tooltip';
 import CustomTable from '../../custom/CustomTable';
 import PropTypes from 'prop-types';
-import { getBooks } from '../../apiCalls/BooksApi'; // Import getBooks API
+import { getBooks } from '../../apiCalls/BooksApi';
+import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 
-// TabPanel Component
-const TabPanel = (props) => {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`tabpanel-${index}`}
-      aria-labelledby={`tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box p={2}>{children}</Box>}
-    </div>
-  );
-};
+const TabPanel = ({ children, value, index, ...other }) => (
+  <div
+    role="tabpanel"
+    hidden={value !== index}
+    id={`tabpanel-${index}`}
+    aria-labelledby={`tab-${index}`}
+    {...other}
+  >
+    {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+  </div>
+);
 
 TabPanel.propTypes = {
   children: PropTypes.node,
@@ -40,9 +37,9 @@ TabPanel.propTypes = {
 
 const Dashboard = () => {
   const [value, setValue] = useState(0);
-  const [books, setBooks] = useState([]); // State to store book data
-  const [loading, setLoading] = useState(true); // Loading state
-  const categories = ["All", "Science", "Arts", "Engineering", "Commerce"];
+  const [books, setBooks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const categories = ['All', 'Science', 'Arts', 'Engineering', 'Commerce'];
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -60,29 +57,26 @@ const Dashboard = () => {
       header: 'Actions',
       accessorFn: (row) => row,
       Cell: ({ cell }) => (
-        <Box>
-          <TooltipComponent title="View Details">
-            <IconButton
-              onClick={() => console.log("View Book", cell.getValue())}
-              color="secondary"
-            >
-              <EastIcon fontSize="small" />
-            </IconButton>
-          </TooltipComponent>
-        </Box>
+        <Tooltip title="View Details">
+          <IconButton
+            onClick={() => console.log('View Book', cell.getValue())}
+            color="primary"
+          >
+            <AutoStoriesIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
       ),
     },
   ];
 
-  // Fetch book data on component mount
   useEffect(() => {
     const fetchBooks = async () => {
       setLoading(true);
       try {
-        const response = await getBooks(); // Fetch books from API
-        setBooks(response.data); // Assuming API response contains a 'data' field with books
+        const response = await getBooks();
+        setBooks(response.data || []);
       } catch (error) {
-        console.error("Error fetching books:", error.message);
+        console.error('Error fetching books:', error.message);
       } finally {
         setLoading(false);
       }
@@ -91,68 +85,137 @@ const Dashboard = () => {
     fetchBooks();
   }, []);
 
-  // Filter books based on selected category
   const filteredBooks =
     value === 0
       ? books
       : books.filter((book) => book.category === categories[value]);
 
   return (
-    <Box sx={{ p: 2, backgroundColor: '#e7e7ff' }}>
-      <Container>
-        {/* Overview Cards */}
-        <Grid container spacing={3} sx={{ mb: 3, justifyContent: 'space-between', mt: 3 }}>
-          <Grid item xs={12} sm={6} md={4}>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        backgroundColor: '#E9F1FA', // Light blue background
+        color: 'white',
+        py: 4,
+      }}
+    >
+      <Container maxWidth="xl">
+        {/* Overview Section */}
+        <Grid container spacing={4} sx={{ mb: 5 }}>
+          <Grid item xs={12} md={4}>
             <Card
               sx={{
-                p: 3,
+                p: 4,
+                borderRadius: '16px',
+                backgroundColor: '#00ABE4', // Bright blue background
+                color: 'white',
+                boxShadow: 6,
+                height: '70%',
                 textAlign: 'center',
-                borderRadius: '12px',
-                boxShadow: 3,
-                height: '15vh',
               }}
             >
-              <Typography variant="h6">All Books</Typography>
-              <Typography variant="h4">{books.length}</Typography>
+              <Typography variant="h5" sx={{ fontWeight: 600, mb: 1 }}>
+                Total Books
+              </Typography>
+              <Typography variant="h2" sx={{ fontWeight: 700 }}>
+                {books.length}
+              </Typography>
             </Card>
           </Grid>
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid item xs={12} md={4}>
             <Card
               sx={{
-                p: 3,
+                p: 4,
+                borderRadius: '16px',
+                backgroundColor: '#FFFFFF', // White background
+                color: 'black',
+                boxShadow: 6,
+                height: '70%',
                 textAlign: 'center',
-                borderRadius: '12px',
-                boxShadow: 3,
-                height: '15vh',
               }}
             >
-              <Typography variant="h6">Recently Viewed</Typography>
-              <Typography>Recently viewed books will appear here</Typography>
+              <Typography variant="h5" sx={{ fontWeight: 600, mb: 1 }}>
+                Recently Viewed
+              </Typography>
+              <Typography variant="body1">
+                Recently viewed books will appear here.
+              </Typography>
+            </Card>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Card
+              sx={{
+                p: 4,
+                borderRadius: '16px',
+                backgroundColor: '#00ABE4', // Bright blue background
+                color: 'white',
+                boxShadow: 6,
+                height: '70%',
+                textAlign: 'center',
+              }}
+            >
+              <Typography variant="h5" sx={{ fontWeight: 600, mb: 1 }}>
+                Recent Additions
+              </Typography>
+              <Typography variant="body1">
+                Explore the newest books in our collection.
+              </Typography>
             </Card>
           </Grid>
         </Grid>
 
-        {/* Book Categories Tabs */}
-        <Box sx={{ p: 2 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant='h4' fontWeight={550} sx={{ mb: 0.4 }}>Book Categories</Typography>
-          </Box>
-          <Box sx={{ height: 45 }}>
-            <Tabs value={value} onChange={handleChange} aria-label="book categories" sx={{ minHeight: 45 }}>
-              {categories.map((category, index) => (
-                <Tab
-                  key={category}
-                  label={category}
-                  id={`tab-${index}`}
-                  aria-controls={`tabpanel-${index}`}
-                  sx={{ fontWeight: 450, textTransform: "none", minHeight: 45 }}
-                />
-              ))}
-            </Tabs>
-          </Box>
+        {/* Book Categories Section */}
+        <Box>
+          <Typography
+            variant="h4"
+            fontWeight={550}
+            sx={{
+              mb: 3,
+              textShadow: '2px 2px 5px rgba(0,0,0,0.5)',
+              color: '#00ABE4', // Bright blue for the title
+            }}
+          >
+            Book Categories
+          </Typography>
+          <Tabs
+            value={value}
+            onChange={handleChange}
+            aria-label="book categories"
+            variant="scrollable"
+            scrollButtons="auto"
+            sx={{
+              mb: 2,
+              backgroundColor: 'rgba(255, 255, 255, 0.2)',
+              borderRadius: '12px',
+              display: 'flex',
+              justifyContent: 'center',
+            }}
+          >
+            {categories.map((category, index) => (
+              <Tab
+                key={category}
+                label={category}
+                id={`tab-${index}`}
+                aria-controls={`tabpanel-${index}`}
+                sx={{
+                  textTransform: 'none',
+                  fontWeight: 500,
+                  color: '#00ABE4',
+                  '&.Mui-selected': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                    borderRadius: '8px',
+                  },
+                }}
+              />
+            ))}
+          </Tabs>
+
+          {/* Tab Content */}
           <TabPanel value={value} index={value}>
             {loading ? (
-              <Typography>Loading books...</Typography>
+              <Box sx={{ textAlign: 'center', py: 4 }}>
+                <CircularProgress color="inherit" />
+              </Box>
             ) : (
               <CustomTable data={filteredBooks} columns={columns} />
             )}

@@ -9,6 +9,8 @@ import Header from "./layout/MainHeader";
 import ResetPassword from "./components/common/ResetPassword";
 import { logout } from './reduxwork/UserSlice'; // Redux action for logging out
 import { userlogout } from './apiCalls/UserApi'; // API method for logging out
+import "./index.css";
+
 
 const App = () => {
   
