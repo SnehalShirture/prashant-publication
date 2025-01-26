@@ -47,6 +47,7 @@ const UserSchema = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "College"
     }
+    
 })
 
 export const User = mongoose.model("User", UserSchema)

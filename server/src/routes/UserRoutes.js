@@ -1,8 +1,8 @@
 import express from "express";
-import { registerUser, getUser, userLogin, userLogout, addBookToShelf, getBookShelfByUserId, sendOtp, resetPassword } from "../controllers/UserController.js";
+import { registerUser, getUser, userLogin, userLogout, addBookToShelf, getBookShelfByUserId, sendOtp, resetPassword, getUserByClgId } from "../controllers/UserController.js";
 import { updatePageCounter, getReadCounterByUserId, getTotalPagesReadByMonth } from "../controllers/SessionController.js";
 import { authenticate } from "../middleware/auth.js";
-import { addCollege,updateCollege } from "../controllers/CollegeController.js";
+import { addCollege, updateCollege, getCollegesData } from "../controllers/CollegeController.js";
 
 const userRouter = express.Router();
 
@@ -14,6 +14,7 @@ userRouter.post("/addToShelf", authenticate, addBookToShelf)
 userRouter.post("/bookShelf", getBookShelfByUserId)
 userRouter.post("/sendOTP", sendOtp)
 userRouter.post("/resetPassword", resetPassword)
+userRouter.post("/getUserByClgId", getUserByClgId)
 
 
 //session routes
@@ -23,6 +24,7 @@ userRouter.get("/getTotalPagesByMonth", getTotalPagesReadByMonth)
 
 
 //college routes
-userRouter.post("/addCollege",addCollege)
-userRouter.post("/updateCollege/:id",updateCollege)
+userRouter.post("/addCollege", addCollege)
+userRouter.post("/updateCollege/:id", updateCollege)
+userRouter.get("/fetchCollegeData", getCollegesData)
 export { userRouter }

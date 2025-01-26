@@ -65,4 +65,18 @@ const updateCollege = async (req, res) => {
 };
 
 
-export { addCollege, updateCollege }
+const getCollegesData = async (req, res) => {
+    try {
+        const fetchCollegeData = await College.find()
+
+        res.status(200).json(new APiResponse(true, 200, fetchCollegeData, "College Data"))
+    } catch (error) {
+        const status = error.statusCode || 500;
+        const message = error.message || "An unexpected error occurred.";
+        res.status(status).json(new APiResponse(false, status, null, message));
+    }
+}
+
+
+
+export { addCollege, updateCollege ,getCollegesData}
