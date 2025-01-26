@@ -170,14 +170,6 @@ const AllStudents = () => {
                   required
                 />
               </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Role"
-                  name="role"
-                  value={addStudent.role}
-                />
-              </Grid>
               <Grid item xs={12} sx={{ textAlign: "right" }}>
                 <Button
                   type="submit"

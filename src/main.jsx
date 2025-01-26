@@ -10,9 +10,6 @@ import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from "react-query";
 import { SnackbarProvider } from "notistack";
 import { AlertProvider } from './custom/CustomAlert.jsx';
-
-
-
 import "./index.css"
 
 const queryClient = new QueryClient();
