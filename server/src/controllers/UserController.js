@@ -180,13 +180,10 @@ const resetPassword = async (req, res) => {
         if (user.otp !== otp || user.otpExpires < Date.now()) {
             throw new ApiError("Invalid or expired OTP.", 400);
         }
-
-        console.log(`New Password: ${newPassword}`);
+        
         const salt = await bcrypt.genSalt(10);
-        console.log(`Salt: ${salt}`);
         const hashedPassword = await bcrypt.hash(newPassword, salt);
-        console.log(`Hashed Password: ${hashedPassword}`);
-
+        
         user.password = hashedPassword;
         user.otp = undefined;
         user.otpExpires = undefined;
@@ -203,7 +200,7 @@ const resetPassword = async (req, res) => {
 
 const getUserByClgId = async (req, res) => {
     try {
-        const fetchUsers = await User.find({ collegeId: req.body.collegeId });
+        const fetchUsers = await User.findOne({ collegeId: req.body.collegeId });
         console.log(fetchUsers);
 
         res.status(200).json(new APiResponse(true, 200, fetchUsers, "Users By CollegeId"))
@@ -215,6 +212,32 @@ const getUserByClgId = async (req, res) => {
 }
 
 
-export { registerUser, getUser, userLogin, userLogout, addBookToShelf, getBookShelfByUserId, sendOtp, resetPassword ,getUserByClgId }
+const updatePassword = async (req, res) => {
+    try {
+        const { email, oldPassword, newPassword } = req.body;
+
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+
+        const isMatch = await bcrypt.compare(oldPassword, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Old password is incorrect.' });
+        }
+
+        let salt = await bcrypt.genSalt(10)
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        user.password = hashedPassword;
+        await user.save();
+      
+        res.status(200).json(new APiResponse(true, 200, user, 'Password updated successfully.'));
+    } catch (error) {
+        res.status(500).json(new APiResponse(false, 500, null, error.message));
+    }
+}
+
+export { registerUser, getUser, userLogin, userLogout, addBookToShelf, getBookShelfByUserId, sendOtp, resetPassword, getUserByClgId, updatePassword }
 
 
