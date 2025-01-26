@@ -4,6 +4,7 @@ import { College } from "../models/CollegeSchema.js";
 import { User } from "../models/UserSchema.js";
 import { APiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from '../utils/ApiError.js';
+import bcrypt from 'bcrypt';
 
 const addCollege = async (req, res) => {
     try {
@@ -18,12 +19,14 @@ const addCollege = async (req, res) => {
         // Generate password
         const generatedPassword = generatePassword();
 
+        let salt = await bcrypt.genSalt(10)
+        let hashedPassword = await bcrypt.hash(generatedPassword, salt)
 
         const NewUser = await User.create({
             name: librarianName,
             email: librarianEmail,
             mobile: librarianMobile,
-            password: generatedPassword,
+            password: hashedPassword,
             role: "CollegeAdmin",
             collegeId: newCollege._id
         });

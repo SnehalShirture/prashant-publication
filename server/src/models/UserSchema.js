@@ -3,7 +3,7 @@ import validator from 'validator'
 
 const UserSchema = mongoose.Schema({
     name: { type: String, required: true },
-    lastName: { type: String, required: true },
+    lastName: { type: String,  },
     email: { type: String, 
             required: true,
             unique: true,
@@ -43,7 +43,10 @@ const UserSchema = mongoose.Schema({
         type: Date,
         default: null
     },
-    totalPagesRead: { type: Number, default: 0 }
+    collegeId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "College"
+    }
 })
 
 export const User = mongoose.model("User", UserSchema)
