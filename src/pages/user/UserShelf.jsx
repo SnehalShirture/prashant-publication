@@ -26,7 +26,7 @@ const Shelf = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedBook, setSelectedBook] = useState(null); // State for selected book
 
-  // Fetch books on component mount
+  // Fetch books on component 
   useEffect(() => {
     const fetchBooks = async () => {
       const user = {
@@ -43,10 +43,12 @@ const Shelf = () => {
     if (user_id) fetchBooks();
   }, [user_id]);
 
-  // Filter books based on search query (author) and category
+  // Filter books based on search query (global) and category
   const filteredBooks = books.filter((book) => {
     return (
-      book.author.toLowerCase().includes(searchQuery.toLowerCase()) &&
+      (book.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        book.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        book.category.toLowerCase().includes(searchQuery.toLowerCase())) &&
       (selectedCategory ? book.category === selectedCategory : true)
     );
   });
@@ -60,15 +62,38 @@ const Shelf = () => {
   };
 
   return (
-    <Box sx={{ padding: 3 }}>
+    <Box
+      sx={{
+        margin: 0,
+        flexGrow: 1,
+        minHeight: "80vh",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+        backgroundColor: "#f9f9f9", // Light background color for the entire container
+        padding: "20px",
+      }}
+    >
       {/* Search and Filter Section */}
-      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          gap: 2,
+          padding: "10px 20px",
+          borderRadius: "10px",
+          backgroundColor: "#E4F1FD", // Light blue filter background
+          boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+          alignItems: "center",
+        }}
+      >
         <TextField
-          label="Search Author"
+          label="Search"
           variant="outlined"
           value={searchQuery}
           onChange={handleSearchChange}
-          sx={{ width: "60%" }}
+          placeholder="Search by name, author, or category"
+          sx={{ flexGrow: 1 }}
         />
         <FormControl sx={{ minWidth: 150 }}>
           <InputLabel>Category</InputLabel>
@@ -87,14 +112,24 @@ const Shelf = () => {
       </Box>
 
       {/* Book Grid Section */}
-      <Grid container spacing={3}>
+      <Grid container spacing={3} sx={{ marginTop: "20px" }}>
         {filteredBooks.map((book, index) => (
           <Grid item xs={12} sm={6} md={3} key={index}>
-            <Card sx={{ maxWidth: 345, boxShadow: 3, borderRadius: 2 }}>
+            <Card
+              sx={{
+                maxWidth: 345,
+                height: "100%", 
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+                boxShadow: 3,
+                borderRadius: 2,
+              }}
+            >
               <CardMedia
                 component="img"
                 height="200"
-                image={book.coverImage}
+                image={`http://localhost:5000/${book.coverImage}`}
                 alt={book.name}
               />
               <CardContent>
@@ -113,7 +148,7 @@ const Shelf = () => {
                 <Button
                   variant="contained"
                   color="primary"
-                  sx={{ mt: 2 }}
+                  sx={{ mt: 2, width: "100%" }}
                   onClick={() => setSelectedBook(book)}
                 >
                   View PDF
@@ -127,7 +162,7 @@ const Shelf = () => {
       {/* PDF Reader Modal */}
       {selectedBook && (
         <PDFReader
-          fileUrl={`http://localhost:5000/${selectedBook.bookPdf}`} // Replace with your actual backend URL for PDFs
+          fileUrl={`http://localhost:5000/${selectedBook.bookPdf}`}
           sessionId={UserData._id}
           onClose={() => setSelectedBook(null)} // Close the modal
         />

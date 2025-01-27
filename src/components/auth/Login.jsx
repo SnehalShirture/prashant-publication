@@ -8,17 +8,23 @@ import {
   Modal,
   Backdrop,
   Fade,
+  IconButton,
+  InputAdornment,
 } from "@mui/material";
 import { styled } from "@mui/system";
 import { useNavigate } from "react-router-dom";
 import { loginuser, sendotp } from "../../apiCalls/UserApi";
 import { useDispatch } from "react-redux";
 import { login } from "../../reduxwork/UserSlice";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import { useAlert } from "../../custom/CustomAlert";
 
 
 const StyledContainer = styled(Container)(() => ({
   borderRadius: "8px",
   boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
+  background: "#fff", // Light background to contrast appbar
 }));
 
 const modalStyle = {
@@ -34,11 +40,14 @@ const modalStyle = {
 };
 
 const Login = () => {
+
+  const { showAlert } = useAlert()
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [email, setEmail] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -59,7 +68,7 @@ const Login = () => {
       const user = response.data.session;
       const userRole = user.user_id.role;
       console.log("User Role:", userRole);
-      console.log("userdata" ,  user)
+      console.log("userdata", user);
 
       dispatch(
         login({
@@ -67,32 +76,23 @@ const Login = () => {
           token: response.data.token,
         })
       );
-      // dispatch(
-      //   login({
-      //     ...response.session.user_id,
-      //     token: response.token,
-      //   })
-      // );
 
       if (userRole === "CollegeAdmin") {
         console.log("Navigating to /librarydashboard");
         navigate("/librarydashboard");
-      }
-      else if (userRole === "user") {
+      } else if (userRole === "user") {
         console.log("Navigating to /user/dashboard");
         navigate("/user/dashboard");
-      }
-      else if (userRole === "SuperAdmin"){
+      } else if (userRole === "SuperAdmin") {
         console.log("Navigating to /admin/dashboard");
         navigate("/sadmin/appbar");
-      }
-      else {
+      } else {
         console.log("Navigating to /profile");
         navigate("/profile");
       }
     } catch (error) {
       console.error("Login Failed:", error.message);
-      alert("Error: " + error.message);
+      showAlert("Error: " + error.message , "error");
     }
   };
 
@@ -113,6 +113,7 @@ const Login = () => {
     <StyledContainer maxWidth="sm">
       <Box
         sx={{
+          padding:"10px",
           marginTop: 8,
           display: "flex",
           flexDirection: "column",
@@ -122,7 +123,11 @@ const Login = () => {
         <Typography
           component="h1"
           variant="h4"
-          sx={{ fontWeight: "bold", marginBottom: 2 }}
+          sx={{
+            fontWeight: "bold",
+            marginBottom: 2,
+            color: "#00ABE4", 
+          }}
         >
           Welcome Back 🙏!!!
         </Typography>
@@ -141,25 +146,55 @@ const Login = () => {
             autoComplete="email"
             value={formData.email}
             onChange={handleChange}
-            sx={{ mb: 2 }}
+            sx={{
+              mb: 2,
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "8px",
+              },
+            }}
           />
           <TextField
             required
             fullWidth
             name="password"
             label="Password"
-            type="password"
+            type={showPassword ? "text" : "password"}
             id="password"
             value={formData.password}
             onChange={handleChange}
-            sx={{ mb: 3 }}
+            sx={{
+              mb: 3,
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "8px",
+              },
+            }}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={() => setShowPassword(!showPassword)}
+                    edge="end"
+                    sx={{
+                      color: "#00ABE4", // Eye icon color to match the appbar
+                    }}
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
           />
           <Button
             type="submit"
             fullWidth
             variant="outlined"
             color="primary"
-            sx={{ py: 1.5, fontSize: "1rem", fontWeight: "bold" }}
+            sx={{
+              py: 1.5,
+              fontSize: "1rem",
+              fontWeight: "bold",
+              borderRadius: "8px", // Rounded corners to match the text fields
+            }}
           >
             Log In
           </Button>
@@ -177,6 +212,7 @@ const Login = () => {
             variant="text"
             color="primary"
             onClick={() => setIsModalOpen(true)}
+            sx={{ fontWeight: "bold" }}
           >
             Forgot Password
           </Button>
@@ -184,6 +220,7 @@ const Login = () => {
             variant="text"
             color="primary"
             onClick={() => navigate("/signup")}
+            sx={{ fontWeight: "bold" }}
           >
             Don't have an account? Sign Up
           </Button>
@@ -205,7 +242,7 @@ const Login = () => {
             <Typography
               variant="h6"
               component="h2"
-              sx={{ mb: 2, fontWeight: "bold" }}
+              sx={{ mb: 2, fontWeight: "bold", color: "#00ABE4" }}
             >
               Forgot Password
             </Typography>
@@ -226,6 +263,9 @@ const Login = () => {
               variant="contained"
               color="primary"
               fullWidth
+              sx={{
+                borderRadius: "8px", // Rounded corners for the button
+              }}
             >
               Send OTP
             </Button>

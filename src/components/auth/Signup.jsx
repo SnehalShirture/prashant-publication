@@ -5,6 +5,8 @@ import { registeruser } from '../../apiCalls/UserApi';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { register } from '../../reduxwork/UserSlice';
+import { useAlert } from '../../custom/CustomAlert';
+
 
 const StyledContainer = styled(Container)(() => ({
   borderRadius: '8px',
@@ -12,6 +14,8 @@ const StyledContainer = styled(Container)(() => ({
 }));
 
 const SignUp = () => {
+
+  const { showAlert } = useAlert()
   const dispatch = useDispatch()
   const nav = useNavigate();
 
@@ -41,19 +45,19 @@ const SignUp = () => {
     try {
       const response = await registeruser(reqData);
       console.log(response);
-      alert('User Registered Successfully');
+      showAlert('User Registered Successfully' , "success");
       dispatch(register(response));
       nav('/');
     } catch (error) {
       if (error.response) {
         console.error('Server Error:', error.response.data);
-        alert('Error: ' + error.response.data.message);
+        showAlert('Error in Registration' + error.response.data.message, "error");
       } else if (error.request) {
         console.error('Network Error:', error.request);
-        alert('Network Error: Please check your internet connection.');
+        showAlert('Error in Registration' + error.request, "error");
       } else {
         console.error('Error:', error.message);
-        alert('Error: ' + error.message);
+        showAlert('Error in Registration' + error.message, "error");
       }
     }
   };
@@ -168,7 +172,7 @@ const SignUp = () => {
           </Button>
           <Grid2 container justifyContent="flex-end">
             <Grid2 item>
-              <Link href="/login" variant="body2" sx={{ color: 'primary.main', fontWeight: 'bold' }}>
+              <Link href="/" variant="body2" sx={{ color: 'primary.main', fontWeight: 'bold' }}>
                 Already have an account? Log in
               </Link>
             </Grid2>

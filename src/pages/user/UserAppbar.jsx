@@ -4,25 +4,35 @@ import {
   Typography,
   IconButton,
   Menu,
+  Avatar,
+  MenuItem,
+  Divider,
   Drawer,
   List,
   ListItem,
   ListItemIcon,
   ListItemText,
 } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useNavigation } from "react-router-dom";
 import MenuIcon from "@mui/icons-material/Menu";
-import AccountCircle from "@mui/icons-material/AccountCircle";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import ShelfIcon from "@mui/icons-material/Store";
 import BookIcon from "@mui/icons-material/Book";
 import SubscriptionIcon from "@mui/icons-material/Subscriptions";
-import LoginIcon from "@mui/icons-material/Login";
+import { useDispatch, useSelector } from "react-redux";
+import { userlogout } from "../../apiCalls/UserApi";
+import { useAlert } from "../../custom/CustomAlert";
+import { logout } from "../../reduxwork/UserSlice";
+
 
 const Appbar = () => {
+  const { showAlert } = useAlert();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [drawerOpen, setDrawerOpen] = React.useState(false);
+  const { UserData } = useSelector((state) => state.user);
 
+  const dispatch = useDispatch()
+  const navigate = useNavigate();
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -40,8 +50,25 @@ const Appbar = () => {
     { to: "/user/shelf", label: "Shelf", icon: <ShelfIcon /> },
     { to: "/user/books", label: "Books", icon: <BookIcon /> },
     { to: "/user/subscription", label: "Subscription", icon: <SubscriptionIcon /> },
-    { to: "/", label: "Login", icon: <LoginIcon /> },
   ];
+
+  // Logout handler
+  const handleLogout = async () => {
+    try {
+      const userdata = {
+        userId: UserData.user_id._id,
+      };
+      console.log(userdata)
+      const res = await userlogout(userdata);
+      console.log(res);
+      showAlert("You have been logged out successfully", "success")
+      dispatch(logout());
+      navigate("/");
+    } catch (error) {
+      console.log(error.message);
+      showAlert("Error logging out. Please try again later", "error")
+    }
+  };
 
   return (
     <Box>
@@ -49,9 +76,10 @@ const Appbar = () => {
       <Box
         sx={{
           display: "flex",
-          justifyContent: "space-around",
+          justifyContent: "space-between",
           alignItems: "center",
-          backgroundColor: "#e7e7ff",
+          background: "#00ABE4", // Bright blue background for header
+          color: "white",
           p: 2,
         }}
       >
@@ -67,7 +95,14 @@ const Appbar = () => {
         </IconButton>
 
         {/* Title */}
-        <Typography variant="h5" sx={{ flexGrow: { xs: 1, sm: 0 }, textAlign: { xs: "center", sm: "left" } }}>
+        <Typography
+          variant="h5"
+          sx={{
+            textAlign: "left",
+            fontWeight: "bold",
+            textShadow: "1px 1px 4px rgba(0,0,0,0.6)",
+          }}
+        >
           User Dashboard
         </Typography>
 
@@ -75,19 +110,26 @@ const Appbar = () => {
         <Box
           sx={{
             display: { xs: "none", sm: "flex" },
-            justifyContent: "center",
-            alignItems: "center",
-            gap: 3,
+            gap: 4,
           }}
         >
           {navLinks.map((link) => (
-            <Link key={link.label} to={link.to} style={{ textDecoration: "none" }}>
+            <Link
+              key={link.label}
+              to={link.to}
+              style={{
+                textDecoration: "none",
+                color: "white",
+              }}
+            >
               <Typography
                 sx={{
                   display: "flex",
                   alignItems: "center",
-                  color: "inherit",
                   gap: 1,
+                  "&:hover": {
+                    color: "#ffe4c4",
+                  },
                 }}
               >
                 {link.icon}
@@ -100,7 +142,15 @@ const Appbar = () => {
         {/* Account Menu */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <IconButton onClick={handleMenu} color="inherit">
-            <AccountCircle />
+            <Avatar sx={{ bgcolor: "#ff5722", color: "white" }}>
+              {UserData?.user_id?.name
+                ? UserData.user_id.name
+                  .split(" ")
+                  .map((word) => word[0])
+                  .join("")
+                  .toUpperCase()
+                : "U"}
+            </Avatar>
           </IconButton>
           <Menu
             anchorEl={anchorEl}
@@ -108,12 +158,54 @@ const Appbar = () => {
             transformOrigin={{ vertical: "top", horizontal: "right" }}
             open={Boolean(anchorEl)}
             onClose={handleMenuClose}
+            PaperProps={{
+              sx: {
+                backgroundColor: "#00ABE4", // Same as header background
+                color: "white",
+                borderRadius: "12px",
+                boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
+                minWidth: 220,
+                p: 1,
+              },
+            }}
           >
-            <Link to="/user/profile" style={{ textDecoration: "none" }} onClick={handleMenuClose}>
-              <Typography sx={{ p: 1, color: "inherit" }}>Profile</Typography>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+              <Avatar sx={{ bgcolor: "#ff5722", color: "white", width: 50, height: 50 }}>
+                {UserData?.user_id?.name
+                  ? UserData.user_id.name
+                    .split(" ")
+                    .map((word) => word[0])
+                    .join("")
+                    .toUpperCase()
+                  : "U"}
+              </Avatar>
+              <Box sx={{ ml: 2 }}>
+                <Typography variant="h6">{UserData?.user_id.name}</Typography>
+                <Typography variant="body2" sx={{ opacity: 0.7 }}>
+                  {UserData?.user_id.email}
+                </Typography>
+              </Box>
+            </Box>
+            <Divider sx={{ borderColor: "rgba(255, 255, 255, 0.3)" }} />
+            <Link
+              to="/user/profile"
+              style={{ textDecoration: "none", color: "inherit" }}
+              onClick={handleMenuClose}
+            >
+              <MenuItem sx={{ borderRadius: "8px", "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.2)" } }}>
+                Profile
+              </MenuItem>
             </Link>
-            <Link to="/signup" style={{ textDecoration: "none" }} onClick={handleMenuClose}>
-              <Typography sx={{ p: 1, color: "inherit" }}>Sign Up</Typography>
+            <Link
+              to=""
+              style={{ textDecoration: "none", color: "inherit" }}
+              onClick={handleMenuClose}
+            >
+              <MenuItem 
+              sx={{ borderRadius: "8px", "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.2)" } }}
+              onClick={handleLogout}>
+                Logout
+              </MenuItem>
             </Link>
           </Menu>
         </Box>
@@ -124,23 +216,92 @@ const Appbar = () => {
         anchor="left"
         open={drawerOpen}
         onClose={toggleDrawer(false)}
-        sx={{ display: { xs: "block", sm: "none" } }}
+        sx={{
+          "& .MuiDrawer-paper": {
+            width: 280,
+            background: "#00ABE4", // Bright blue background for drawer
+            color: "white",
+          },
+        }}
       >
-        <List>
+        {/* Drawer Header */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            p: 2,
+            background: "#00ABE4", // Same bright blue as header
+            color: "white",
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Avatar sx={{ bgcolor: "#ff5722", color: "white" }}>
+              {UserData?.user_id?.name
+                ? UserData.user_id.name
+                  .split(" ")
+                  .map((word) => word[0])
+                  .join("")
+                  .toUpperCase()
+                : "U"}
+            </Avatar>
+
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                Welcome, User!
+              </Typography>
+              <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                {UserData?.user_id?.name}
+              </Typography>
+            </Box>
+          </Box>
+          <IconButton onClick={toggleDrawer(false)} sx={{ color: "white" }}>
+            <MenuIcon />
+          </IconButton>
+        </Box>
+
+        {/* Drawer Navigation Links */}
+        <List sx={{ mt: 2 }}>
           {navLinks.map((link) => (
             <Link
               to={link.to}
               key={link.label}
-              style={{ textDecoration: "none", color: "inherit" }}
+              style={{
+                textDecoration: "none",
+                color: "inherit",
+              }}
               onClick={toggleDrawer(false)}
             >
-              <ListItem button>
-                <ListItemIcon>{link.icon}</ListItemIcon>
-                <ListItemText primary={link.label} />
+              <ListItem
+                button
+                sx={{
+                  borderRadius: 2,
+                  mb: 1,
+                  mx: 1,
+                  "&:hover": {
+                    background: "rgba(255, 255, 255, 0.2)",
+                  },
+                }}
+              >
+                <ListItemIcon sx={{ color: "white" }}>{link.icon}</ListItemIcon>
+                <ListItemText
+                  primary={link.label}
+                  primaryTypographyProps={{
+                    fontSize: "1rem",
+                    fontWeight: 500,
+                  }}
+                />
               </ListItem>
             </Link>
           ))}
         </List>
+
+        {/* Footer Section */}
+        <Box sx={{ textAlign: "center", mt: "auto", p: 2 }}>
+          <Typography variant="body2" sx={{ opacity: 0.8 }}>
+            © 2025 Prashant Digital Library
+          </Typography>
+        </Box>
       </Drawer>
     </Box>
   );

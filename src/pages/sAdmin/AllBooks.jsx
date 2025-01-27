@@ -5,8 +5,11 @@ import AddIcon from "@mui/icons-material/Add";
 import CustomTable from "../../custom/CustomTable";
 import { getBooks, deleteBook } from "../../apiCalls/BooksApi"; // Import your API methods
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
+import { useAlert } from "../../custom/CustomAlert";
+
 
 const AllBooks = () => {
+  const { showAlert } = useAlert()
   const [tabValue, setTabValue] = useState(0);
   const [openAddBook, setOpenAddBook] = useState(false); // State to toggle AddBook modal
   const [bookData, setBookData] = useState([]); // State to store books data
@@ -48,19 +51,16 @@ const AllBooks = () => {
   // delete book api call
   const handleDeleteBook = async (_id) => {
     try {
-      const response = await deleteBook({ _id: _id }); // Call the corrected deleteBook API method
-      console.log("Book deleted successfully:", response); // Debug log to inspect the response
-      setBookData(bookData.filter((book) => book._id !== _id)); // Remove the deleted book from state
-      alert("Book deleted successfully");
+      const response = await deleteBook({ _id: _id }); 
+      console.log("Book deleted successfully:", response); 
+      setBookData(bookData.filter((book) => book._id !== _id)); 
+      showAlert("Book deleted successfully" , "success");
     } catch (error) {
       console.error("Error deleting book:", error.message);
-      alert(error.message); // Notify the user if deletion fails
+      showAlert("Error deleting book", "error");
     }
   };
-
-
-
-
+  
   // Table columns
   const columns = [
     { header: "Sr. No", accessorFn: (row, index) => index + 1 },
@@ -72,10 +72,11 @@ const AllBooks = () => {
     { header: "Year Published", accessorKey: "yearPublished" },
     { header: "Book Path", accessorKey: "bookPdf" },
     {
-      header: "Details",
+      header: "Actions",
       accessorFn: (row) => row,
       Cell: ({ cell }) => (
-        <Tooltip title="Details">
+        <Box>
+          <Tooltip title="Details">
           <a
             href={`http://localhost:5000/${cell.getValue().bookPdf}`}
             target="_blank"
@@ -84,12 +85,6 @@ const AllBooks = () => {
             <EastIcon fontSize="small" />
           </a>
         </Tooltip>
-      ),
-    },
-    {
-      header: "Delete",
-      accessorFn: (row) => row,
-      Cell: ({ cell }) => (
         <Tooltip title="Delete">
           <IconButton
             onClick={() => handleDeleteBook(cell.getValue()._id)} // Pass the correct `id` to handleDeleteBook
@@ -98,8 +93,12 @@ const AllBooks = () => {
             <DeleteForeverIcon fontSize="small" />
           </IconButton>
         </Tooltip>
+
+        </Box>
+        
+
       ),
-    }
+    },
 
   ];
 

@@ -16,8 +16,12 @@ import { userlogout } from "../../apiCalls/UserApi";
 import SAdminDashboard from "./SAdminDashboard";
 import AddBookForm from "./AddBook";
 import AllBooks from "./AllBooks";
+import { useAlert } from "../../custom/CustomAlert";
+import AllColleges from "./AllColleges";
+
 
 const SuperAdminAppBar = () => {
+  const { showAlert } = useAlert();
   const [tabValue, setTabValue] = React.useState("dashboard");
   const [anchorEl, setAnchorEl] = React.useState(null);
 
@@ -47,11 +51,12 @@ const SuperAdminAppBar = () => {
       const userdata = { userId: UserData.user_id._id};
       const res = await userlogout(userdata);
       console.log("Logout Response:", res);
-
+      showAlert("You have been logged out successfully","success")
       dispatch(logout());
       navigate("/");
     } catch (error) {
       console.error("Logout Error:", error.message);
+      showAlert("Error logging out. Please try again later","error")
     }
   };
 
@@ -69,6 +74,7 @@ const SuperAdminAppBar = () => {
             <Tab label="Other Books" value="otherbooks" />
             <Tab label="Add Books" value="addbooks" />
             <Tab label="All Users" value="allusers" />
+            <Tab label="All Colleges" value="allcolleges" />
           </Tabs>
           <IconButton onClick={handleMenuClick} sx={{ ml: 2 }}>
             <Avatar alt="Profile" />
@@ -88,6 +94,7 @@ const SuperAdminAppBar = () => {
         {tabValue === "otherbooks" && <Typography>Other Books Content</Typography>}
         {tabValue === "addbooks" && <AddBookForm/>}
         {tabValue === "allusers" && <Typography>All Users Content</Typography>}
+        {tabValue === "allcolleges" && <AllColleges/>}
       </Box>
     </>
   );

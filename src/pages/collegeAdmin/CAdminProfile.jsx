@@ -4,8 +4,11 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../../reduxwork/UserSlice";
 import { userlogout } from "../../apiCalls/UserApi";
+import { useAlert } from "../../custom/CustomAlert";
+
 
 const CAdminProfile = () => {
+  const { showAlert } = useAlert()
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -22,10 +25,12 @@ const CAdminProfile = () => {
       const res = await userlogout(userdata);
       console.log(res)
       dispatch(logout());
+      showAlert("You have been logged out successfully","success")
       navigate("/");
 
     } catch (error) {
       console.log(error.message)
+      showAlert("Error while logging out. Please try again","error")
     }
   }
 

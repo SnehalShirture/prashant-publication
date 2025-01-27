@@ -14,8 +14,11 @@ import { useNavigate } from "react-router-dom";
 import { LineChart } from "@mui/x-charts/LineChart";
 import { logout } from "../../reduxwork/UserSlice";
 import { userlogout, getreadingdatabytuserid } from "../../apiCalls/UserApi";
+import { useAlert } from "../../custom/CustomAlert";
+
 
 const UserProfile = () => {
+  const { showAlert } = useAlert();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -32,12 +35,15 @@ const UserProfile = () => {
       const userdata = {
         userId: UserData.user_id._id,
       };
+      console.log(userdata)
       const res = await userlogout(userdata);
       console.log(res);
+      showAlert("You have been logged out successfully","success")
       dispatch(logout());
       navigate("/");
     } catch (error) {
       console.log(error.message);
+      showAlert("Error logging out. Please try again later","error")
     }
   };
 

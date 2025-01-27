@@ -10,20 +10,29 @@ import {
   ListItemIcon,
   ListItemText,
 } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import MenuIcon from "@mui/icons-material/Menu";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import DashboardIcon from "@mui/icons-material/Dashboard";
-import ShelfIcon from "@mui/icons-material/Store";
+import GroupIcon from "@mui/icons-material/Group";
 import BookIcon from "@mui/icons-material/Book";
 import SubscriptionIcon from "@mui/icons-material/Subscriptions";
-import LoginIcon from "@mui/icons-material/Login";
-import GroupIcon from '@mui/icons-material/Group';
+import { useDispatch, useSelector } from "react-redux";
+import { userlogout } from "../../apiCalls/UserApi";
+import { useAlert } from "../../custom/CustomAlert";
+import { logout } from "../../reduxwork/UserSlice";
+
 
 const CollegeAppbar = () => {
+  const { showAlert } = useAlert();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [drawerOpen, setDrawerOpen] = React.useState(false);
 
+
+  const { UserData } = useSelector((state) => state.user);
+
+  const dispatch = useDispatch()
+  const navigate = useNavigate();
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -38,11 +47,28 @@ const CollegeAppbar = () => {
 
   const navLinks = [
     { to: "/librarydashboard", label: "Dashboard", icon: <DashboardIcon /> },
-    { to: "/library/all-users", label: "AllUsers", icon: < GroupIcon/> },
+    { to: "/library/students", label: "All Students", icon: <GroupIcon /> },
     { to: "/library/books", label: "Books", icon: <BookIcon /> },
     { to: "/library/subscription", label: "Subscription", icon: <SubscriptionIcon /> },
-    { to: "/", label: "Login", icon: <LoginIcon /> },
   ];
+
+  // Logout handler
+    const handleLogout = async () => {
+      try {
+        const userdata = {
+          userId: UserData.user_id._id,
+        };
+        console.log(userdata)
+        const res = await userlogout(userdata);
+        console.log(res);
+        showAlert("You have been logged out successfully", "success")
+        dispatch(logout());
+        navigate("/");
+      } catch (error) {
+        console.log(error.message);
+        showAlert("Error logging out. Please try again later", "error")
+      }
+    };
 
   return (
     <Box>
@@ -50,9 +76,10 @@ const CollegeAppbar = () => {
       <Box
         sx={{
           display: "flex",
-          justifyContent: "space-around",
+          justifyContent: "space-between",
           alignItems: "center",
-          backgroundColor: "#e7e7ff",
+          background: "#00ABE4", // Bright blue background
+          color: "white",
           p: 2,
         }}
       >
@@ -68,7 +95,13 @@ const CollegeAppbar = () => {
         </IconButton>
 
         {/* Title */}
-        <Typography variant="h5" sx={{ flexGrow: { xs: 1, sm: 0 }, textAlign: { xs: "center", sm: "left" } }}>
+        <Typography
+          variant="h5"
+          sx={{
+            fontWeight: "bold",
+            textShadow: "1px 1px 4px rgba(0,0,0,0.6)",
+          }}
+        >
           Librarian Dashboard
         </Typography>
 
@@ -76,19 +109,26 @@ const CollegeAppbar = () => {
         <Box
           sx={{
             display: { xs: "none", sm: "flex" },
-            justifyContent: "center",
-            alignItems: "center",
             gap: 3,
           }}
         >
           {navLinks.map((link) => (
-            <Link key={link.label} to={link.to} style={{ textDecoration: "none" }}>
+            <Link
+              key={link.label}
+              to={link.to}
+              style={{
+                textDecoration: "none",
+                color: "white",
+              }}
+            >
               <Typography
                 sx={{
                   display: "flex",
                   alignItems: "center",
-                  color: "inherit",
                   gap: 1,
+                  "&:hover": {
+                    color: "#ffe4c4",
+                  },
                 }}
               >
                 {link.icon}
@@ -109,12 +149,20 @@ const CollegeAppbar = () => {
             transformOrigin={{ vertical: "top", horizontal: "right" }}
             open={Boolean(anchorEl)}
             onClose={handleMenuClose}
+            PaperProps={{
+              sx: {
+                backgroundColor: "#00ABE4",
+                color: "white",
+                borderRadius: "12px",
+                p: 1,
+              },
+            }}
           >
             <Link to="/library/profile" style={{ textDecoration: "none" }} onClick={handleMenuClose}>
-              <Typography sx={{ p: 1, color: "inherit" }}>Profile</Typography>
+              <Typography sx={{ p: 1 }}>Profile</Typography>
             </Link>
-            <Link to="/signup" style={{ textDecoration: "none" }} onClick={handleMenuClose}>
-              <Typography sx={{ p: 1, color: "inherit" }}>Sign Up</Typography>
+            <Link to="/logout" style={{ textDecoration: "none" }} onClick={handleLogout}>
+              <Typography sx={{ p: 1 }}>Logout</Typography>
             </Link>
           </Menu>
         </Box>
@@ -125,7 +173,13 @@ const CollegeAppbar = () => {
         anchor="left"
         open={drawerOpen}
         onClose={toggleDrawer(false)}
-        sx={{ display: { xs: "block", sm: "none" } }}
+        sx={{
+          "& .MuiDrawer-paper": {
+            width: 280,
+            background: "#00ABE4",
+            color: "white",
+          },
+        }}
       >
         <List>
           {navLinks.map((link) => (
@@ -135,8 +189,13 @@ const CollegeAppbar = () => {
               style={{ textDecoration: "none", color: "inherit" }}
               onClick={toggleDrawer(false)}
             >
-              <ListItem button>
-                <ListItemIcon>{link.icon}</ListItemIcon>
+              <ListItem
+                button
+                sx={{
+                  "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.2)" },
+                }}
+              >
+                <ListItemIcon sx={{ color: "white" }}>{link.icon}</ListItemIcon>
                 <ListItemText primary={link.label} />
               </ListItem>
             </Link>
