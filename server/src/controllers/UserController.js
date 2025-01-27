@@ -180,10 +180,10 @@ const resetPassword = async (req, res) => {
         if (user.otp !== otp || user.otpExpires < Date.now()) {
             throw new ApiError("Invalid or expired OTP.", 400);
         }
-        
+
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(newPassword, salt);
-        
+
         user.password = hashedPassword;
         user.otp = undefined;
         user.otpExpires = undefined;
@@ -200,7 +200,7 @@ const resetPassword = async (req, res) => {
 
 const getUserByClgId = async (req, res) => {
     try {
-        const fetchUsers = await User.findOne({ collegeId: req.body.collegeId });
+        const fetchUsers = await User.find({ collegeId: req.body.collegeId });
         console.log(fetchUsers);
 
         res.status(200).json(new APiResponse(true, 200, fetchUsers, "Users By CollegeId"))
@@ -231,7 +231,7 @@ const updatePassword = async (req, res) => {
 
         user.password = hashedPassword;
         await user.save();
-      
+
         res.status(200).json(new APiResponse(true, 200, user, 'Password updated successfully.'));
     } catch (error) {
         res.status(500).json(new APiResponse(false, 500, null, error.message));
