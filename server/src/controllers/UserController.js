@@ -127,26 +127,26 @@ const addBookToShelf = async (req, res) => {
 
 const getBookShelfByUserId = async (req, res) => {
     try {
-      const { _id: userId } = req.body; // Use _id to match the frontend request
-  
-      if (!userId) {
-        throw new ApiError("User ID is required.", 400);
-      }
-      const user = await User.findById(userId).populate("bookShelf");
-  
-      if (!user) {
-        throw new ApiError("User not found.", 404);
-      }
-  
-      res.status(200).json(new APiResponse(true, 200, user.bookShelf, "Bookshelf retrieved successfully."));
+        const { _id: userId } = req.body; // Use _id to match the frontend request
+
+        if (!userId) {
+            throw new ApiError("User ID is required.", 400);
+        }
+        const user = await User.findById(userId).populate("bookShelf");
+
+        if (!user) {
+            throw new ApiError("User not found.", 404);
+        }
+
+        res.status(200).json(new APiResponse(true, 200, user.bookShelf, "Bookshelf retrieved successfully."));
     } catch (error) {
-      console.error("Error fetching bookshelf:", error.message);
-      const status = error.statusCode || 500;
-      const message = error.message || "Error fetching bookshelf.";
-      res.status(status).json(new APiResponse(false, status, null, message));
+        console.error("Error fetching bookshelf:", error.message);
+        const status = error.statusCode || 500;
+        const message = error.message || "Error fetching bookshelf.";
+        res.status(status).json(new APiResponse(false, status, null, message));
     }
-  };
-  
+};
+
 
 const sendOtp = async (req, res) => {
     const { email } = req.body;
@@ -201,8 +201,20 @@ const resetPassword = async (req, res) => {
 }
 
 
+const getUserByClgId = async (req, res) => {
+    try {
+        const fetchUsers = await User.find({ collegeId: req.body.collegeId });
+        console.log(fetchUsers);
+
+        res.status(200).json(new APiResponse(true, 200, fetchUsers, "Users By CollegeId"))
+    } catch (error) {
+        const status = error.statusCode || 500;
+        const message = error.message || "An unexpected error occurred ";
+        res.status(status).json(new APiResponse(false, status, null, message));
+    }
+}
 
 
-export { registerUser, getUser, userLogin, userLogout, addBookToShelf,getBookShelfByUserId, sendOtp, resetPassword }
+export { registerUser, getUser, userLogin, userLogout, addBookToShelf, getBookShelfByUserId, sendOtp, resetPassword ,getUserByClgId }
 
 

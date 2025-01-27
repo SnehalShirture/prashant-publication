@@ -46,7 +46,11 @@ const UserSchema = mongoose.Schema({
         type: Date,
         default: null
     },
-    totalPagesRead: { type: Number, default: 0 }
+    collegeId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "College"
+    }
+    
 })
 
 export const User = mongoose.model("User", UserSchema)
