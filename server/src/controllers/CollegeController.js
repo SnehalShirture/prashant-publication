@@ -18,7 +18,9 @@ const addCollege = async (req, res) => {
         const newCollege = await College.create(req.body);
         // Generate password
         const generatedPassword = generatePassword();
-
+        
+       
+       
         let salt = await bcrypt.genSalt(10)
         let hashedPassword = await bcrypt.hash(generatedPassword, salt)
 
