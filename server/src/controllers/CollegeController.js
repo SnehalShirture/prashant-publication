@@ -4,6 +4,7 @@ import { College } from "../models/CollegeSchema.js";
 import { User } from "../models/UserSchema.js";
 import { APiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from '../utils/ApiError.js';
+import bcrypt from 'bcrypt';
 
 const addCollege = async (req, res) => {
     try {
