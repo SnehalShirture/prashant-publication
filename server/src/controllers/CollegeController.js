@@ -41,10 +41,10 @@ const addCollege = async (req, res) => {
 
 const updateCollege = async (req, res) => {
     try {
-        const id = req.params;
+        
         const { updateData } = req.body;
 
-        const updatedCollege = await College.findByIdAndUpdate(id, updateData, {
+        const updatedCollege = await College.findByIdAndUpdate(id, {updateData}, {
             new: true,
             runValidators: true
         });
