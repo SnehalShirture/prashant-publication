@@ -28,7 +28,7 @@ const addCollege = async (req, res) => {
             name: librarianName,
             email: librarianEmail,
             mobile: librarianMobile,
-            password: generatedPassword,
+            password: hashedPassword,
             role: "CollegeAdmin",
             collegeId: newCollege._id
         });
