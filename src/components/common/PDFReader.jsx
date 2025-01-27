@@ -4,8 +4,10 @@ import "@react-pdf-viewer/core/lib/styles/index.css";
 import { zoomPlugin } from "@react-pdf-viewer/zoom"; // Correct import for zoom plugin
 import axios from "axios";
 import CloseIcon from "@mui/icons-material/Close"; // Importing Material UI close icon
+import { DisableScreenshot } from "../../App";
 
 const PDFReader = ({ fileUrl, sessionId, onClose }) => {
+    
     const zoomPluginInstance = zoomPlugin();
     const { ZoomInButton, ZoomOutButton, ZoomPopover } = zoomPluginInstance;
 
@@ -44,6 +46,8 @@ const PDFReader = ({ fileUrl, sessionId, onClose }) => {
     };
 
     return (
+        <>
+        <DisableScreenshot/>
         <div
             style={{
                 position: "fixed",
@@ -85,6 +89,7 @@ const PDFReader = ({ fileUrl, sessionId, onClose }) => {
                 <Viewer fileUrl={fileUrl} onPageChange={handlePageChange} plugins={[zoomPluginInstance]} />
             </Worker>
         </div>
+        </>
     );
 };
 

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Box, Typography, Paper, Button, TextField, Grid, Modal } from "@mui/material";
 import CustomTable from "../../custom/CustomTable";
 import axios from "axios";
+import { createCollege } from "../../apiCalls/UserApi";
 
 const AllColleges = () => {
   const [colleges, setColleges] = useState([]);
@@ -62,7 +63,7 @@ const AllColleges = () => {
   const handleAddCollege = async (e) => {
     e.preventDefault();
     try {
-        const response = await axios.post("http://localhost:5000/api/addCollege", addnewCollege);
+        const response = await  createCollege(addnewCollege);
         // Assuming response.data is the updated list of colleges
         setAddCollege(response.data); 
         console.log("New College Data:", response);
@@ -85,7 +86,7 @@ const AllColleges = () => {
   ];
 
   return (
-    <Box sx={{ padding: 4, bgcolor: "#f5f5f5", minHeight: "100vh" }}>
+    <Box sx={{ padding: 4, margin:0 ,bgcolor: "#f5f5f5" }}>
       <Typography variant="h4" gutterBottom>
         All Colleges
       </Typography>

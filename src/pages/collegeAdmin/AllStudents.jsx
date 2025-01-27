@@ -1,15 +1,16 @@
-import React, { useState } from "react";
-import { Box, Typography, Paper, Button, TextField, Grid, Modal, MenuItem } from "@mui/material";
+import React, { useState, useEffect } from "react";
+import { Box, Typography, Paper, Button, TextField, Grid, Modal } from "@mui/material";
 import CustomTable from "../../custom/CustomTable";
+import { useSelector } from "react-redux";
+import { addstudent ,getstudentbyclgid } from "../../apiCalls/UserApi";
+
+
 
 const AllStudents = () => {
-  // Sample data for students
-  const [students, setStudents] = useState([
-    { id: 1, name: "Alice Smith", email: "alice@example.com", mobile: "7898789878" },
-    { id: 2, name: "Bob Johnson", email: "bob@example.com", mobile: "7898789879" },
-  ]);
+  const { UserData } = useSelector((state) => state.user);
+  console.log(UserData)
 
-  // State for adding a new student
+  const [students, setStudents] = useState([]);
   const [addStudent, setAddStudent] = useState({
     name: "",
     lastName: "",
@@ -18,11 +19,28 @@ const AllStudents = () => {
     mobile: "",
     role: "user", // Default role for students
   });
-
-  // Modal visibility state
   const [open, setOpen] = useState(false);
+
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+
+  // Fetch students by college ID
+  const getUserByCollegeId = async (collegeId) => {
+    try {
+      const response = await getstudentbyclgid(collegeId);
+      console.log(response.data)
+      setStudents(response.data);
+    } catch (error) {
+      console.log("Error fetching students by college ID:", error.message);
+
+    }
+  };
+
+  useEffect(() => {
+    // Replace with your desired college ID
+    const collegeId = 1;
+    getUserByCollegeId(collegeId);
+  }, []);
 
   // Handle input changes
   const handleInputChange = (e) => {
@@ -33,36 +51,46 @@ const AllStudents = () => {
     }));
   };
 
-  // Handle form submission
-  const handleAddStudent = (e) => {
-    e.preventDefault();
+  // Add a new student
+  const addNewStudent = async (studentData) => {
+    try {
+      const response = await addstudent(studentData);
+      return response.data;
+    } catch (error) {
+      console.log("Error adding new student:", error.message);
+      throw error;
+    }
+  };
 
-    // Add new student to the table
-    setStudents((prev) => [
-      ...prev,
-      {
-        id: prev.length + 1,
+  // Handle form submission
+  const handleAddStudent = async (e) => {
+    e.preventDefault();
+    try {
+      const newStudent = {
         name: `${addStudent.name} ${addStudent.lastName}`,
         email: addStudent.email,
+        password: addStudent.password,
         mobile: addStudent.mobile,
         role: addStudent.role,
-        
-      },
-    ]);
+      };
 
-    // Log the data to the console
-    console.log("New Student Data:", addStudent);
+      const addedStudent = await addNewStudent(newStudent);
+      setStudents((prev) => [...prev, addedStudent]);
+      console.log("New Student Added:", addedStudent);
 
-    // Reset form fields and close modal
-    setAddStudent({
-      name: "",
-      lastName: "",
-      email: "",
-      password: "",
-      mobile: "",
-      role: "user",
-    });
-    setOpen(false);
+      // Reset form fields and close modal
+      setAddStudent({
+        name: "",
+        lastName: "",
+        email: "",
+        password: "",
+        mobile: "",
+        role: "user",
+      });
+      setOpen(false);
+    } catch (error) {
+      console.error("Failed to add student:", error);
+    }
   };
 
   // Table columns configuration
@@ -81,7 +109,6 @@ const AllStudents = () => {
         Below is the list of all registered students.
       </Typography>
 
-      {/* Students Table */}
       <Box sx={{ marginTop: 5 }}>
         <Paper elevation={3} sx={{ padding: 2, borderRadius: 2 }}>
           <CustomTable data={students} columns={tableColumns} />
@@ -98,7 +125,6 @@ const AllStudents = () => {
         </Paper>
       </Box>
 
-      {/* Modal for Adding Students */}
       <Modal open={open} onClose={handleClose}>
         <Box
           sx={{

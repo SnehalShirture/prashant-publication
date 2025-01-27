@@ -11,9 +11,37 @@ import { logout } from './reduxwork/UserSlice'; // Redux action for logging out
 import { userlogout } from './apiCalls/UserApi'; // API method for logging out
 import "./index.css";
 
+export const DisableScreenshot = () => {
+  useEffect(() => {
+    // Block print screen key
+    const blockPrintScreen = (event) => {
+      if (event.key === "PrintScreen") {
+        event.preventDefault();
+        alert("Screenshots are disabled on this site.");
+      }
+    };
+
+    // Disable right-click context menu
+    const disableRightClick = (event) => {
+      event.preventDefault();
+      alert("Right-click is disabled.");
+    };
+
+    // Add event listeners
+    document.addEventListener("keydown", blockPrintScreen);
+    document.addEventListener("contextmenu", disableRightClick);
+
+    return () => {
+      // Clean up event listeners
+      document.removeEventListener("keydown", blockPrintScreen);
+      document.removeEventListener("contextmenu", disableRightClick);
+    };
+  }, []);
+
+  return null;
+};
 
 const App = () => {
-  
   // Define public routes
   const publicRoutes = [
     { path: "/signup", element: <SignUp />, label: "SignUp" },
@@ -41,4 +69,3 @@ const App = () => {
 };
 
 export default App;
-

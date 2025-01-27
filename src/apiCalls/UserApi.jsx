@@ -85,3 +85,42 @@ export const resetPassword = async (data) => {
     }
   }
 
+export const addstudent = async(reqstudentdata)=>{
+    let aInstance = createInstance()
+    try {
+        const response = await aInstance.post("addStudent", reqstudentdata);
+        return response.data;
+        
+    } catch (error) {
+        console.error("Error Response:", error.response?.data);
+        throw new Error(error.response?.data?.message || "An error occurred during student addition.");
+        
+    }
+}
+
+export const getstudentbyclgid = async(reqdata)=>{
+    let aInstance = createInstance()
+    console.log(reqdata)
+    try {
+        const response = await aInstance.post("getUserByClgId", reqdata);
+        return response.data;
+        
+    } catch (error) {
+        console.error("Error Response:", error.response?.data);
+        throw new Error(error.response?.data?.message || "An error occurred during student retrieval.");
+        
+    }
+}
+
+export const createCollege = async(reqClgData) =>{
+    let aInstance = createInstance()
+    console.log("Request college data : " , reqClgData)
+    try {
+        const response = await aInstance.post("addCollege" , reqClgData);
+        return response.data;
+    } catch (error) {
+        console.error("Error Response:", error.response?.data);
+        throw new Error(error.response?.data?.message || "An error occurred during College creation.");
+    }
+} 
+
