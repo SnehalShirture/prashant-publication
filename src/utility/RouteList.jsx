@@ -9,6 +9,7 @@ import UserProfile from "../pages/user/UserProfile";
 import Collegebooks from "../pages/collegeAdmin/Collegebooks";
 import SuperAdminAppBar from "../pages/sAdmin/SAdminAppbar";
 import AllStudents from "../pages/collegeAdmin/AllStudents";
+import SAdminProfile from "../pages/sAdmin/SAdminProfile";
 
 export const User_Routes = [
   { path: "/user/dashboard", element: <Dashboard />, label: "Dashboard" },
@@ -28,4 +29,5 @@ export const Librarian_Routes = [
 
 export const SAdmin_Routes = [
   { path: "/sadmin/appbar", element: <SuperAdminAppBar />, label: "superAdmin Dashboard" },
+  { path: "/sadmin/profile", element: <SAdminProfile />, label: "superAdmin Profile" },
 ]

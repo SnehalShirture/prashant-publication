@@ -88,7 +88,7 @@ export const resetPassword = async (data) => {
 export const addstudent = async(reqstudentdata)=>{
     let aInstance = createInstance()
     try {
-        const response = await aInstance.post("addStudent", reqstudentdata);
+        const response = await aInstance.post("", reqstudentdata);
         return response.data;
         
     } catch (error) {
@@ -98,11 +98,12 @@ export const addstudent = async(reqstudentdata)=>{
     }
 }
 
-export const getstudentbyclgid = async(reqdata)=>{
+export const getstudentbyclgid = async(collegeId)=>{
     let aInstance = createInstance()
-    console.log(reqdata)
+    console.log(collegeId)
     try {
-        const response = await aInstance.post("getUserByClgId", reqdata);
+        const response = await aInstance.post("getUserByClgId", collegeId);
+        console.log(response)
         return response.data;
         
     } catch (error) {
@@ -124,3 +125,15 @@ export const createCollege = async(reqClgData) =>{
     }
 } 
 
+export const getColleges = async () => {
+    let aInstance = createInstance()
+    try {
+      const response = await aInstance.get("fetchCollegeData");
+      console.log(response)
+      return response.data;
+    } catch (error) {
+        console.error("Error Response:", error.response?.data);
+        throw new Error(error.response?.data?.message || "An error occurred during College retrieval.");
+    }
+  };
+  

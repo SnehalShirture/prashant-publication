@@ -2,13 +2,16 @@ import React, { useState, useEffect } from "react";
 import { Box, Typography, Paper, Button, TextField, Grid, Modal } from "@mui/material";
 import CustomTable from "../../custom/CustomTable";
 import { useSelector } from "react-redux";
-import { addstudent ,getstudentbyclgid } from "../../apiCalls/UserApi";
+import { registeruser ,getstudentbyclgid } from "../../apiCalls/UserApi";
 
 
 
 const AllStudents = () => {
   const { UserData } = useSelector((state) => state.user);
-  console.log(UserData)
+  console.log("userdata : " , UserData)
+  console.log("collegeID : " , UserData.user_id.collegeId)
+  const collegeId = UserData.user_id.collegeId;
+
 
   const [students, setStudents] = useState([]);
   const [addStudent, setAddStudent] = useState({
@@ -18,6 +21,7 @@ const AllStudents = () => {
     password: "",
     mobile: "",
     role: "user", // Default role for students
+    collegeId : collegeId,
   });
   const [open, setOpen] = useState(false);
 
@@ -25,9 +29,13 @@ const AllStudents = () => {
   const handleClose = () => setOpen(false);
 
   // Fetch students by college ID
+  useEffect(() => {
   const getUserByCollegeId = async (collegeId) => {
     try {
-      const response = await getstudentbyclgid(collegeId);
+      let reqdata = {
+        collegeId : collegeId
+      }
+      const response = await getstudentbyclgid(reqdata);
       console.log(response.data)
       setStudents(response.data);
     } catch (error) {
@@ -35,12 +43,9 @@ const AllStudents = () => {
 
     }
   };
-
-  useEffect(() => {
-    // Replace with your desired college ID
-    const collegeId = 1;
-    getUserByCollegeId(collegeId);
-  }, []);
+  getUserByCollegeId(collegeId);
+}, []);
+  
 
   // Handle input changes
   const handleInputChange = (e) => {
@@ -54,7 +59,7 @@ const AllStudents = () => {
   // Add a new student
   const addNewStudent = async (studentData) => {
     try {
-      const response = await addstudent(studentData);
+      const response = await registeruser(studentData);
       return response.data;
     } catch (error) {
       console.log("Error adding new student:", error.message);
@@ -72,10 +77,11 @@ const AllStudents = () => {
         password: addStudent.password,
         mobile: addStudent.mobile,
         role: addStudent.role,
+        collegeId : addStudent.collegeId
       };
 
       const addedStudent = await addNewStudent(newStudent);
-      setStudents((prev) => [...prev, addedStudent]);
+      setStudents(addedStudent);
       console.log("New Student Added:", addedStudent);
 
       // Reset form fields and close modal
@@ -86,6 +92,7 @@ const AllStudents = () => {
         password: "",
         mobile: "",
         role: "user",
+        collegeId : addStudent.collegeId
       });
       setOpen(false);
     } catch (error) {
@@ -101,7 +108,7 @@ const AllStudents = () => {
   ];
 
   return (
-    <Box sx={{ padding: 4, bgcolor: "#f5f5f5", minHeight: "100vh" }}>
+    <Box sx={{ padding: 3, bgcolor: "#f5f5f5"}}>
       <Typography variant="h4" gutterBottom>
         All Students
       </Typography>
@@ -112,6 +119,7 @@ const AllStudents = () => {
       <Box sx={{ marginTop: 5 }}>
         <Paper elevation={3} sx={{ padding: 2, borderRadius: 2 }}>
           <CustomTable data={students} columns={tableColumns} />
+
           <Box sx={{ textAlign: "right", marginTop: 2 }}>
             <Button
               variant="outlined"

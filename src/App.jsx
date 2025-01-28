@@ -7,24 +7,24 @@ import SignUp from "./components/auth/Signup";
 import ErrorPage from "./components/common/ErrorPage";
 import Header from "./layout/MainHeader";
 import ResetPassword from "./components/common/ResetPassword";
-import { logout } from './reduxwork/UserSlice'; // Redux action for logging out
-import { userlogout } from './apiCalls/UserApi'; // API method for logging out
 import "./index.css";
+import { useAlert } from './custom/CustomAlert';
 
 export const DisableScreenshot = () => {
+  const { showAlert } = useAlert();
   useEffect(() => {
     // Block print screen key
     const blockPrintScreen = (event) => {
       if (event.key === "PrintScreen") {
         event.preventDefault();
-        alert("Screenshots are disabled on this site.");
+        showAlert("Screenshots are disabled on this site." , "error");
       }
     };
 
     // Disable right-click context menu
     const disableRightClick = (event) => {
       event.preventDefault();
-      alert("Right-click is disabled.");
+      showAlert("Right-click is disabled." , "error");
     };
 
     // Add event listeners

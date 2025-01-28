@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Typography, Paper, Button, TextField, Grid, Modal } from "@mui/material";
 import CustomTable from "../../custom/CustomTable";
-import axios from "axios";
-import { createCollege } from "../../apiCalls/UserApi";
+import { createCollege , getColleges } from "../../apiCalls/UserApi";
 
 const AllColleges = () => {
   const [colleges, setColleges] = useState([]);
@@ -15,27 +14,6 @@ const AllColleges = () => {
     librarianMobile: "",
     librarianEmail: "",
   });
-
-  const CollegeData = [
-    {
-        clgName: "College1",
-        clgStream: "Science",
-        clgAddress: "Address1",
-        directorName: "Director1",
-        librarianName: "Librarian1",
-        librarianMobile: "1234567890",
-        librarianEmail: "librarian1@example.com",
-    },
-    {
-        clgName: "College2",
-        clgStream: "Arts",
-        clgAddress: "Address2",
-        directorName: "Director2",
-        librarianName: "Librarian2",
-        librarianMobile: "9876543210",
-        librarianEmail: "librarian2@example.com",
-    },
-  ]
 
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
@@ -74,15 +52,29 @@ const AllColleges = () => {
     }
 };
 
+useEffect(() =>{
+  const fetchAllColleges = async () =>{
+    try {
+      const response = await getColleges();
+      console.log( "college data",response)
+      setColleges(response.data);
+  
+    } catch (error) {
+      console.log("Failed to fetch colleges", error.response ? error.data : error.message);
+    }
+  }
+fetchAllColleges();
+},[])
+
 
   const tableColumns = [
     { accessorKey: "clgName", header: "College Name", size: 200 },
-    { accessorKey: "clgStream", header: "Stream", size: 150 },
-    { accessorKey: "clgAddress", header: "Address", size: 300 },
+    { accessorKey: "clgStream", header: "Stream", size: 200 },
+    { accessorKey: "clgAddress", header: "Address", size: 200 },
     { accessorKey: "directorName", header: "Director Name", size: 200 },
     { accessorKey: "librarianName", header: "Librarian Name", size: 200 },
-    { accessorKey: "librarianMobile", header: "Librarian Mobile", size: 150 },
-    { accessorKey: "librarianEmail", header: "Librarian Email", size: 250 },
+    { accessorKey: "librarianMobile", header: "Librarian Mobile", size: 200 },
+    { accessorKey: "librarianEmail", header: "Librarian Email", size: 200 },
   ];
 
   return (
@@ -96,7 +88,7 @@ const AllColleges = () => {
 
       <Box sx={{ marginTop: 5 }}>
         <Paper elevation={3} sx={{ padding: 2, borderRadius: 2 }}>
-          <CustomTable data={CollegeData} columns={tableColumns} />
+          <CustomTable data={colleges} columns={tableColumns} />
           <Box sx={{ textAlign: "right", marginTop: 2 }}>
             <Button
               variant="outlined"
