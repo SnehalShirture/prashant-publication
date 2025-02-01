@@ -1,12 +1,18 @@
 import express from 'express'
-import {createSubscription,getActiveSubscription,cancelSubscription,getsubscriptionByUserId} from '../controllers/SubscriptionController.js'
+import { createSubscription, getActiveSubscription, cancelSubscription,removeBooksFromSubscription ,getBooksBySubscription,updateSubscriptionStatus,getAllSubscription} from '../controllers/SubscriptionController.js'
 import { authenticate } from '../middleware/auth.js';
 
-const SubscriptionRouter= express.Router();
+const SubscriptionRouter = express.Router();
 
-SubscriptionRouter.post("/createsubscription",authenticate,createSubscription);
-SubscriptionRouter.get("/getsubscription",getActiveSubscription);
-SubscriptionRouter.post("/cancelsubscription",cancelSubscription);
-SubscriptionRouter.post("/getsubscriptionbyUserId",getsubscriptionByUserId);
+SubscriptionRouter.post("/createsubscription", createSubscription);
+SubscriptionRouter.post("/removeBooksFromSubscription", removeBooksFromSubscription);
+SubscriptionRouter.get("/getBooksBySubscription", getBooksBySubscription);
+SubscriptionRouter.post("/updateSubscriptionStatus", updateSubscriptionStatus);
+SubscriptionRouter.get("/getAllSubscription", getAllSubscription);
+SubscriptionRouter.get("/getActiveSubscription", getActiveSubscription);
 
-export {SubscriptionRouter}
+
+SubscriptionRouter.post("/cancelsubscription", cancelSubscription);
+
+
+export { SubscriptionRouter }
