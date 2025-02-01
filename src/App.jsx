@@ -12,29 +12,47 @@ import { useAlert } from './custom/CustomAlert';
 
 export const DisableScreenshot = () => {
   const { showAlert } = useAlert();
+
   useEffect(() => {
-    // Block print screen key
+    // Block Print Screen key
     const blockPrintScreen = (event) => {
-      if (event.key === "PrintScreen") {
+      if (event.key === "PrintScreen" || (event.ctrlKey && event.key === "p")) {
         event.preventDefault();
-        showAlert("Screenshots are disabled on this site." , "error");
+        showAlert("Screenshots are disabled on this site.", "error");
       }
     };
 
     // Disable right-click context menu
     const disableRightClick = (event) => {
       event.preventDefault();
-      showAlert("Right-click is disabled." , "error");
+      showAlert("Right-click is disabled.", "error");
+    };
+
+    // Disable dragging and dropping images
+    const disableDragAndDrop = (event) => {
+      event.preventDefault();
+    };
+
+    // Disable keyboard shortcuts for saving (Ctrl+S, Ctrl+Shift+S, etc.)
+    const disableSaveShortcuts = (event) => {
+      if ((event.ctrlKey || event.metaKey) && (event.key === "s" || event.key === "S" || event.key === "Shift+S")) {
+        event.preventDefault();
+        showAlert("Saving is disabled on this site.", "error");
+      }
     };
 
     // Add event listeners
     document.addEventListener("keydown", blockPrintScreen);
     document.addEventListener("contextmenu", disableRightClick);
+    document.addEventListener("dragstart", disableDragAndDrop);
+    document.addEventListener("keydown", disableSaveShortcuts);
 
+    // Clean up event listeners
     return () => {
-      // Clean up event listeners
       document.removeEventListener("keydown", blockPrintScreen);
       document.removeEventListener("contextmenu", disableRightClick);
+      document.removeEventListener("dragstart", disableDragAndDrop);
+      document.removeEventListener("keydown", disableSaveShortcuts);
     };
   }, []);
 
