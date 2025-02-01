@@ -7,24 +7,36 @@ const SubscriptionSchema = mongoose.Schema({
     },
     plan: {
         type: String,
-        enum: ['6Months', '1Year'],
+        
     },
     startDate: {
         type: Date,
-        default: new Date()
     },
     endDate: {
         type: Date,
-
     },
     isActive: {
         type: Boolean,
-        default: true
+        default: false
     },
-    paymentId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Payment',
-        required: true
+    // paymentId: {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: 'Payment',
+    //     required: true
+    // },
+    subscribedBooks: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Book",
+        }
+    ],
+    status: {
+        type: String,
+        default:"pending"
+        
+    },
+    totalAmount:{
+        type:Number,
     }
 });
 
