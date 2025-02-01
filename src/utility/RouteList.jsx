@@ -7,9 +7,13 @@ import UserSubscription from "../pages/user/UserSubscription";
 import CAdminProfile from "../pages/collegeAdmin/CAdminProfile";
 import UserProfile from "../pages/user/UserProfile";
 import Collegebooks from "../pages/collegeAdmin/Collegebooks";
-import SuperAdminAppBar from "../pages/sAdmin/SAdminAppbar";
 import AllStudents from "../pages/collegeAdmin/AllStudents";
 import SAdminProfile from "../pages/sAdmin/SAdminProfile";
+import SAdminDashboard from "../pages/sAdmin/SAdminDashboard";
+import AddBookForm from "../pages/sAdmin/AddBook";
+import AllBooks from "../pages/sAdmin/AllBooks";
+import AllColleges from "../pages/sAdmin/AllColleges";
+import AllSubscriptions from "../pages/sAdmin/AllSubscriptions";
 
 export const User_Routes = [
   { path: "/user/dashboard", element: <Dashboard />, label: "Dashboard" },
@@ -28,6 +32,10 @@ export const Librarian_Routes = [
 ];
 
 export const SAdmin_Routes = [
-  { path: "/sadmin/appbar", element: <SuperAdminAppBar />, label: "superAdmin Dashboard" },
+  { path: "/sadmin/dashboard", element: <SAdminDashboard />, label: "superAdmin Dashboard" },
+  { path: "/sadmin/addbook", element: <AddBookForm />, label: "superAdmin AddBook" },
+  { path: "/sadmin/allbooks", element: <AllBooks />, label: "superAdmin AllBooks" },
+  { path: "/sadmin/colleges", element: <AllColleges />, label: "superAdmin Colleges" },
+  { path: "/sadmin/orders", element: <AllSubscriptions />, label: "superAdmin subscription" },
   { path: "/sadmin/profile", element: <SAdminProfile />, label: "superAdmin Profile" },
 ]
