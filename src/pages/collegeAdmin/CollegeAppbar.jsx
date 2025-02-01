@@ -4,6 +4,9 @@ import {
   Typography,
   IconButton,
   Menu,
+  Avatar,
+  MenuItem,
+  Divider,
   Drawer,
   List,
   ListItem,
@@ -22,17 +25,16 @@ import { userlogout } from "../../apiCalls/UserApi";
 import { useAlert } from "../../custom/CustomAlert";
 import { logout } from "../../reduxwork/UserSlice";
 
-
 const CollegeAppbar = () => {
   const { showAlert } = useAlert();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [drawerOpen, setDrawerOpen] = React.useState(false);
 
-
   const { UserData } = useSelector((state) => state.user);
 
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -53,22 +55,22 @@ const CollegeAppbar = () => {
   ];
 
   // Logout handler
-    const handleLogout = async () => {
-      try {
-        const userdata = {
-          userId: UserData.user_id._id,
-        };
-        console.log(userdata)
-        const res = await userlogout(userdata);
-        console.log(res);
-        showAlert("You have been logged out successfully", "success")
-        dispatch(logout());
-        navigate("/");
-      } catch (error) {
-        console.log(error.message);
-        showAlert("Error logging out. Please try again later", "error")
-      }
-    };
+  const handleLogout = async () => {
+    try {
+      const userdata = {
+        userId: UserData.user_id._id,
+      };
+      console.log(userdata);
+      const res = await userlogout(userdata);
+      console.log(res);
+      showAlert("You have been logged out successfully", "success");
+      dispatch(logout());
+      navigate("/");
+    } catch (error) {
+      console.log(error.message);
+      showAlert("Error logging out. Please try again later", "error");
+    }
+  };
 
   return (
     <Box>
@@ -127,7 +129,9 @@ const CollegeAppbar = () => {
                   alignItems: "center",
                   gap: 1,
                   "&:hover": {
-                    color: "#ffe4c4",
+                    color: "#ffe4c4", // Hover effect for desktop links
+                    transform: "scale(1.05)",
+                    transition: "transform 0.2s ease-in-out",
                   },
                 }}
               >
@@ -141,7 +145,15 @@ const CollegeAppbar = () => {
         {/* Account Menu */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <IconButton onClick={handleMenu} color="inherit">
-            <AccountCircle />
+            <Avatar sx={{ bgcolor: "#ff5722", color: "white" }}>
+              {UserData?.user_id?.name
+                ? UserData.user_id.name
+                    .split(" ")
+                    .map((word) => word[0])
+                    .join("")
+                    .toUpperCase()
+                : "U"}
+            </Avatar>
           </IconButton>
           <Menu
             anchorEl={anchorEl}
@@ -151,19 +163,64 @@ const CollegeAppbar = () => {
             onClose={handleMenuClose}
             PaperProps={{
               sx: {
-                backgroundColor: "#00ABE4",
-                color: "white",
+                backgroundColor: "#fff", // Same as header background
+                color: "#00ABE4",
                 borderRadius: "12px",
+                boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
+                minWidth: 220,
                 p: 1,
               },
             }}
           >
-            <Link to="/library/profile" style={{ textDecoration: "none" }} onClick={handleMenuClose}>
-              <Typography sx={{ p: 1 }}>Profile</Typography>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+              <Avatar sx={{ bgcolor: "#ff5722", color: "white", width: 50, height: 50 }}>
+                {UserData?.user_id?.name
+                  ? UserData.user_id.name
+                      .split(" ")
+                      .map((word) => word[0])
+                      .join("")
+                      .toUpperCase()
+                  : "U"}
+              </Avatar>
+              <Box sx={{ ml: 2 }}>
+                <Typography variant="h6">{UserData?.user_id.name}</Typography>
+                <Typography variant="body2" sx={{ opacity: 0.7 }}>
+                  {UserData?.user_id.email}
+                </Typography>
+              </Box>
+            </Box>
+            <Divider sx={{ borderColor: "rgba(255, 255, 255, 0.3)" }} />
+            <Link
+              to="/library/profile"
+              style={{ textDecoration: "none", color: "inherit" }}
+              onClick={handleMenuClose}
+            >
+              <MenuItem
+                sx={{
+                  borderRadius: "8px",
+                  "&:hover": {
+                    backgroundColor: "rgba(0, 171, 228, 0.1)", // Hover effect for menu items
+                    transform: "scale(1.02)",
+                    transition: "transform 0.2s ease-in-out",
+                  },
+                }}
+              >
+                Profile
+              </MenuItem>
             </Link>
-            <Link to="/logout" style={{ textDecoration: "none" }} onClick={handleLogout}>
-              <Typography sx={{ p: 1 }}>Logout</Typography>
-            </Link>
+            <MenuItem
+              sx={{
+                borderRadius: "8px",
+                "&:hover": {
+                  backgroundColor: "rgba(0, 171, 228, 0.1)", // Hover effect for menu items
+                  transform: "scale(1.02)",
+                  transition: "transform 0.2s ease-in-out",
+                },
+              }}
+              onClick={handleLogout}
+            >
+              Logout
+            </MenuItem>
           </Menu>
         </Box>
       </Box>
@@ -192,7 +249,11 @@ const CollegeAppbar = () => {
               <ListItem
                 button
                 sx={{
-                  "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.2)" },
+                  "&:hover": {
+                    backgroundColor: "rgba(255, 255, 255, 0.2)", // Hover effect for drawer items
+                    transform: "scale(1.02)",
+                    transition: "transform 0.2s ease-in-out",
+                  },
                 }}
               >
                 <ListItemIcon sx={{ color: "white" }}>{link.icon}</ListItemIcon>

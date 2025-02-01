@@ -102,9 +102,9 @@ const AllStudents = () => {
 
   // Table columns configuration
   const tableColumns = [
-    { accessorKey: "name", header: "Student Name", size: 200 },
-    { accessorKey: "email", header: "Email Address", size: 300 },
-    { accessorKey: "mobile", header: "Mobile", size: 150 },
+    { accessorKey: "name", header: "Student Name", size: 250 },
+    { accessorKey: "email", header: "Email Address", size: 250 },
+    { accessorKey: "mobile", header: "Mobile", size: 250 },
   ];
 
   return (

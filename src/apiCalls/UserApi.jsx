@@ -1,10 +1,6 @@
-import axios from "axios";
 import { createInstance } from "./axiosInstance";
 
-// axios.defaults.withCredentials = true;
-
-// const BASE_URL = "mongodb+srv://prashantbooks2025:kvPiegjdlRsOLBxA@prashant.0d7z5.mongodb.net/?retryWrites=true&w=majority&appName=Prashant";
-
+//register user
 export const registeruser = async (userReqData) => {
     let aInstance = createInstance()
     try {
@@ -19,6 +15,8 @@ export const registeruser = async (userReqData) => {
 
     }
 }
+
+//login user
 export const loginuser = async (reqLoginData) => {
     let aInstance = createInstance()
     console.log(reqLoginData)
@@ -32,6 +30,8 @@ export const loginuser = async (reqLoginData) => {
         throw new Error(errorMessage); // Throw a clear error message
     }
 };
+
+//logout user
 export const userlogout = async (reqLogout) => {
     let aInstance = createInstance()
     try {
@@ -40,12 +40,12 @@ export const userlogout = async (reqLogout) => {
         console.log(response)
         return response.data;
     } catch (error) {
-        // Log the full error response for debugging
         console.error("Logout Error:", error.response?.data);
         throw new Error(error.response?.data?.message || "An error occurred during logout.");
     }
 }
 
+//send otp 
 export const sendotp = async (data) => {
     let aInstance = createInstance()
     try {
@@ -59,6 +59,7 @@ export const sendotp = async (data) => {
     }
 };
 
+//reset new password
 export const resetPassword = async (data) => {
     let aInstance = createInstance()
    try {
@@ -72,6 +73,7 @@ export const resetPassword = async (data) => {
    }
   };
 
+  //get book reading data by user id
   export const getreadingdatabytuserid = async(getreqdata) =>{
     let aInstance = createInstance()
     console.log(getreqdata)
@@ -85,19 +87,7 @@ export const resetPassword = async (data) => {
     }
   }
 
-export const addstudent = async(reqstudentdata)=>{
-    let aInstance = createInstance()
-    try {
-        const response = await aInstance.post("", reqstudentdata);
-        return response.data;
-        
-    } catch (error) {
-        console.error("Error Response:", error.response?.data);
-        throw new Error(error.response?.data?.message || "An error occurred during student addition.");
-        
-    }
-}
-
+  //fetch student data by college id
 export const getstudentbyclgid = async(collegeId)=>{
     let aInstance = createInstance()
     console.log(collegeId)
@@ -113,6 +103,7 @@ export const getstudentbyclgid = async(collegeId)=>{
     }
 }
 
+//add new college
 export const createCollege = async(reqClgData) =>{
     let aInstance = createInstance()
     console.log("Request college data : " , reqClgData)
@@ -125,6 +116,7 @@ export const createCollege = async(reqClgData) =>{
     }
 } 
 
+//fetch college data
 export const getColleges = async () => {
     let aInstance = createInstance()
     try {
@@ -136,4 +128,31 @@ export const getColleges = async () => {
         throw new Error(error.response?.data?.message || "An error occurred during College retrieval.");
     }
   };
+
+//upadate password 
+export const updatePassword = async (email, oldPassword, newPassword) => {
+    let aInstance = createInstance()
+    try {
+        const response = await aInstance.post("updatePassword", {email, oldPassword, newPassword});
+        return response.data;
+        
+    } catch (error) {
+        console.error("Error Response:", error.response?.data);
+        throw new Error(error.response?.data?.message || "An error occurred during password update.");  
+        
+    }
+}
+// fetch total book read data by month
+export const getBookReadData = async () => {
+    let aInstance = createInstance()
+    try {
+        const response = await aInstance.get("getTotalPagesByMonth");
+        return response.data;
+        
+    } catch (error) {
+        console.error("Error Response:", error.response?.data);
+        throw new Error(error.response?.data?.message || "An error occurred during book read data retrieval");
+        
+    }
+}
   

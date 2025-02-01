@@ -46,7 +46,7 @@ const App = () => {
   const publicRoutes = [
     { path: "/signup", element: <SignUp />, label: "SignUp" },
     { path: "/", element: <Login />, label: "Login" },
-    // { path: "*", element: <ErrorPage />, label: "ErrorPage" },
+    { path: "*", element: <ErrorPage />, label: "ErrorPage" },
     { path: "/resetpassword", element: <ResetPassword />, label: 'resetPassword' }
   ];
 
@@ -55,7 +55,7 @@ const App = () => {
       <Header />
       {/* Define Routes */}
       <Routes>
-        {[...User_Routes, ...Librarian_Routes, SAdmin_Routes, ...publicRoutes].map((route, index) => (
+        {[...User_Routes, ...Librarian_Routes, ...SAdmin_Routes, ...publicRoutes].map((route, index) => (
           <Route
             exact
             key={index}

@@ -68,7 +68,7 @@ fetchAllColleges();
 
 
   const tableColumns = [
-    { accessorKey: "clgName", header: "College Name", size: 200 },
+    { accessorKey: "clgName", header: "College Name", size: 200},
     { accessorKey: "clgStream", header: "Stream", size: 200 },
     { accessorKey: "clgAddress", header: "Address", size: 200 },
     { accessorKey: "directorName", header: "Director Name", size: 200 },
@@ -78,7 +78,7 @@ fetchAllColleges();
   ];
 
   return (
-    <Box sx={{ padding: 4, margin:0 ,bgcolor: "#f5f5f5" }}>
+    <Box sx={{ padding: 4, bgcolor: "#f5f5f5" }}>
       <Typography variant="h4" gutterBottom>
         All Colleges
       </Typography>

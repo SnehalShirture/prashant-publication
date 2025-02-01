@@ -7,6 +7,8 @@ import { getBooks } from "../../apiCalls/BooksApi"; // Import your API methods
 const Collegebooks = () => {
   const [tabValue, setTabValue] = useState(0);
   const [bookData, setBookData] = useState([]); // State to store books data
+  const [selectedBooks, setSelectedBooks] = useState([]); // State for selected books
+
 
   // List of categories
   const categories = ["All", "Science", "Commerce", "Arts", "Engineering"];
@@ -31,7 +33,11 @@ const Collegebooks = () => {
   useEffect(() => {
     fetchBooks();
   }, []);
-  
+
+  useEffect(() => {
+    console.log("Selected Books in AllBooks:", selectedBooks);
+  }, [selectedBooks]);
+
 
   // Table columns
   const columns = [
@@ -57,7 +63,7 @@ const Collegebooks = () => {
           </a>
         </Tooltip>
       ),
-    }  
+    }
   ];
 
   // Filter books based on selected category
@@ -89,7 +95,12 @@ const Collegebooks = () => {
       </Tabs>
 
       <Box>
-        <CustomTable data={filteredBooks} columns={columns} />
+        <CustomTable
+          data={filteredBooks}
+          columns={columns}
+          enableSelection={true}
+          onSelectedBooksChange={setSelectedBooks}
+        />
       </Box>
     </Container>
   );
