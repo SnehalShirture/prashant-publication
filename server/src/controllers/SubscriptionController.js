@@ -157,7 +157,8 @@ const updateSubscriptionStatus = async (req, res) => {
 const getAllSubscription = async (req, res) => {
     try {
         const subscriptions = await Subscription.find()
-        res.status(200).json(new APiResponse(true, 200, subscriptions, "fetched All SubscriptionsF"))
+        .populate("user_id")
+        res.status(200).json(new APiResponse(true, 200, subscriptions, "fetched All Subscriptions"))
     } catch (error) {
         res.status(500).json(new APiResponse(false, 500, null, error.message))
     }
@@ -170,7 +171,8 @@ const getActiveSubscription = async (req, res) => {
         const subscription = await Subscription.find({
             isActive: true,
             endDate: { $gte: new Date() },
-        });
+        })
+        .populate("user_id")
 
         if (!subscription) {
             throw new ApiError("No active subscription found.", 404);
