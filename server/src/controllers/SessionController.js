@@ -98,7 +98,7 @@ const getReadCounterByUserId = async (req, res) => {
             },
             {
                 $sort: {
-                    _id: 1
+                    _id:1
                 }
             },
             {
