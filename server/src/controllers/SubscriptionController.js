@@ -10,7 +10,7 @@ const cancelSubscription = async (req, res) => {
         const { subscriptionId } = req.body;
 
         const subscription = await Subscription.findOneAndUpdate(
-            { _id: subscriptionId, isActive: true }, 
+            { _id: subscriptionId, isActive: true },
             { isActive: false },
             { new: true }
         );
@@ -66,7 +66,7 @@ const getBooksByCollegeId = async (req, res) => {
         const { user_id } = req.body;
 
         const subscriptions = await Subscription.aggregate([
-            { $match: { user_id: new mongoose.Types.ObjectId(user_id) } }, 
+            { $match: { user_id: new mongoose.Types.ObjectId(user_id) } },
             {
                 $lookup: {
                     from: "books",
@@ -106,7 +106,7 @@ const getBooksByCollegeId = async (req, res) => {
 
         res.status(200).json(new APiResponse(true, 200, books, "Books retrieved successfully"));
     } catch (error) {
-      
+
         res.status(500).json(new APiResponse(false, 500, null, error.message));
     }
 };
@@ -138,7 +138,7 @@ const updateSubscriptionStatus = async (req, res) => {
                 endDate,
                 isActive: true,
                 plan,
-                
+
             },
             { new: true }
         );
@@ -177,11 +177,11 @@ const getAllSubscription = async (req, res) => {
                 }
             },
             {
-                $unwind: "$user" 
+                $unwind: "$user"
             },
             {
                 $lookup: {
-                    from: "colleges", 
+                    from: "colleges",
                     localField: "user.collegeId",
                     foreignField: "_id",
                     as: "college"
@@ -190,7 +190,7 @@ const getAllSubscription = async (req, res) => {
             {
                 $unwind: {
                     path: "$college",
-                    preserveNullAndEmptyArrays: true 
+                    preserveNullAndEmptyArrays: true
                 }
             },
             {
@@ -206,7 +206,7 @@ const getAllSubscription = async (req, res) => {
                     totalBooks: { $size: "$books" }
                 }
             },
-            
+
         ]);
 
         res.status(200).json(new APiResponse(true, 200, subscriptions, "Fetched All Subscriptions"));
@@ -296,4 +296,129 @@ const getActiveSubscription = async (req, res) => {
 };
 
 
-export { getActiveSubscription, createSubscription, cancelSubscription, getAllSubscription, updateSubscriptionStatus, getBooksByCollegeId, removeBooksFromSubscription }
+const getSubscriptionsByStatus = async (req, res) => {
+    try {
+        const subscription = await Subscription.aggregate([
+            {
+                $match: req.body
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "user_id",
+                    foreignField: "_id",
+                    as: "user"
+                }
+            },
+            {
+                $unwind: "$user"
+            },
+            {
+                $lookup: {
+                    from: "colleges",
+                    localField: "user.collegeId",
+                    foreignField: "_id",
+                    as: "college"
+                }
+            },
+            {
+                $unwind: { path: "$college", preserveNullAndEmptyArrays: true } // Keep null if no college exists
+            },
+            {
+                $lookup: {
+                    from: "books",
+                    localField: "subscribedBooks",
+                    foreignField: "_id",
+                    as: "books"
+                }
+            },
+            {
+                $project: {
+                    "user.password": 0,
+                    "user.otp": 0,
+                    "user.otpExpires": 0,
+                    "user.__v": 0,
+                    "college.__v": 0,
+                    subscribedBooks: 0,
+                    __v: 0
+                }
+            }
+        ]);
+        res.status(200).json(new APiResponse(true, 200, subscription, " subscriptions fetched successfully."));
+
+    } catch (error) {
+        res.status(500).json(new APiResponse(false, 500, null, error.message || "An error occurred."));
+
+    }
+}
+
+
+const getExpiredSubscription = async (req, res) => {
+    try {
+        const expiredSubscriptions = await Subscription.aggregate([
+            {
+                $match: {
+                    endDate: { $lt: new Date() }
+                }
+            },
+            {
+                $set: {
+                    isActive: false
+                }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "user_id",
+                    foreignField: "_id",
+                    as: "user"
+                }
+            },
+            {
+                $unwind: "$user"
+            },
+            {
+                $lookup: {
+                    from: "colleges",
+                    localField: "user.collegeId",
+                    foreignField: "_id",
+                    as: "college"
+                }
+            },
+            {
+                $unwind: { path: "$college", preserveNullAndEmptyArrays: true }
+            },
+            {
+                $lookup: {
+                    from: "books",
+                    localField: "subscribedBooks",
+                    foreignField: "_id",
+                    as: "books"
+                }
+            },
+            {
+                $addFields: {
+                    bookCount: { $size: "$books" } 
+                }
+            },
+            {
+                $project: {
+                    "user.password": 0,
+                    "user.otp": 0,
+                    "user.otpExpires": 0,
+                    "user.__v": 0,
+                    "college.__v": 0,
+                    subscribedBooks: 0,
+                    __v: 0
+                }
+            }
+        ]);
+
+        res.status(200).json(new APiResponse(true, 200, expiredSubscriptions, "Expired subscriptions fetched successfully."));
+    } catch (error) {
+        res.status(500).json(new APiResponse(false, 500, null, error.message || "An error occurred."));
+    }
+};
+
+
+export { getActiveSubscription, createSubscription, cancelSubscription, getAllSubscription, updateSubscriptionStatus, getBooksByCollegeId, removeBooksFromSubscription, getSubscriptionsByStatus, getExpiredSubscription }
