@@ -96,12 +96,10 @@ const createBook = async (req, res) => {
             new APiResponse(true, 201, book, "Book added successfully.")
         );
     } catch (error) {
-        const status = error.statusCode || 500;
-        const message = error.message || "An unexpected error occurred.";
-        console.log(error);
-        res.status(status).json(new APiResponse(false, status, null, message));
+        res.status(500).json(new APiResponse(false, 500, null, error.message));
     }
 }
+
 
 const getAllBook = async (req, res) => {
     try {
@@ -110,9 +108,7 @@ const getAllBook = async (req, res) => {
             new APiResponse(true, 200, books, "Books fetched successfully.")
         );
     } catch (error) {
-        const status = error.statusCode || 500;
-        const message = error.message || "An unexpected error occurred.";
-        res.status(status).json(new APiResponse(false, status, null, message));
+        res.status(500).json(new APiResponse(false, 500, null, error.message));
     }
 }
 
@@ -128,9 +124,8 @@ const updateBook = async (req, res) => {
             new APiResponse(true, 200, updateBook, "Book updated successfully.")
         );
     } catch (error) {
-        const status = error.statusCode || 500;
-        const message = error.message || "An unexpected error occurred.";
-        res.status(status).json(new APiResponse(false, status, null, message));
+        res.status(500).json(new APiResponse(false, 500, null, error.message));
+
     }
 }
 
@@ -142,9 +137,8 @@ const deleteBook = async (req, res) => {
             new APiResponse(true, 200, deleteBook, "Book deleted successfully.")
         );
     } catch (error) {
-        const status = error.statusCode || 500;
-        const message = error.message || "An unexpected error occurred.";
-        res.status(status).json(new APiResponse(false, status, null, message));
+        res.status(500).json(new APiResponse(false, 500, null, error.message));
+
     }
 }
 

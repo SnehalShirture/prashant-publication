@@ -39,9 +39,8 @@ const addCollege = async (req, res) => {
 
         res.status(200).json(new APiResponse(true, 200, newCollege, "College Added SUccessfully"))
     } catch (error) {
-        const status = error.statusCode || 500;
-        const message = error.message || "An unexpected error occurred.";
-        res.status(status).json(new APiResponse(false, status, null, message));
+        res.status(500).json(new APiResponse(false, 500, null, error.message));
+
     }
 }
 
