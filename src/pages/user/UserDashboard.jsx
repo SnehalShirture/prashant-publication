@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Typography,
@@ -10,12 +10,12 @@ import {
   IconButton,
   CircularProgress,
 } from '@mui/material';
-import EastIcon from '@mui/icons-material/East';
 import Tooltip from '@mui/material/Tooltip';
 import CustomTable from '../../custom/CustomTable';
 import PropTypes from 'prop-types';
-import { getBooks } from '../../apiCalls/BooksApi';
 import AutoStoriesIcon from '@mui/icons-material/AutoStories';
+import { useQuery } from '@tanstack/react-query'; 
+import { getBooks } from '../../apiCalls/BooksApi';
 
 const TabPanel = ({ children, value, index, ...other }) => (
   <div
@@ -37,8 +37,6 @@ TabPanel.propTypes = {
 
 const Dashboard = () => {
   const [value, setValue] = useState(0);
-  const [books, setBooks] = useState([]);
-  const [loading, setLoading] = useState(true);
   const categories = ['All', 'Science', 'Arts', 'Engineering', 'Commerce'];
 
   const handleChange = (event, newValue) => {
@@ -69,26 +67,21 @@ const Dashboard = () => {
     },
   ];
 
-  useEffect(() => {
-    const fetchBooks = async () => {
-      setLoading(true);
-      try {
-        const response = await getBooks();
-        setBooks(response.data || []);
-      } catch (error) {
-        console.error('Error fetching books:', error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Fetch books using React Query
+  const { data: books =[], isLoading, error } = useQuery(
+    {
+        queryKey: ["books.data"],
+        queryFn: getBooks,
+      });
 
-    fetchBooks();
-  }, []);
+  if (error) {
+    return <Typography variant="h6" color="error">Error fetching books</Typography>;
+  }
 
   const filteredBooks =
     value === 0
-      ? books
-      : books.filter((book) => book.category === categories[value]);
+      ? books.data || []
+      : books.data?.filter((book) => book.category === categories[value]);
 
   return (
     <Box
@@ -118,7 +111,7 @@ const Dashboard = () => {
                 Total Books
               </Typography>
               <Typography variant="h2" sx={{ fontWeight: 700 }}>
-                {books.length}
+                {books?.length || 0}
               </Typography>
             </Card>
           </Grid>
@@ -212,7 +205,7 @@ const Dashboard = () => {
 
           {/* Tab Content */}
           <TabPanel value={value} index={value}>
-            {loading ? (
+            {isLoading ? (
               <Box sx={{ textAlign: 'center', py: 4 }}>
                 <CircularProgress color="inherit" />
               </Box>

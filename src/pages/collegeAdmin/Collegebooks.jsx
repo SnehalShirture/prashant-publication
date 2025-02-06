@@ -1,45 +1,54 @@
 import React, { useState, useEffect } from "react";
-import { Box, Tabs, Tab, Typography, Container, Tooltip } from "@mui/material";
+import { Box, Tabs, Tab, Typography, Container, Tooltip, Button } from "@mui/material";
 import EastIcon from "@mui/icons-material/East";
 import CustomTable from "../../custom/CustomTable";
-import { getBooks } from "../../apiCalls/BooksApi"; // Import your API methods
+import { getBooks } from "../../apiCalls/BooksApi";
+import { createsubscription } from "../../apiCalls/SubscriptionApi";
+import { useSelector } from "react-redux";
+import { useAlert } from "../../custom/CustomAlert";
+import { useQuery, useMutation } from "@tanstack/react-query";
 
 const Collegebooks = () => {
+  const { showAlert } = useAlert();
   const [tabValue, setTabValue] = useState(0);
-  const [bookData, setBookData] = useState([]); // State to store books data
-  const [selectedBooks, setSelectedBooks] = useState([]); // State for selected books
-
-
-  // List of categories
+  const [selectedBooks, setSelectedBooks] = useState([]);
+  
+  const { UserData } = useSelector((state) => state.user);
+  const userId = UserData.user_id._id;
   const categories = ["All", "Science", "Commerce", "Arts", "Engineering"];
 
-  // Handle tab changes
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
   };
 
-  // Fetch books from the API
-  const fetchBooks = async () => {
-    try {
-      const response = await getBooks(); // Fetch data from the API
-      console.log("API Response:", response); // Debug log to inspect the response
-      setBookData(response.data); // Update the bookData state with the fetched data
-    } catch (error) {
-      console.error("Error fetching books:", error);
-    }
-  };
-
-  // UseEffect to fetch books on component mount
-  useEffect(() => {
-    fetchBooks();
-  }, []);
+  const { data: bookData = [], error, isLoading } = useQuery({
+    queryKey: ["books"],
+    queryFn: getBooks,
+  });
 
   useEffect(() => {
-    console.log("Selected Books in AllBooks:", selectedBooks);
+    console.log("Selected Books:", selectedBooks);
   }, [selectedBooks]);
 
+  const TotalAmount = selectedBooks.reduce((acc, book) => acc + (Number(book.price) || 0), 0);
 
-  // Table columns
+  const subscriptionMutation = useMutation({
+    mutationFn: async () => {
+      const subscriptionData = {
+        user_id: userId,
+        subscribedBooks: selectedBooks.map((book) => book._id),
+        totalAmount: TotalAmount,
+      };
+      return await createsubscription(subscriptionData);
+    },
+    onSuccess: (response) => {
+      showAlert("You have successfully subscribed to the selected books.", "success");
+    },
+    onError: (error) => {
+      showAlert("Failed to create subscription: " + error.message, "error");
+    },
+  });
+
   const columns = [
     { header: "Sr. No", accessorFn: (row, index) => index + 1 },
     { header: "Title", accessorKey: "name" },
@@ -63,16 +72,14 @@ const Collegebooks = () => {
           </a>
         </Tooltip>
       ),
-    }
+    },
   ];
 
-  // Filter books based on selected category
-  const filteredBooks =
-    tabValue === 0
-      ? bookData
-      : bookData.filter((book) => book.category === categories[tabValue]);
+  if (isLoading) return <Typography>Loading...</Typography>;
+  if (error) return <Typography>Error fetching books</Typography>;
 
-  console.log("Filtered Books:", filteredBooks); // Debug filtered books
+  const filteredBooks =
+    tabValue === 0 ? bookData.data : bookData.data.filter((book) => book.category === categories[tabValue]);
 
   return (
     <Container sx={{ mt: 4 }}>
@@ -80,7 +87,6 @@ const Collegebooks = () => {
         All Books
       </Typography>
 
-      {/* Tabs for categories */}
       <Tabs
         value={tabValue}
         onChange={handleTabChange}
@@ -102,6 +108,21 @@ const Collegebooks = () => {
           onSelectedBooksChange={setSelectedBooks}
         />
       </Box>
+
+      {selectedBooks.length > 0 && (
+        <Box sx={{ mt: 2 }}>
+          <Typography variant="h6">Total Amount: Rs. {TotalAmount}</Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => subscriptionMutation.mutate()}
+            sx={{ mt: 1 }}
+            disabled={subscriptionMutation.isLoading}
+          >
+            {subscriptionMutation.isLoading ? "Processing..." : "Subscribe to Selected Books"}
+          </Button>
+        </Box>
+      )}
     </Container>
   );
 };

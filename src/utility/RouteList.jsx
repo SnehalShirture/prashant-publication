@@ -1,7 +1,7 @@
 import Dashboard from "../pages/user/UserDashboard";
 import Shelf from "../pages/user/UserShelf";
 import UserBooks from "../pages/user/Userbooks";
-import LibraryAdminDashboard from "../pages/collegeAdmin/CadminDashboard";
+import LibraryAdminDashboard from "../pages/collegeAdmin/CAdminDashboard";
 import LibrarySubscription from "../pages/collegeAdmin/CollegeSubscription";
 import UserSubscription from "../pages/user/UserSubscription";
 import CAdminProfile from "../pages/collegeAdmin/CAdminProfile";
@@ -14,6 +14,7 @@ import AddBookForm from "../pages/sAdmin/AddBook";
 import AllBooks from "../pages/sAdmin/AllBooks";
 import AllColleges from "../pages/sAdmin/AllColleges";
 import AllSubscriptions from "../pages/sAdmin/AllSubscriptions";
+import OrderDetail from "../pages/sAdmin/OrderDetail";
 
 export const User_Routes = [
   { path: "/user/dashboard", element: <Dashboard />, label: "Dashboard" },
@@ -37,5 +38,6 @@ export const SAdmin_Routes = [
   { path: "/sadmin/allbooks", element: <AllBooks />, label: "superAdmin AllBooks" },
   { path: "/sadmin/colleges", element: <AllColleges />, label: "superAdmin Colleges" },
   { path: "/sadmin/orders", element: <AllSubscriptions />, label: "superAdmin subscription" },
+  { path: "/sadmin/orderdetail", element: <OrderDetail />, label: "superAdmin Order Detail" },
   { path: "/sadmin/profile", element: <SAdminProfile />, label: "superAdmin Profile" },
 ]

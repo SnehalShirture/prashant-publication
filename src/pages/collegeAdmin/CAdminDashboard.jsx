@@ -11,6 +11,7 @@ const LibraryAdminDashboard = () => {
 
     // Access user data from Redux store
     const { UserData } = useSelector((state) => state.user);
+    console.log(UserData)
 
     const [tableData] = useState([
         { id: 1, studentName: "Alice Smith", action: "Borrowed 'Advanced Mathematics'", date: "2023-12-25" },

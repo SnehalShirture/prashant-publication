@@ -7,7 +7,7 @@ import MainStore from './reduxwork/MainStore.js'
 import { PersistGate } from "redux-persist/integration/react"
 import { persistStore } from "redux-persist"
 import { BrowserRouter } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from "react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SnackbarProvider } from "notistack";
 import { AlertProvider } from './custom/CustomAlert.jsx';
 import "./index.css"

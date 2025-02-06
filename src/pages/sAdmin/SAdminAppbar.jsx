@@ -24,6 +24,7 @@ import AddBoxIcon from "@mui/icons-material/AddBox";
 import SubscriptionsIcon from '@mui/icons-material/Subscriptions';
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../reduxwork/UserSlice";
+import { useMutation } from "@tanstack/react-query"; // Import React Query's useMutation
 import { userlogout } from "../../apiCalls/UserApi";
 import { useAlert } from "../../custom/CustomAlert";
 
@@ -56,23 +57,26 @@ const SuperAdminAppBar = () => {
     { to: "/sadmin/orders", label: "Orders", icon: <SubscriptionsIcon /> },
   ];
 
-  const handleLogout = async () => {
-    try {
-      if (!UserData || !UserData._id) {
-        console.error("User data is missing.");
-        return;
-      }
+  // Mutation for logout
+    const logoutMutation = useMutation({
+      mutationFn: async () => {
+        const userdata = { userId: UserData.user_id._id };
+        return await userlogout(userdata);
+      },
+      onSuccess: () => {
+        dispatch(logout());
+        showAlert("You have been logged out successfully", "success");
+        navigate("/");
+      },
+      onError: (error) => {
+        console.log(error.message);
+        showAlert("Error logging out. Please try again later", "error");
+      },
+    });
+    
 
-      const userdata = { userId: UserData.user_id._id };
-      const res = await userlogout(userdata);
-      console.log("Logout Response:", res);
-      showAlert("You have been logged out successfully", "success");
-      dispatch(logout());
-      navigate("/");
-    } catch (error) {
-      console.error("Logout Error:", error.message);
-      showAlert("Error logging out. Please try again later", "error");
-    }
+  const handleLogout = () => {
+    logoutMutation.mutate();
   };
 
   return (
@@ -169,19 +173,19 @@ const SuperAdminAppBar = () => {
               </Box>
             </Box>
             <Divider sx={{ borderColor: "rgba(255, 255, 255, 0.3)" }} />
-             <Link
-                  to="/sadmin/profile"
-                  style={{ textDecoration: "none", color: "inherit" }}
-                  onClick={handleMenuClose}
-                >
-              <MenuItem
+            <Link
+              to="/sadmin/profile"
+              style={{ textDecoration: "none", color: "inherit" }}
               onClick={handleMenuClose}
-              sx={{ borderRadius: "8px", "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.2)" } }}
+            >
+              <MenuItem
+                onClick={handleMenuClose}
+                sx={{ borderRadius: "8px", "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.2)" } }}
               >
-              Profile
-             </MenuItem>
+                Profile
+              </MenuItem>
             </Link>
-            
+
             <MenuItem
               onClick={handleLogout}
               sx={{ borderRadius: "8px", "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.2)" } }}

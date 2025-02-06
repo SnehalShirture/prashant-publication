@@ -2,18 +2,13 @@ import React, { useState, useEffect } from "react";
 import { Box, Typography, Paper, Button, TextField, Grid, Modal } from "@mui/material";
 import CustomTable from "../../custom/CustomTable";
 import { useSelector } from "react-redux";
-import { registeruser ,getstudentbyclgid } from "../../apiCalls/UserApi";
-
-
+import { useMutation } from "@tanstack/react-query";
+import { registeruser, getstudentbyclgid } from "../../apiCalls/UserApi";
 
 const AllStudents = () => {
   const { UserData } = useSelector((state) => state.user);
-  console.log("userdata : " , UserData)
-  console.log("collegeID : " , UserData.user_id.collegeId)
   const collegeId = UserData.user_id.collegeId;
 
-
-  const [students, setStudents] = useState([]);
   const [addStudent, setAddStudent] = useState({
     name: "",
     lastName: "",
@@ -21,31 +16,51 @@ const AllStudents = () => {
     password: "",
     mobile: "",
     role: "user", // Default role for students
-    collegeId : collegeId,
+    collegeId: collegeId,
   });
+  const [students, setStudents] = useState([]);
   const [open, setOpen] = useState(false);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  // Fetch students by college ID
-  useEffect(() => {
-  const getUserByCollegeId = async (collegeId) => {
-    try {
-      let reqdata = {
-        collegeId : collegeId
-      }
-      const response = await getstudentbyclgid(reqdata);
-      console.log(response.data)
-      setStudents(response.data);
-    } catch (error) {
-      console.log("Error fetching students by college ID:", error.message);
+  // Mutation for adding a new student
+  const addStudentMutation = useMutation({
+    mutationFn: (newStudent) => registeruser(newStudent), // Ensure this is a function that returns a promise
+    onSuccess: (newStudent) => {
+      setStudents((prevStudents) => [...prevStudents, newStudent]);
+      setAddStudent({
+        name: "",
+        lastName: "",
+        email: "",
+        password: "",
+        mobile: "",
+        role: "user",
+        collegeId: collegeId,
+      });
+      setOpen(false);
+      console.log("New Student Added:", newStudent);
+    },
+    onError: (error) => {
+      console.log("Error adding new student:", error.message);
+    },
+  });
 
-    }
-  };
-  getUserByCollegeId(collegeId);
-}, []);
-  
+  // Mutation for fetching students
+  const fetchStudentsMutation = useMutation({
+    mutationFn: ({ collegeId }) => getstudentbyclgid({ collegeId }), // Ensure it returns a promise
+    onSuccess: (studentsData) => {
+      setStudents(studentsData.data);
+    },
+    onError: (error) => {
+      console.log("Error fetching students:", error.message);
+    },
+  });
+
+  // Fetch students when the component mounts or when the college ID changes
+  useEffect(() => {
+    fetchStudentsMutation.mutate({ collegeId });
+  }, [collegeId]);
 
   // Handle input changes
   const handleInputChange = (e) => {
@@ -56,48 +71,19 @@ const AllStudents = () => {
     }));
   };
 
-  // Add a new student
-  const addNewStudent = async (studentData) => {
-    try {
-      const response = await registeruser(studentData);
-      return response.data;
-    } catch (error) {
-      console.log("Error adding new student:", error.message);
-      throw error;
-    }
-  };
-
-  // Handle form submission
-  const handleAddStudent = async (e) => {
+  // Handle form submission for adding a new student
+  const handleAddStudent = (e) => {
     e.preventDefault();
-    try {
-      const newStudent = {
-        name: `${addStudent.name} ${addStudent.lastName}`,
-        email: addStudent.email,
-        password: addStudent.password,
-        mobile: addStudent.mobile,
-        role: addStudent.role,
-        collegeId : addStudent.collegeId
-      };
+    const newStudent = {
+      name: `${addStudent.name} ${addStudent.lastName}`,
+      email: addStudent.email,
+      password: addStudent.password,
+      mobile: addStudent.mobile,
+      role: addStudent.role,
+      collegeId: addStudent.collegeId,
+    };
 
-      const addedStudent = await addNewStudent(newStudent);
-      setStudents(addedStudent);
-      console.log("New Student Added:", addedStudent);
-
-      // Reset form fields and close modal
-      setAddStudent({
-        name: "",
-        lastName: "",
-        email: "",
-        password: "",
-        mobile: "",
-        role: "user",
-        collegeId : addStudent.collegeId
-      });
-      setOpen(false);
-    } catch (error) {
-      console.error("Failed to add student:", error);
-    }
+    addStudentMutation.mutate(newStudent);
   };
 
   // Table columns configuration
@@ -108,7 +94,7 @@ const AllStudents = () => {
   ];
 
   return (
-    <Box sx={{ padding: 3, bgcolor: "#f5f5f5"}}>
+    <Box sx={{ padding: 3, bgcolor: "#f5f5f5" }}>
       <Typography variant="h4" gutterBottom>
         All Students
       </Typography>
@@ -118,7 +104,13 @@ const AllStudents = () => {
 
       <Box sx={{ marginTop: 5 }}>
         <Paper elevation={3} sx={{ padding: 2, borderRadius: 2 }}>
-          <CustomTable data={students} columns={tableColumns} />
+          {fetchStudentsMutation.isLoading ? (
+            <Typography>Loading students...</Typography>
+          ) : fetchStudentsMutation.isError ? (
+            <Typography color="error">Error fetching students</Typography>
+          ) : (
+            <CustomTable data={students} columns={tableColumns} />
+          )}
 
           <Box sx={{ textAlign: "right", marginTop: 2 }}>
             <Button
@@ -133,6 +125,7 @@ const AllStudents = () => {
         </Paper>
       </Box>
 
+      {/* Add Student Modal */}
       <Modal open={open} onClose={handleClose}>
         <Box
           sx={{
@@ -210,8 +203,9 @@ const AllStudents = () => {
                   variant="contained"
                   color="primary"
                   sx={{ borderRadius: 2 }}
+                  disabled={addStudentMutation.isLoading}
                 >
-                  Submit
+                  {addStudentMutation.isLoading ? "Adding..." : "Submit"}
                 </Button>
               </Grid>
             </Grid>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Box,
   Card,
@@ -15,6 +15,7 @@ import {
   Select,
   Pagination,
 } from "@mui/material";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { getBooks, addToShelf } from "../../apiCalls/BooksApi";
 import PDFReader from "./PDFReader";
 import { useDispatch, useSelector } from "react-redux";
@@ -22,7 +23,6 @@ import { addShelf } from "../../reduxwork/ShelfSlice";
 import { useAlert } from "../../custom/CustomAlert";
 
 const RecommendedBooks = () => { 
-
   const { showAlert } = useAlert();
   const dispatch = useDispatch();
   const { UserData } = useSelector((state) => state.user);
@@ -31,7 +31,6 @@ const RecommendedBooks = () => {
   const sessionId = UserData._id;
   const token = UserData.token;
 
-  const [books, setBooks] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [page, setPage] = useState(1);
@@ -43,30 +42,34 @@ const RecommendedBooks = () => {
   const cardBackground = "#FFFFFF";
   const buttonColor = "#F37A24";
 
-  useEffect(() => {
-    const fetchBooks = async () => {
-      try {
-        const response = await getBooks();
-        setBooks(response.data);
-      } catch (error) {
-        console.error("Error fetching books:", error);
-      }
-    };
-    fetchBooks();
-  }, []);
-
-  const filteredBooks = books.filter((book) => {
-    const matchesQuery = searchQuery
-      ? [book.name, book.author, book.category]
-          .join(" ")
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase())
-      : true;
-    const matchesCategory = selectedCategory
-      ? book.category === selectedCategory
-      : true;
-    return matchesQuery && matchesCategory;
+  // Correct usage of useQuery in v5 with default value for books
+  const { data: books = [], isLoading, isError, error } = useQuery({
+    queryKey: ["books.data"],
+    queryFn: getBooks,
+    onError: (error) => {
+      console.error("Error fetching books:", error);
+      showAlert("Failed to fetch books.", "error");
+    }
   });
+
+  // books data 
+  console.log("Books data: ", books.data);
+
+  // Ensure books is an array before calling .filter
+  const filteredBooks = Array.isArray(books.data)
+    ? books.data.filter((book) => {
+        const matchesQuery = searchQuery
+          ? [book.name, book.author, book.category]
+              .join(" ")
+              .toLowerCase()
+              .includes(searchQuery.toLowerCase())
+          : true;
+        const matchesCategory = selectedCategory
+          ? book.category === selectedCategory
+          : true;
+        return matchesQuery && matchesCategory;
+      })
+    : [];
 
   const paginatedBooks = filteredBooks.slice(
     (page - 1) * itemsPerPage,
@@ -87,19 +90,26 @@ const RecommendedBooks = () => {
     setPage(value);
   };
 
-  const handleAddToShelf = async (book) => {
-    try {
+  // React Query: Add to Shelf Mutation
+  const addToShelfMutation = useMutation({
+    mutationFn: (book) => {
       const data = {
         bookId: book._id,
         userId: userid,
       };
-      const shelfRes = await addToShelf(data, token);
-
+      return addToShelf(data, token);
+    },
+    onSuccess: (response, book) => {
       dispatch(addShelf({ bookId: book._id, name: book.name }));
       showAlert(`${book.name} has been added to your shelf!`, "success");
-    } catch (error) {
-      showAlert(error.response?.data?.message || "Failed to add book to shelf.","error");
+    },
+    onError: (error) => {
+      showAlert(error.response?.data?.message || "Failed to add book to shelf.", "error");
     }
+  });
+
+  const handleAddToShelf = (book) => {
+    addToShelfMutation.mutate(book);
   };
 
   return (
@@ -153,6 +163,10 @@ const RecommendedBooks = () => {
           </Select>
         </FormControl>
       </Box>
+
+      {/* Loading and Error States */}
+      {isLoading && <Typography variant="h6">Loading books...</Typography>}
+      {isError && <Typography variant="h6" color="error">{error.message || "Failed to fetch books"}</Typography>}
 
       {/* Books List */}
       <Grid container spacing={3}>

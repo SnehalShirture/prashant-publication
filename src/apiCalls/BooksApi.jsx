@@ -3,6 +3,7 @@ import axios from "axios";
 
 axios.defaults.withCredentials = true;
 
+// Add new Book
 export const addnewbook = async (formData) => {
   let aInstance = createInstance()
   console.log(formData)
@@ -19,6 +20,7 @@ export const addnewbook = async (formData) => {
   }
 }
 
+//Get All Books
 export const getBooks = async () => {
   let aInstance = createInstance()
   try {
@@ -29,6 +31,8 @@ export const getBooks = async () => {
     throw new Error(error.response?.data?.message || "An error occurred during getting books");
   }
 };
+
+//delete book
 export const deleteBook = async (reqdeldata) => {
   const aInstance = createInstance(); // Ensure `createInstance` initializes Axios.
   try {
@@ -40,7 +44,7 @@ export const deleteBook = async (reqdeldata) => {
     throw new Error(error.response?.data?.message || "An error occurred while deleting the book");
   }
 };
-
+//book add to shelf
 export const addToShelf = async (data, token) => {
   const aInstance = createInstance();
   try {
@@ -61,7 +65,7 @@ export const addToShelf = async (data, token) => {
   }
 };
 
-
+//fetch shelf books 
 export const fetchShelfBooks = async (user) => {
   const aInstance = createInstance();
   try {
