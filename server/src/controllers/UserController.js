@@ -15,13 +15,10 @@ const registerUser = async (req, res) => {
         req.body.password = hashedPassword
 
         const newUser = await User.create(req.body);
-        console.log(newUser);
+
         res.status(200).json(new APiResponse(true, 200, newUser, "user created successfully.."));
     } catch (error) {
-
-        const status = error.statusCode || 500;
-        const message = error.message || "An unexpected error occurred.";
-        res.status(status).json(new APiResponse(false, status, null, message));
+        res.status(500).json(new APiResponse(false, 500, null, error.message));
     }
 };
 
@@ -31,7 +28,7 @@ const getUser = async (req, res) => {
         const users = await User.find().populate("bookShelf")
         res.status(201).json(users);
     } catch (error) {
-        res.status(400).json({ error: error.message })
+        res.status(500).json(new APiResponse(false, 500, null, error.message))
     }
 }
 
@@ -70,11 +67,7 @@ const userLogin = async (req, res) => {
             "Login successful"
         ));
     } catch (error) {
-
-        // console.log(error);
-        const status = error.statusCode || 500;
-        const message = error.message || "An unexpected error occurred.";
-        res.status(status).json(new APiResponse(false, status, null, message));
+        res.status(500).json(new APiResponse(false, 500, null, error.message));
     }
 };
 
@@ -98,9 +91,7 @@ const userLogout = async (req, res) => {
         res.status(200).json(new APiResponse(true, 200, null, "Successfully logged out."));
 
     } catch (error) {
-        const status = error.statusCode || 500;
-        const message = error.message || "An error occurred during logout.";
-        res.status(status).json(new APiResponse(false, status, null, message));
+        res.status(500).json(new APiResponse(false, 500, null, error.message));
     }
 };
 
@@ -119,9 +110,7 @@ const addBookToShelf = async (req, res) => {
         res.status(200).json(new APiResponse(true, 200, { user }, "Book added to shelf."));
 
     } catch (error) {
-        const status = error.statusCode || 500;
-        const message = error.message || "Error adding book to shelf.";
-        res.status(status).json(new APiResponse(false, status, null, message));
+        res.status(500).json(new APiResponse(false, 500, null, error.message));
     }
 }
 
@@ -140,10 +129,7 @@ const getBookShelfByUserId = async (req, res) => {
 
         res.status(200).json(new APiResponse(true, 200, user.bookShelf, "Bookshelf retrieved successfully."));
     } catch (error) {
-        console.error("Error fetching bookshelf:", error.message);
-        const status = error.statusCode || 500;
-        const message = error.message || "Error fetching bookshelf.";
-        res.status(status).json(new APiResponse(false, status, null, message));
+        res.status(500).json(new APiResponse(false, 500, null, error.message));
     }
 };
 
@@ -164,9 +150,7 @@ const sendOtp = async (req, res) => {
         res.status(200).json(new APiResponse(true, 200, null, "OTP sent successfully."));
 
     } catch (error) {
-        const status = error.statusCode || 500;
-        const message = error.message || "An unexpected error occurred while sending OTP.";
-        res.status(status).json(new APiResponse(false, status, null, message));
+        res.status(500).json(new APiResponse(false, 500, null, error.message ));
     }
 }
 
@@ -191,9 +175,7 @@ const resetPassword = async (req, res) => {
 
         res.status(200).json(new APiResponse(true, 200, null, "Password updated successfully."));
     } catch (error) {
-        const status = error.statusCode || 500;
-        const message = error.message || "An unexpected error occurred while sending OTP.";
-        res.status(status).json(new APiResponse(false, status, null, message));
+        res.status(500).json(new APiResponse(false, 500, null, error.message));
     }
 }
 
@@ -205,9 +187,8 @@ const getUserByClgId = async (req, res) => {
 
         res.status(200).json(new APiResponse(true, 200, fetchUsers, "Users By CollegeId"))
     } catch (error) {
-        const status = error.statusCode || 500;
-        const message = error.message || "An unexpected error occurred ";
-        res.status(status).json(new APiResponse(false, status, null, message));
+        res.status(500).json(new APiResponse(false, 500, null, error.message));
+
     }
 }
 

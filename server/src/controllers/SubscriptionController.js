@@ -30,7 +30,7 @@ const cancelSubscription = async (req, res) => {
 const createSubscription = async (req, res) => {
     try {
         //user_id,subscribedBooks,totalAmount
-
+        
         const subscription = await Subscription.create(req.body)
 
         res.status(200).json(new APiResponse(true, 200, subscription, "Subscription created successfully."));
