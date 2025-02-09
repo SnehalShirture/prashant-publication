@@ -6,7 +6,7 @@ const SubscriptionRouter = express.Router();
 
 SubscriptionRouter.post("/createsubscription", createSubscription);
 SubscriptionRouter.post("/removeBooksFromSubscription", removeBooksFromSubscription);
-SubscriptionRouter.get("/getBooksByCollegeId", getBooksByCollegeId);
+ SubscriptionRouter.post("/getBooksByCollegeId", getBooksByCollegeId);
 SubscriptionRouter.post("/updateSubscriptionStatus", updateSubscriptionStatus);
 SubscriptionRouter.get("/getAllSubscription", getAllSubscription);
 SubscriptionRouter.get("/getActiveSubscription", getActiveSubscription);

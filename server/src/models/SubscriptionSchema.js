@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
 
 const SubscriptionSchema = mongoose.Schema({
-    user_id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
+    collegeId:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"College"
     },
     plan: {
         type: String,

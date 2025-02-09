@@ -29,8 +29,8 @@ const cancelSubscription = async (req, res) => {
 
 const createSubscription = async (req, res) => {
     try {
-        //user_id,subscribedBooks,totalAmount
-        
+        //collegeId,subscribedBooks,totalAmount
+
         const subscription = await Subscription.create(req.body)
 
         res.status(200).json(new APiResponse(true, 200, subscription, "Subscription created successfully."));
@@ -63,10 +63,10 @@ const removeBooksFromSubscription = async (req, res) => {
 
 const getBooksByCollegeId = async (req, res) => {
     try {
-        const { user_id } = req.body;
+        const { collegeId } = req.body;
 
         const subscriptions = await Subscription.aggregate([
-            { $match: { user_id: new mongoose.Types.ObjectId(user_id) } },
+            { $match: { collegeId: new mongoose.Types.ObjectId(collegeId) } },
             {
                 $lookup: {
                     from: "books",
@@ -170,27 +170,10 @@ const getAllSubscription = async (req, res) => {
         const subscriptions = await Subscription.aggregate([
             {
                 $lookup: {
-                    from: "users",
-                    localField: "user_id",
-                    foreignField: "_id",
-                    as: "user"
-                }
-            },
-            {
-                $unwind: "$user"
-            },
-            {
-                $lookup: {
                     from: "colleges",
-                    localField: "user.collegeId",
+                    localField: "collegeId",
                     foreignField: "_id",
                     as: "college"
-                }
-            },
-            {
-                $unwind: {
-                    path: "$college",
-                    preserveNullAndEmptyArrays: true
                 }
             },
             {
@@ -206,7 +189,11 @@ const getAllSubscription = async (req, res) => {
                     totalBooks: { $size: "$books" }
                 }
             },
-
+            {
+                $project: {
+                    subscribedBooks: 0,
+                }
+            }
         ]);
 
         res.status(200).json(new APiResponse(true, 200, subscriptions, "Fetched All Subscriptions"));
@@ -214,6 +201,8 @@ const getAllSubscription = async (req, res) => {
         res.status(500).json(new APiResponse(false, 500, null, error.message));
     }
 };
+
+
 
 
 
@@ -244,19 +233,8 @@ const getActiveSubscription = async (req, res) => {
             {
                 $match: {
                     isActive: true,
-                    endDate: { $gte: new Date() } // Ensure subscription is still valid
+                    endDate: { $gte: new Date() }
                 }
-            },
-            {
-                $lookup: {
-                    from: "users",
-                    localField: "user_id",
-                    foreignField: "_id",
-                    as: "user"
-                }
-            },
-            {
-                $unwind: "$user"
             },
             {
                 $lookup: {
@@ -267,19 +245,27 @@ const getActiveSubscription = async (req, res) => {
                 }
             },
             {
+                $lookup: {
+                    from: "colleges",
+                    localField: "collegeId",
+                    foreignField: "_id",
+                    as: "college"
+                }
+            },
+            {
                 $addFields: {
-                    bookCount: { $size: "$books" } // Count total books in subscription
+                    bookCount: { $size: "$books" }
                 }
             },
             {
                 $project: {
-                    "user.password": 0, // Exclude sensitive data
+                    "user.password": 0,
                     "user.__v": 0,
                     "user.otp": 0,
                     "user.otpExpires": 0,
                     "user.bookShelf": 0,
                     "user.totalRevenue": 0,
-                    subscribedBooks: 0, // Remove raw book IDs since books are fully populated
+                    subscribedBooks: 0,
                     __v: 0
                 }
             }
@@ -299,37 +285,26 @@ const getActiveSubscription = async (req, res) => {
 const getSubscriptionsByStatus = async (req, res) => {
     try {
         const subscription = await Subscription.aggregate([
-            {
-                $match: req.body
-            },
-            {
-                $lookup: {
-                    from: "users",
-                    localField: "user_id",
-                    foreignField: "_id",
-                    as: "user"
-                }
-            },
-            {
-                $unwind: "$user"
-            },
-            {
-                $lookup: {
-                    from: "colleges",
-                    localField: "user.collegeId",
-                    foreignField: "_id",
-                    as: "college"
-                }
-            },
-            {
-                $unwind: { path: "$college", preserveNullAndEmptyArrays: true } // Keep null if no college exists
-            },
+            { $match: req.body },
             {
                 $lookup: {
                     from: "books",
                     localField: "subscribedBooks",
                     foreignField: "_id",
                     as: "books"
+                }
+            },
+            {
+                $lookup: {
+                    from: "colleges",
+                    localField: "collegeId",
+                    foreignField: "_id",
+                    as: "college"
+                }
+            },
+            {
+                $addFields: {
+                    bookCount: { $size: "$books" }
                 }
             },
             {
@@ -368,28 +343,6 @@ const getExpiredSubscription = async (req, res) => {
             },
             {
                 $lookup: {
-                    from: "users",
-                    localField: "user_id",
-                    foreignField: "_id",
-                    as: "user"
-                }
-            },
-            {
-                $unwind: "$user"
-            },
-            {
-                $lookup: {
-                    from: "colleges",
-                    localField: "user.collegeId",
-                    foreignField: "_id",
-                    as: "college"
-                }
-            },
-            {
-                $unwind: { path: "$college", preserveNullAndEmptyArrays: true }
-            },
-            {
-                $lookup: {
                     from: "books",
                     localField: "subscribedBooks",
                     foreignField: "_id",
@@ -397,8 +350,16 @@ const getExpiredSubscription = async (req, res) => {
                 }
             },
             {
+                $lookup: {
+                    from: "colleges",
+                    localField: "collegeId",
+                    foreignField: "_id",
+                    as: "college"
+                }
+            },
+            {
                 $addFields: {
-                    bookCount: { $size: "$books" } 
+                    bookCount: { $size: "$books" }
                 }
             },
             {
