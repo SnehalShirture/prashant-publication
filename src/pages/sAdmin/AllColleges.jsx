@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Box, Typography, Paper, Button, TextField, Grid, Modal } from "@mui/material";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import CustomTable from "../../custom/CustomTable";
-import { createCollege , getColleges } from "../../apiCalls/UserApi";
+import { createCollege, getColleges } from "../../apiCalls/UserApi";
 
 const AllColleges = () => {
-  const [colleges, setColleges] = useState([]);
+  const queryClient = useQueryClient();
+  const [open, setOpen] = useState(false);
   const [addnewCollege, setAddCollege] = useState({
     clgName: "",
     clgStream: "",
@@ -15,7 +17,21 @@ const AllColleges = () => {
     librarianEmail: "",
   });
 
-  const [open, setOpen] = useState(false);
+  // Fetch colleges using React Query
+  const { data: colleges = [], isLoading, error } = useQuery({
+    queryKey: ["colleges"],
+    queryFn: getColleges,
+  });
+
+  // Mutation for adding a new college
+  const mutation = useMutation({
+    mutationFn: createCollege,
+    onSuccess: () => {
+      queryClient.invalidateQueries(["colleges"]); // Refresh college list
+      handleClose();
+    },
+  });
+
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
     setOpen(false);
@@ -32,43 +48,16 @@ const AllColleges = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setAddCollege((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setAddCollege((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleAddCollege = async (e) => {
+  const handleAddCollege = (e) => {
     e.preventDefault();
-    try {
-        const response = await  createCollege(addnewCollege);
-        // Assuming response.data is the updated list of colleges
-        setAddCollege(response.data); 
-        console.log("New College Data:", response);
-        handleClose();
-    } catch (error) {
-        console.log(addnewCollege);
-        console.error("Failed to add college", error.response ? error.response.data : error.message);
-    }
-};
-
-useEffect(() =>{
-  const fetchAllColleges = async () =>{
-    try {
-      const response = await getColleges();
-      console.log( "college data",response)
-      setColleges(response.data);
-  
-    } catch (error) {
-      console.log("Failed to fetch colleges", error.response ? error.data : error.message);
-    }
-  }
-fetchAllColleges();
-},[])
-
+    mutation.mutate(addnewCollege);
+  };
 
   const tableColumns = [
-    { accessorKey: "clgName", header: "College Name", size: 200},
+    { accessorKey: "clgName", header: "College Name", size: 200 },
     { accessorKey: "clgStream", header: "Stream", size: 200 },
     { accessorKey: "clgAddress", header: "Address", size: 200 },
     { accessorKey: "directorName", header: "Director Name", size: 200 },
@@ -88,14 +77,16 @@ fetchAllColleges();
 
       <Box sx={{ marginTop: 5 }}>
         <Paper elevation={3} sx={{ padding: 2, borderRadius: 2 }}>
-          <CustomTable data={colleges} columns={tableColumns} />
+          {isLoading ? (
+            <Typography>Loading colleges...</Typography>
+          ) : error ? (
+            <Typography color="error">Failed to fetch colleges</Typography>
+          ) : (
+            <CustomTable data={colleges.data} columns={tableColumns} />
+          )}
+
           <Box sx={{ textAlign: "right", marginTop: 2 }}>
-            <Button
-              variant="outlined"
-              color="primary"
-              sx={{ borderRadius: 2 }}
-              onClick={handleOpen}
-            >
+            <Button variant="outlined" color="primary" sx={{ borderRadius: 2 }} onClick={handleOpen}>
               Add New College
             </Button>
           </Box>
@@ -121,84 +112,22 @@ fetchAllColleges();
           </Typography>
           <Box component="form" onSubmit={handleAddCollege}>
             <Grid container spacing={2}>
-              <Grid item xs={6}>
-                <TextField
-                  fullWidth
-                  label="College Name"
-                  name="clgName"
-                  value={addnewCollege.clgName}
-                  onChange={handleInputChange}
-                  required
-                />
-              </Grid>
-              <Grid item xs={6}>
-                <TextField
-                  fullWidth
-                  label="Stream"
-                  name="clgStream"
-                  value={addnewCollege.clgStream}
-                  onChange={handleInputChange}
-                  required
-                />
-              </Grid>
-              <Grid item xs={6}>
-                <TextField
-                  fullWidth
-                  label="Address"
-                  name="clgAddress"
-                  value={addnewCollege.clgAddress}
-                  onChange={handleInputChange}
-                  required
-                />
-              </Grid>
-              <Grid item xs={6}>
-                <TextField
-                  fullWidth
-                  label="Director Name"
-                  name="directorName"
-                  value={addnewCollege.directorName}
-                  onChange={handleInputChange}
-                  required
-                />
-              </Grid>
-              <Grid item xs={6}>
-                <TextField
-                  fullWidth
-                  label="Librarian Name"
-                  name="librarianName"
-                  value={addnewCollege.librarianName}
-                  onChange={handleInputChange}
-                  required
-                />
-              </Grid>
-              <Grid item xs={6}>
-                <TextField
-                  fullWidth
-                  label="Librarian Mobile"
-                  name="librarianMobile"
-                  value={addnewCollege.librarianMobile}
-                  onChange={handleInputChange}
-                  required
-                />
-              </Grid>
-              <Grid item xs={6}>
-                <TextField
-                  fullWidth
-                  label="Librarian Email"
-                  name="librarianEmail"
-                  value={addnewCollege.librarianEmail}
-                  onChange={handleInputChange}
-                  required
-                />
-              </Grid>
+              {[
+                { label: "College Name", name: "clgName" },
+                { label: "Stream", name: "clgStream" },
+                { label: "Address", name: "clgAddress" },
+                { label: "Director Name", name: "directorName" },
+                { label: "Librarian Name", name: "librarianName" },
+                { label: "Librarian Mobile", name: "librarianMobile" },
+                { label: "Librarian Email", name: "librarianEmail" },
+              ].map(({ label, name }) => (
+                <Grid item xs={6} key={name}>
+                  <TextField fullWidth label={label} name={name} value={addnewCollege[name]} onChange={handleInputChange} required />
+                </Grid>
+              ))}
               <Grid item xs={12} sx={{ textAlign: "right" }}>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  color="primary"
-                  sx={{ borderRadius: 2 }}
-                >
-                  Submit
+                <Button type="submit" variant="contained" color="primary" sx={{ borderRadius: 2 }} disabled={mutation.isLoading}>
+                  {mutation.isLoading ? "Adding..." : "Submit"}
                 </Button>
               </Grid>
             </Grid>

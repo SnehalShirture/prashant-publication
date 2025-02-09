@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/system";
 import { useNavigate } from "react-router-dom";
+import { useMutation } from "@tanstack/react-query";
 import { loginuser, sendotp } from "../../apiCalls/UserApi";
 import { useDispatch } from "react-redux";
 import { login } from "../../reduxwork/UserSlice";
@@ -20,11 +21,10 @@ import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { useAlert } from "../../custom/CustomAlert";
 
-
 const StyledContainer = styled(Container)(() => ({
   borderRadius: "8px",
   boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
-  background: "#fff", // Light background to contrast appbar
+  background: "#fff",
 }));
 
 const modalStyle = {
@@ -40,14 +40,56 @@ const modalStyle = {
 };
 
 const Login = () => {
-
-  const { showAlert } = useAlert()
+  const { showAlert } = useAlert();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  // React Query Mutations
+  const loginMutation = useMutation({
+    mutationFn: loginuser,
+    onSuccess: (response) => {
+      const user = response.data.session;
+      const userRole = user.user_id.role;
+
+      dispatch(
+        login({
+          ...response.data.session,
+          token: response.data.token,
+        })
+      );
+
+      if (userRole === "CollegeAdmin") {
+        navigate("/librarydashboard");
+      } else if (userRole === "user") {
+        navigate("/user/dashboard");
+      } else if (userRole === "SuperAdmin") {
+        navigate("/sadmin/dashboard");
+      } else {
+        navigate("/profile");
+      }
+    },
+    onError: (error) => {
+      console.error("Login Failed:", error.message);
+      showAlert("Error: " + error.message, "error");
+    },
+  });
+
+  const sendOtpMutation = useMutation({
+    mutationFn: sendotp,
+    onSuccess: (res) => {
+      console.log(res);
+      showAlert("OTP sent successfully to your email!", "success");
+      navigate("/resetpassword", { state: { email } });
+    },
+    onError: (error) => {
+      console.error("Failed to send OTP:", error.message);
+      showAlert("Failed to send OTP. Please try again.", "error");
+    },
+  });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -58,62 +100,18 @@ const Login = () => {
     e.preventDefault();
     const loginData = new FormData(e.target);
     const reqData = Object.fromEntries(loginData);
-
-    console.log("Login Data:", reqData);
-
-    try {
-      const response = await loginuser(reqData);
-      console.log("Login Response:", response);
-
-      const user = response.data.session;
-      const userRole = user.user_id.role;
-      console.log("User Role:", userRole);
-      console.log("userdata", user);
-
-      dispatch(
-        login({
-          ...response.data.session,
-          token: response.data.token,
-        })
-      );
-
-      if (userRole === "CollegeAdmin") {
-        console.log("Navigating to /librarydashboard");
-        navigate("/librarydashboard");
-      } else if (userRole === "user") {
-        console.log("Navigating to /user/dashboard");
-        navigate("/user/dashboard");
-      } else if (userRole === "SuperAdmin") {
-        console.log("Navigating to /admin/dashboard");
-        navigate("/sadmin/dashboard");
-      } else {
-        console.log("Navigating to /profile");
-        navigate("/profile");
-      }
-    } catch (error) {
-      console.error("Login Failed:", error.message);
-      showAlert("Error: " + error.message , "error");
-    }
+    loginMutation.mutate(reqData);
   };
 
-  const handleSendOtp = async (email) => {
-    console.log(email);
-    try {
-      const res = await sendotp({ email });
-      console.log(res);
-      alert("OTP sent successfully to your email!");
-      navigate("/resetpassword", { state: { email } }); // Navigate to reset-password with email
-    } catch (error) {
-      console.error("Failed to send OTP:", error.message);
-      alert("Failed to send OTP. Please try again.");
-    }
+  const handleSendOtp = () => {
+    sendOtpMutation.mutate({ email });
   };
 
   return (
     <StyledContainer maxWidth="sm">
       <Box
         sx={{
-          padding:"10px",
+          padding: "10px",
           marginTop: 8,
           display: "flex",
           flexDirection: "column",
@@ -126,7 +124,7 @@ const Login = () => {
           sx={{
             fontWeight: "bold",
             marginBottom: 2,
-            color: "#00ABE4", 
+            color: "#00ABE4",
           }}
         >
           Welcome Back 🙏!!!
@@ -175,7 +173,7 @@ const Login = () => {
                     onClick={() => setShowPassword(!showPassword)}
                     edge="end"
                     sx={{
-                      color: "#00ABE4", // Eye icon color to match the appbar
+                      color: "#00ABE4",
                     }}
                   >
                     {showPassword ? <VisibilityOff /> : <Visibility />}
@@ -189,14 +187,15 @@ const Login = () => {
             fullWidth
             variant="outlined"
             color="primary"
+            disabled={loginMutation.isLoading}
             sx={{
               py: 1.5,
               fontSize: "1rem",
               fontWeight: "bold",
-              borderRadius: "8px", // Rounded corners to match the text fields
+              borderRadius: "8px",
             }}
           >
-            Log In
+            {loginMutation.isLoading ? "Logging In..." : "Log In"}
           </Button>
         </Box>
 
@@ -259,12 +258,12 @@ const Login = () => {
               sx={{ mb: 3 }}
             />
             <Button
-              onClick={() => handleSendOtp(email)}
+              onClick={handleSendOtp}
               variant="contained"
               color="primary"
               fullWidth
               sx={{
-                borderRadius: "8px", // Rounded corners for the button
+                borderRadius: "8px",
               }}
             >
               Send OTP

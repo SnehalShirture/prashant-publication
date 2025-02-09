@@ -15,21 +15,20 @@ import {
 } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import MenuIcon from "@mui/icons-material/Menu";
-import AccountCircle from "@mui/icons-material/AccountCircle";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import GroupIcon from "@mui/icons-material/Group";
 import BookIcon from "@mui/icons-material/Book";
 import SubscriptionIcon from "@mui/icons-material/Subscriptions";
 import { useDispatch, useSelector } from "react-redux";
+import { logout } from "../../reduxwork/UserSlice";
 import { userlogout } from "../../apiCalls/UserApi";
 import { useAlert } from "../../custom/CustomAlert";
-import { logout } from "../../reduxwork/UserSlice";
+import { useMutation } from "@tanstack/react-query";
 
 const CollegeAppbar = () => {
   const { showAlert } = useAlert();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [drawerOpen, setDrawerOpen] = React.useState(false);
-
   const { UserData } = useSelector((state) => state.user);
 
   const dispatch = useDispatch();
@@ -54,23 +53,22 @@ const CollegeAppbar = () => {
     { to: "/library/subscription", label: "Subscription", icon: <SubscriptionIcon /> },
   ];
 
-  // Logout handler
-  const handleLogout = async () => {
-    try {
-      const userdata = {
-        userId: UserData.user_id._id,
-      };
-      console.log(userdata);
-      const res = await userlogout(userdata);
-      console.log(res);
-      showAlert("You have been logged out successfully", "success");
+  // Mutation for logout
+  const logoutMutation = useMutation({
+    mutationFn: async () => {
+      const userdata = { userId: UserData.user_id._id };
+      return await userlogout(userdata);
+    },
+    onSuccess: () => {
       dispatch(logout());
+      showAlert("You have been logged out successfully", "success");
       navigate("/");
-    } catch (error) {
+    },
+    onError: (error) => {
       console.log(error.message);
       showAlert("Error logging out. Please try again later", "error");
-    }
-  };
+    },
+  });
 
   return (
     <Box>
@@ -80,7 +78,7 @@ const CollegeAppbar = () => {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          background: "#00ABE4", // Bright blue background
+          background: "#00ABE4",
           color: "white",
           p: 2,
         }}
@@ -108,28 +106,16 @@ const CollegeAppbar = () => {
         </Typography>
 
         {/* Desktop Navigation Links */}
-        <Box
-          sx={{
-            display: { xs: "none", sm: "flex" },
-            gap: 3,
-          }}
-        >
+        <Box sx={{ display: { xs: "none", sm: "flex" }, gap: 3 }}>
           {navLinks.map((link) => (
-            <Link
-              key={link.label}
-              to={link.to}
-              style={{
-                textDecoration: "none",
-                color: "white",
-              }}
-            >
+            <Link key={link.label} to={link.to} style={{ textDecoration: "none", color: "white" }}>
               <Typography
                 sx={{
                   display: "flex",
                   alignItems: "center",
                   gap: 1,
                   "&:hover": {
-                    color: "#ffe4c4", // Hover effect for desktop links
+                    color: "#ffe4c4",
                     transform: "scale(1.05)",
                     transition: "transform 0.2s ease-in-out",
                   },
@@ -163,7 +149,7 @@ const CollegeAppbar = () => {
             onClose={handleMenuClose}
             PaperProps={{
               sx: {
-                backgroundColor: "#fff", // Same as header background
+                backgroundColor: "#fff",
                 color: "#00ABE4",
                 borderRadius: "12px",
                 boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
@@ -189,37 +175,18 @@ const CollegeAppbar = () => {
                 </Typography>
               </Box>
             </Box>
-            <Divider sx={{ borderColor: "rgba(255, 255, 255, 0.3)" }} />
-            <Link
-              to="/library/profile"
-              style={{ textDecoration: "none", color: "inherit" }}
-              onClick={handleMenuClose}
-            >
-              <MenuItem
-                sx={{
-                  borderRadius: "8px",
-                  "&:hover": {
-                    backgroundColor: "rgba(0, 171, 228, 0.1)", // Hover effect for menu items
-                    transform: "scale(1.02)",
-                    transition: "transform 0.2s ease-in-out",
-                  },
-                }}
-              >
+            <Divider />
+            <Link to="/library/profile" style={{ textDecoration: "none", color: "inherit" }} onClick={handleMenuClose}>
+              <MenuItem sx={{ borderRadius: "8px", "&:hover": { backgroundColor: "rgba(0, 171, 228, 0.1)", transform: "scale(1.02)", transition: "0.2s ease-in-out" } }}>
                 Profile
               </MenuItem>
             </Link>
             <MenuItem
-              sx={{
-                borderRadius: "8px",
-                "&:hover": {
-                  backgroundColor: "rgba(0, 171, 228, 0.1)", // Hover effect for menu items
-                  transform: "scale(1.02)",
-                  transition: "transform 0.2s ease-in-out",
-                },
-              }}
-              onClick={handleLogout}
+              sx={{ borderRadius: "8px", "&:hover": { backgroundColor: "rgba(0, 171, 228, 0.1)", transform: "scale(1.02)", transition: "0.2s ease-in-out" } }}
+              onClick={() => logoutMutation.mutate()}
+              disabled={logoutMutation.isLoading}
             >
-              Logout
+              {logoutMutation.isLoading ? "Logging Out..." : "Logout"}
             </MenuItem>
           </Menu>
         </Box>
@@ -240,22 +207,8 @@ const CollegeAppbar = () => {
       >
         <List>
           {navLinks.map((link) => (
-            <Link
-              to={link.to}
-              key={link.label}
-              style={{ textDecoration: "none", color: "inherit" }}
-              onClick={toggleDrawer(false)}
-            >
-              <ListItem
-                button
-                sx={{
-                  "&:hover": {
-                    backgroundColor: "rgba(255, 255, 255, 0.2)", // Hover effect for drawer items
-                    transform: "scale(1.02)",
-                    transition: "transform 0.2s ease-in-out",
-                  },
-                }}
-              >
+            <Link to={link.to} key={link.label} style={{ textDecoration: "none", color: "inherit" }} onClick={toggleDrawer(false)}>
+              <ListItem button sx={{ "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.2)", transform: "scale(1.02)", transition: "0.2s ease-in-out" } }}>
                 <ListItemIcon sx={{ color: "white" }}>{link.icon}</ListItemIcon>
                 <ListItemText primary={link.label} />
               </ListItem>

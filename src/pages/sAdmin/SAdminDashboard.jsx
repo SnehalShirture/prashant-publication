@@ -1,26 +1,28 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Box, Typography, Grid, Card, CardContent, Avatar, useMediaQuery } from "@mui/material";
 import { Book, AttachMoney, LibraryBooks } from "@mui/icons-material";
-import { LineChart } from '@mui/x-charts/LineChart';
-import { getBookReadData } from "../../apiCalls/UserApi";
+import { BarChart } from '@mui/x-charts/BarChart'; 
+import { useQuery } from '@tanstack/react-query'; 
+import { getBookReadData } from "../../apiCalls/UserApi"; 
 
 const SAdminDashboard = () => {
-  const [chartData, setChartData] = useState([]);
   const isMobile = useMediaQuery("(max-width:600px)");
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await getBookReadData();
-        setChartData(response.data);
-        console.log("chart Response : ", response.data);
-      } catch (error) {
-        console.error("Error fetching chart data:", error);
-      }
-    };
+  // Fetch data using React Query
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['bookReadData'], // Define queryKey as an array
+    queryFn: getBookReadData, // Define the fetch function
+  });
 
-    fetchData();
-  }, []);
+  if (isLoading) {
+    return <Typography variant="h6">Loading data...</Typography>;
+  }
+
+  if (error) {
+    return <Typography variant="h6" color="error">Error fetching data.</Typography>;
+  }
+
+  const chartData = data?.data || []; // Safely handle data response
 
   return (
     <Box sx={{ p: 3, backgroundColor: "#f5f5f5", minHeight: "100vh" }}>
@@ -88,7 +90,7 @@ const SAdminDashboard = () => {
           Total Pages Read by Month
         </Typography>
         <Box sx={{ display: "flex", justifyContent: "center" }}>
-          <LineChart
+          <BarChart
             xAxis={[{ data: chartData.map(item => item.monthYear), scaleType: 'band' }]}
             series={[
               { data: chartData.map(item => item.totalPagesRead), label: 'Total Pages Read', color: "#8884d8" },

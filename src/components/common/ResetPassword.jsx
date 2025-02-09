@@ -8,6 +8,7 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/system";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useMutation } from "@tanstack/react-query";
 import { resetPassword } from "../../apiCalls/UserApi";
 import { useAlert } from "../../custom/CustomAlert";
 
@@ -19,7 +20,7 @@ const StyledContainer = styled(Container)(() => ({
 }));
 
 const ResetPassword = () => {
-  const { showAlert } = useAlert()
+  const { showAlert } = useAlert();
   const navigate = useNavigate();
   const location = useLocation(); // To get the passed email from navigation
   const { email } = location.state || {}; // Get the email passed through navigation
@@ -34,17 +35,22 @@ const ResetPassword = () => {
     }
   }, [email, navigate]);
 
-  const handleResetPassword = async () => {
-    try {
-      // Assuming OTP and email are sent/validated on the server
-      const response = await resetPassword({ email, otp, newPassword });
-      console.log(response);
+  // Use TanStack React Query's useMutation hook
+  const { mutate: handleResetPassword, isLoading } = useMutation({
+    mutationFn: (data) => resetPassword(data),
+    onSuccess: () => {
       showAlert("Password reset successfully! Redirecting to login.", "success");
       navigate("/");
-    } catch (error) {
+    },
+    onError: (error) => {
       console.error("Failed to reset password:", error.message);
       showAlert("Failed to reset password. Please try again.", "error");
-    }
+    },
+  });
+
+  const handleSubmit = () => {
+    const data = { email, otp, newPassword };
+    handleResetPassword(data); // Trigger mutation
   };
 
   return (
@@ -68,13 +74,14 @@ const ResetPassword = () => {
           Enter the OTP sent to your email and set a new password.
         </Typography>
 
-        {/* Email Field */}
+        {/* Email Field (Read-only) */}
         <TextField
           required
           label="Email Address"
           fullWidth
           variant="outlined"
           value={email || ""}
+          disabled
           sx={{ mb: 3 }}
         />
 
@@ -102,12 +109,13 @@ const ResetPassword = () => {
         />
 
         <Button
-          onClick={()=>handleResetPassword({ email, otp, newPassword })} // Corrected the function call
+          onClick={handleSubmit}
           variant="contained"
           color="primary"
           fullWidth
+          disabled={isLoading} // Disable button during loading
         >
-          Reset Password
+          {isLoading ? "Resetting..." : "Reset Password"}
         </Button>
       </Box>
     </StyledContainer>

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { Navigate, Route, Routes } from "react-router-dom";
-import { User_Routes, Librarian_Routes , SAdmin_Routes } from "./utility/RouteList";
+import { useSelector } from 'react-redux';
+import { Route, Routes } from "react-router-dom";
+import { User_Routes, Librarian_Routes, SAdmin_Routes } from "./utility/RouteList";
 import Login from "./components/auth/Login";
 import SignUp from "./components/auth/Signup";
 import ErrorPage from "./components/common/ErrorPage";
@@ -60,6 +60,7 @@ export const DisableScreenshot = () => {
 };
 
 const App = () => {
+  const { UserData } = useSelector((state) => state.user);
   // Define public routes
   const publicRoutes = [
     { path: "/signup", element: <SignUp />, label: "SignUp" },
@@ -68,19 +69,29 @@ const App = () => {
     { path: "/resetpassword", element: <ResetPassword />, label: 'resetPassword' }
   ];
 
-  return (  
+  return (
     <>
       <Header />
       {/* Define Routes */}
       <Routes>
-        {[...User_Routes, ...Librarian_Routes, ...SAdmin_Routes, ...publicRoutes].map((route, index) => (
+        {[...User_Routes, ...Librarian_Routes, ...SAdmin_Routes , ...publicRoutes].map((route, index) => (
           <Route
             exact
             key={index}
             path={route.path}
             element={route.element}
-          />
+              />
         ))}
+        {/* {
+          publicRoutes.map((route, index) => {
+            <Route
+              exact
+              key={index}
+              path={route.path}
+              element={route.element}
+            />
+          })
+        } */}
       </Routes>
     </>
   );

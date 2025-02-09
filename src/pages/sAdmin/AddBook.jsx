@@ -11,12 +11,12 @@ import {
   FormControl,
 } from "@mui/material";
 import { CloudUpload } from "@mui/icons-material";
+import { useMutation } from "@tanstack/react-query";
 import { addnewbook } from "../../apiCalls/BooksApi";
 import { useAlert } from "../../custom/CustomAlert";
 
-
 const AddBookForm = () => {
-  const { showAlert } =useAlert();
+  const { showAlert } = useAlert();
   const [formData, setFormData] = useState({
     name: "",
     author: "",
@@ -57,29 +57,25 @@ const AddBookForm = () => {
     setter(e.target.files[0]);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    try {
-      console.log("Form Data Submitted:", formData);
-      console.log("Files Submitted:", { coverImage, indexImage1, indexImage2, bookPdf });
-
-      const res = await addnewbook({
+  const mutation = useMutation({
+    mutationFn: async () => {
+      return await addnewbook({
         ...formData,
         coverImage,
         indexImage1,
         indexImage2,
         bookPdf,
       });
-
-      console.log("Book Added Successfully:", res);
-      showAlert("Book added successfully!" , "success"); // Provide user feedback
-      resetForm(); // Clear the form after successful submission
-    } catch (error) {
-      console.error("Error Adding Book:", error.message);
-      showAlert("Failed to add book. Please try again.", "error"); 
-    }
-  };
+    },
+    onSuccess: () => {
+      showAlert("Book added successfully!", "success");
+      resetForm();
+    },
+    onError: (error) => {
+      showAlert("Failed to add book. Please try again.", "error");
+      console.error("Error Adding Book:", error);
+    },
+  });
 
   return (
     <Box
@@ -95,7 +91,12 @@ const AddBookForm = () => {
       <Typography variant="h5" fontWeight="bold" gutterBottom>
         Add New Book
       </Typography>
-      <form onSubmit={handleSubmit}>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          mutation.mutate();
+        }}
+      >
         <Grid container spacing={2}>
           <Grid item xs={12}>
             <TextField
@@ -124,12 +125,7 @@ const AddBookForm = () => {
           <Grid item xs={12}>
             <FormControl fullWidth>
               <InputLabel>Category</InputLabel>
-              <Select
-                name="category"
-                value={formData.category}
-                onChange={handleChange}
-                required
-              >
+              <Select name="category" value={formData.category} onChange={handleChange} required>
                 <MenuItem value="Science">Science</MenuItem>
                 <MenuItem value="Arts">Arts</MenuItem>
                 <MenuItem value="Commerce">Commerce</MenuItem>
@@ -187,87 +183,29 @@ const AddBookForm = () => {
             />
           </Grid>
 
-          <Grid item xs={12}>
-            <Button
-              variant="contained"
-              component="label"
-              startIcon={<CloudUpload />}
-              fullWidth
-            >
-              Upload Cover Image
-              <input
-                type="file"
-                hidden
-                accept="image/*"
-                onChange={handleFileChange(setCoverImage)}
-                required
-              />
-            </Button>
-          </Grid>
+          {["Cover Image", "Index Image 1", "Index Image 2", "Book PDF"].map((label, idx) => (
+            <Grid item xs={12} key={idx}>
+              <Button variant="contained" component="label" startIcon={<CloudUpload />} fullWidth>
+                Upload {label}
+                <input
+                  type="file"
+                  hidden
+                  accept={label.includes("PDF") ? "application/pdf" : "image/*"}
+                  onChange={handleFileChange([
+                    setCoverImage,
+                    setIndexImage1,
+                    setIndexImage2,
+                    setBookPdf,
+                  ][idx])}
+                  required
+                />
+              </Button>
+            </Grid>
+          ))}
 
           <Grid item xs={12}>
-            <Button
-              variant="contained"
-              component="label"
-              startIcon={<CloudUpload />}
-              fullWidth
-            >
-              Upload Index Image 1
-              <input
-                type="file"
-                hidden
-                accept="image/*"
-                onChange={handleFileChange(setIndexImage1)}
-                required
-              />
-            </Button>
-          </Grid>
-
-          <Grid item xs={12}>
-            <Button
-              variant="contained"
-              component="label"
-              startIcon={<CloudUpload />}
-              fullWidth
-            >
-              Upload Index Image 2
-              <input
-                type="file"
-                hidden
-                accept="image/*"
-                onChange={handleFileChange(setIndexImage2)}
-                required
-              />
-            </Button>
-          </Grid>
-
-          <Grid item xs={12}>
-            <Button
-              variant="contained"
-              component="label"
-              startIcon={<CloudUpload />}
-              fullWidth
-            >
-              Upload Book PDF
-              <input
-                type="file"
-                hidden
-                accept="application/pdf"
-                onChange={handleFileChange(setBookPdf)}
-                required
-              />
-            </Button>
-          </Grid>
-
-          <Grid item xs={12}>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              fullWidth
-              sx={{ mt: 2 }}
-            >
-              Add Book
+            <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>
+              {mutation.isLoading ? "Adding..." : "Add Book"}
             </Button>
           </Grid>
         </Grid>

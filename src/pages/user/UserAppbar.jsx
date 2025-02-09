@@ -23,6 +23,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { userlogout } from "../../apiCalls/UserApi";
 import { useAlert } from "../../custom/CustomAlert";
 import { logout } from "../../reduxwork/UserSlice";
+import { useMutation } from "@tanstack/react-query";
 
 
 const Appbar = () => {
@@ -52,23 +53,27 @@ const Appbar = () => {
     { to: "/user/subscription", label: "Subscription", icon: <SubscriptionIcon /> },
   ];
 
-  // Logout handler
-  const handleLogout = async () => {
-    try {
-      const userdata = {
-        userId: UserData.user_id._id,
-      };
-      console.log(userdata)
-      const res = await userlogout(userdata);
-      console.log(res);
-      showAlert("You have been logged out successfully", "success")
+  // Mutation for logout
+  const logoutMutation = useMutation({
+    mutationFn: async () => {
+      const userdata = { userId: UserData.user_id._id };
+      return await userlogout(userdata);
+    },
+    onSuccess: () => {
       dispatch(logout());
+      showAlert("You have been logged out successfully", "success");
       navigate("/");
-    } catch (error) {
+    },
+    onError: (error) => {
       console.log(error.message);
-      showAlert("Error logging out. Please try again later", "error")
-    }
-  };
+      showAlert("Error logging out. Please try again later", "error");
+    },
+  });
+  
+
+const handleLogout = () => {
+  logoutMutation.mutate();
+};
 
   return (
     <Box>

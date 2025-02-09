@@ -5,7 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { logout } from "../../reduxwork/UserSlice";
 import { userlogout } from "../../apiCalls/UserApi";
 import { useAlert } from "../../custom/CustomAlert";
-import UpdatePasswordModal from "../../custom/UpdatePassword"; 
+import UpdatePasswordModal from "../../custom/UpdatePassword";
+import { useMutation } from "@tanstack/react-query";
 
 const CAdminProfile = () => {
   const { showAlert } = useAlert();
@@ -14,21 +15,24 @@ const CAdminProfile = () => {
   const { UserData, islogin } = useSelector((state) => state.user);
   const [updatePasswordModalOpen, setUpdatePasswordModalOpen] = useState(false);
 
-  const handleLogout = async () => {
-    try {
+  // Mutation for logout
+  const logoutMutation = useMutation({
+    mutationFn: async () => {
       let userdata = {
         userId: UserData.user_id._id,
       };
-      const res = await userlogout(userdata);
-      console.log(res);
+      return await userlogout(userdata);
+    },
+    onSuccess: () => {
       dispatch(logout());
       showAlert("You have been logged out successfully", "success");
       navigate("/");
-    } catch (error) {
+    },
+    onError: (error) => {
       console.log(error.message);
       showAlert("Error while logging out. Please try again", "error");
-    }
-  };
+    },
+  });
 
   if (!islogin || !UserData) {
     return (
@@ -94,9 +98,10 @@ const CAdminProfile = () => {
                 variant="outlined"
                 color="error"
                 sx={{ textTransform: "none" }}
-                onClick={handleLogout}
+                onClick={() => logoutMutation.mutate()}
+                disabled={logoutMutation.isLoading}
               >
-                Logout
+                {logoutMutation.isLoading ? "Logging Out..." : "Logout"}
               </Button>
             </Box>
           </Grid>

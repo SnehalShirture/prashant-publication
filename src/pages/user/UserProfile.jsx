@@ -1,12 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   Box,
   Button,
   Card,
-  CardContent,
   Paper,
   Typography,
-  Grid,
   Divider,
 } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
@@ -15,7 +13,7 @@ import { LineChart } from "@mui/x-charts/LineChart";
 import { logout } from "../../reduxwork/UserSlice";
 import { userlogout, getreadingdatabytuserid } from "../../apiCalls/UserApi";
 import { useAlert } from "../../custom/CustomAlert";
-
+import { useQuery , useMutation} from "@tanstack/react-query";
 
 const UserProfile = () => {
   const { showAlert } = useAlert();
@@ -25,52 +23,40 @@ const UserProfile = () => {
   // Access user data from Redux store
   const { UserData, islogin } = useSelector((state) => state.user);
 
-  // State for reading data
-  const [readingData, setReadingData] = useState([]);
-  const [readingMonths, setReadingMonths] = useState([]);
-
-  // Logout handler
-  const handleLogout = async () => {
-    try {
-      const userdata = {
-        userId: UserData.user_id._id,
-      };
-      console.log(userdata)
-      const res = await userlogout(userdata);
-      console.log(res);
-      showAlert("You have been logged out successfully","success")
-      dispatch(logout());
-      navigate("/");
-    } catch (error) {
-      console.log(error.message);
-      showAlert("Error logging out. Please try again later","error")
-    }
+  // React Query to fetch reading data
+  const fetchReadingData = async (userId) => {
+    const response = await getreadingdatabytuserid({ userId });
+    return response.data;
   };
 
-  // Fetch reading data by user_id
-  useEffect(() => {
-    const fetchReadingData = async () => {
-      const userid = {
+  const { data: readingData = [], isLoading, error } = useQuery({
+    queryKey: ["readingData", UserData?.user_id?._id], 
+    queryFn: () => fetchReadingData(UserData.user_id._id),
+    enabled: !!UserData?.user_id?._id, // Fetch only if user ID exists
+  });
+
+  // Mutation for logout
+  const logoutMutation = useMutation({
+    mutationFn: async () => {
+      let userdata = {
         userId: UserData.user_id._id,
       };
+      return await userlogout(userdata);
+    },
+    onSuccess: () => {
+      dispatch(logout());
+      showAlert("You have been logged out successfully", "success");
+      navigate("/");
+    },
+    onError: (error) => {
+      console.log(error.message);
+      showAlert("Error while logging out. Please try again", "error");
+    },
+  });
 
-      try {
-        const res = await getreadingdatabytuserid(userid);
-        console.log("Reading response:", res.data);
-
-        // Update chart data
-        const months = res.data.map((item) => item.monthYear); // ['Jan 2025', 'Feb 2025']
-        const counters = res.data.map((item) => item.totalPageCounter); // [21, 30]
-
-        setReadingMonths(months);
-        setReadingData(counters);
-      } catch (error) {
-        console.error("Error fetching reading stats:", error.message);
-      }
-    };
-
-    fetchReadingData();
-  }, [UserData]);
+  const handleLogout = () =>{
+    logoutMutation.mutate();
+  }
 
   if (!islogin || !UserData) {
     return (
@@ -85,14 +71,7 @@ const UserProfile = () => {
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
       {/* User Profile Card */}
-      <Card
-        elevation={3}
-        sx={{
-          p: 4,
-          mb: 4,
-          borderRadius: 3,
-        }}
-      >
+      <Card elevation={3} sx={{ p: 4, mb: 4, borderRadius: 3 }}>
         <Typography variant="h5" fontWeight="bold">
           {UserData.user_id.name}
         </Typography>
@@ -106,12 +85,7 @@ const UserProfile = () => {
           <strong>Role:</strong> {UserData.user_id.role}
         </Typography>
         <Box sx={{ mt: 3 }}>
-          <Button
-            variant="contained"
-            color="primary"
-            sx={{ mr: 2 }}
-            onClick={() => navigate("/edit-profile")}
-          >
+          <Button variant="contained" color="primary" sx={{ mr: 2 }} onClick={() => navigate("/edit-profile")}>
             Edit Profile
           </Button>
           <Button variant="outlined" color="secondary" onClick={handleLogout}>
@@ -121,35 +95,28 @@ const UserProfile = () => {
       </Card>
 
       {/* Reading Stats Section */}
-      <Paper
-        elevation={3}
-        sx={{
-          p: 4,
-          borderRadius: 3,
-          backgroundColor: "#f9f9f9",
-        }}
-      >
-        <Typography
-          variant="h6"
-          fontWeight="bold"
-          color="primary"
-          sx={{ mb: 3 }}
-        >
+      <Paper elevation={3} sx={{ p: 4, borderRadius: 3, backgroundColor: "#f9f9f9" }}>
+        <Typography variant="h6" fontWeight="bold" color="primary" sx={{ mb: 3 }}>
           Reading Activity
         </Typography>
         <Divider sx={{ mb: 3 }} />
-        {readingData.length > 0 ? (
+
+        {isLoading ? (
+          <Typography>Loading reading data...</Typography>
+        ) : error ? (
+          <Typography color="error">Error fetching data</Typography>
+        ) : readingData.length > 0 ? (
           <LineChart
             xAxis={[
               {
-                data: readingMonths, // x-axis labels
+                data: readingData.map((item) => item.monthYear),
                 label: "Months",
                 scaleType: "band",
               },
             ]}
             series={[
               {
-                data: readingData, // y-axis data
+                data: readingData.map((item) => item.totalPageCounter),
                 label: "Total Pages Read",
               },
             ]}

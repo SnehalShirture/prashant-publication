@@ -1,12 +1,23 @@
 import React, { useState } from 'react';
-import { TextField, Button, Box, Typography, Container, Link, Grid2, Radio, RadioGroup, FormControlLabel, FormControl, FormLabel } from '@mui/material';
+import { TextField,
+   Button,
+   Box, 
+   Typography, 
+   Container, 
+   Link, 
+   Grid, 
+   Radio, 
+   RadioGroup, 
+   FormControlLabel, 
+   FormControl, 
+   FormLabel } from '@mui/material';
 import { styled } from '@mui/system';
-import { registeruser } from '../../apiCalls/UserApi';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
+import { useMutation } from '@tanstack/react-query';
+import { registeruser } from '../../apiCalls/UserApi';
 import { register } from '../../reduxwork/UserSlice';
 import { useAlert } from '../../custom/CustomAlert';
-
 
 const StyledContainer = styled(Container)(() => ({
   borderRadius: '8px',
@@ -14,10 +25,9 @@ const StyledContainer = styled(Container)(() => ({
 }));
 
 const SignUp = () => {
-
-  const { showAlert } = useAlert()
-  const dispatch = useDispatch()
-  const nav = useNavigate();
+  const { showAlert } = useAlert();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -25,53 +35,38 @@ const SignUp = () => {
     mobile: '',
     email: '',
     password: '',
-    role: 'user' // default role is 'user'
+    role: 'user'
+  });
+
+  const registerMutation = useMutation({
+    mutationFn: registeruser,
+    onSuccess: (response) => {
+      showAlert('User Registered Successfully', 'success');
+      dispatch(register(response));
+      navigate('/');
+    },
+    onError: (error) => {
+      const errorMessage = error.response?.data?.message || error.message;
+      showAlert('Error in Registration: ' + errorMessage, 'error');
+    },
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: value
+      [name]: value,
     });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    const registerData = new FormData(e.target);
-    const reqData = Object.fromEntries(registerData);
-    console.log('Form Submitted:', reqData);
-
-    try {
-      const response = await registeruser(reqData);
-      console.log(response);
-      showAlert('User Registered Successfully' , "success");
-      dispatch(register(response));
-      nav('/');
-    } catch (error) {
-      if (error.response) {
-        console.error('Server Error:', error.response.data);
-        showAlert('Error in Registration' + error.response.data.message, "error");
-      } else if (error.request) {
-        console.error('Network Error:', error.request);
-        showAlert('Error in Registration' + error.request, "error");
-      } else {
-        console.error('Error:', error.message);
-        showAlert('Error in Registration' + error.message, "error");
-      }
-    }
+    registerMutation.mutate(formData);
   };
 
   return (
     <StyledContainer maxWidth="sm">
-      <Box
-        sx={{
-          marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-      >
+      <Box sx={{ marginTop: 8, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <Typography component="h1" variant="h4" sx={{ fontWeight: 'bold', marginBottom: 2 }}>
           Create an Account
         </Typography>
@@ -79,104 +74,43 @@ const SignUp = () => {
           Join our digital library to explore a world of knowledge and resources.
         </Typography>
         <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
-          <Grid2 container spacing={2}>
-            <Grid2 item xs={12} sm={6}>
-              <TextField
-                autoComplete="given-name"
-                name="name"
-                required
-                fullWidth
-                id="firstName"
-                label="First Name"
-                autoFocus
-                value={formData.name}
-                onChange={handleChange}
-              />
-            </Grid2>
-            <Grid2 item xs={12} sm={6}>
-              <TextField
-                required
-                fullWidth
-                id="lastName"
-                label="Last Name"
-                name="lastName"
-                autoComplete="family-name"
-                value={formData.lastName}
-                onChange={handleChange}
-              />
-            </Grid2>
-
-            <Grid2 item xs={12}>
-              <TextField
-                required
-                fullWidth
-                id="mobile"
-                label="Mobile No."
-                name="mobile"
-                autoComplete="mobile"
-                value={formData.mobile}
-                onChange={handleChange}
-              />
-            </Grid2>
-
-            <Grid2 item xs={12}>
-              <TextField
-                required
-                fullWidth
-                id="email"
-                label="Email Address"
-                name="email"
-                autoComplete="email"
-                value={formData.email}
-                onChange={handleChange}
-              />
-            </Grid2>
-            <Grid2 item xs={12}>
-              <TextField
-                required
-                fullWidth
-                name="password"
-                label="Password"
-                type="password"
-                id="password"
-                value={formData.password}
-                onChange={handleChange}
-              />
-            </Grid2>
-
-            {/* Radio buttons for role selection */}
-            <Grid2 item xs={12}>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6}>
+              <TextField required fullWidth label="First Name" name="name" value={formData.name} onChange={handleChange} autoFocus />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField required fullWidth label="Last Name" name="lastName" value={formData.lastName} onChange={handleChange} />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField required fullWidth label="Mobile No." name="mobile" value={formData.mobile} onChange={handleChange} />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField required fullWidth label="Email Address" name="email" value={formData.email} onChange={handleChange} />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField required fullWidth type="password" label="Password" name="password" value={formData.password} onChange={handleChange} />
+            </Grid>
+            <Grid item xs={12}>
               <FormControl component="fieldset">
                 <FormLabel component="legend">Select Role</FormLabel>
-                <RadioGroup
-                  name="role"
-                  value={formData.role}
-                  onChange={handleChange}
-                  row
-                >
+                <RadioGroup row name="role" value={formData.role} onChange={handleChange}>
                   <FormControlLabel value="SuperAdmin" control={<Radio />} label="SuperAdmin" />
                   <FormControlLabel value="CollegeAdmin" control={<Radio />} label="CollegeAdmin" />
-                  <FormControlLabel value="user" control={<Radio />} label="user" />
+                  <FormControlLabel value="user" control={<Radio />} label="User" />
                 </RadioGroup>
               </FormControl>
-            </Grid2>
-          </Grid2>
-          <Button
-            type="submit"
-            fullWidth
-            variant="outlined"
-            color="primary"
-            sx={{ mt: 3, mb: 2, py: 1.5, fontSize: '1rem', fontWeight: 'bold' }}
-          >
-            Sign Up
+            </Grid>
+          </Grid>
+          <Button type="submit" fullWidth variant="outlined" color="primary" sx={{ mt: 3, mb: 2, py: 1.5, fontSize: '1rem', fontWeight: 'bold' }}>
+            {registerMutation.isLoading ? 'Signing Up...' : 'Sign Up'}
           </Button>
-          <Grid2 container justifyContent="flex-end">
-            <Grid2 item>
+          <Grid container justifyContent="flex-end">
+            <Grid item>
               <Link href="/" variant="body2" sx={{ color: 'primary.main', fontWeight: 'bold' }}>
                 Already have an account? Log in
               </Link>
-            </Grid2>
-          </Grid2>
+            </Grid>
+          </Grid>
         </Box>
       </Box>
     </StyledContainer>
