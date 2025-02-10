@@ -83,7 +83,7 @@ const getBooksByCollegeId = async (req, res) => {
                             as: "book",
                             in: {
                                 _id: "$$book._id",
-                                title: "$$book.title",
+                                name: "$$book.name",
                                 author: "$$book.author",
                                 category: "$$book.category",
                                 price: "$$book.price",

@@ -56,19 +56,20 @@ const OrderDetail = () => {
     mutation.mutate(selectedStatus);
   };
 
+  const collegeDetails = subscription.college?.[0];
   // Librarian Details
   const librarianData = {
-    userName: subscription.user?.name || "N/A",
-    userEmail: subscription.user?.email || "N/A",
-    userMobile: subscription.user?.mobile || "N/A",
+    userName: collegeDetails?.librarianName || "N/A",
+    userEmail: collegeDetails?.librarianEmail|| "N/A",
+    userMobile: collegeDetails?.librarianMobile || "N/A",
   };
 
   // College Details
   const collegeData = {
-    name: subscription.college?.clgName || "N/A",
-    stream: subscription.college?.clgStream || "N/A",
-    address: subscription.college?.clgAddress || "N/A",
-    director: subscription.college?.directorName || "N/A",
+    name: collegeDetails?.clgName || "N/A",
+    stream: collegeDetails?.clgStream || "N/A",
+    address: collegeDetails?.clgAddress || "N/A",
+    director: collegeDetails?.directorName || "N/A",
   };
 
   // Table Columns

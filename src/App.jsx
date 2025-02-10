@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { Route, Routes } from "react-router-dom";
+import React, { useEffect } from "react";
+import { useSelector } from "react-redux";
+import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import { User_Routes, Librarian_Routes, SAdmin_Routes } from "./utility/RouteList";
 import Login from "./components/auth/Login";
 import SignUp from "./components/auth/Signup";
@@ -8,13 +8,14 @@ import ErrorPage from "./components/common/ErrorPage";
 import Header from "./layout/MainHeader";
 import ResetPassword from "./components/common/ResetPassword";
 import "./index.css";
-import { useAlert } from './custom/CustomAlert';
+import { useIsFetching } from "@tanstack/react-query";
+import Loading from "./components/common/Loading";
+import { useAlert } from "./custom/CustomAlert";
 
 export const DisableScreenshot = () => {
   const { showAlert } = useAlert();
 
   useEffect(() => {
-    // Block Print Screen key
     const blockPrintScreen = (event) => {
       if (event.key === "PrintScreen" || (event.ctrlKey && event.key === "p")) {
         event.preventDefault();
@@ -22,32 +23,27 @@ export const DisableScreenshot = () => {
       }
     };
 
-    // Disable right-click context menu
     const disableRightClick = (event) => {
       event.preventDefault();
       showAlert("Right-click is disabled.", "error");
     };
 
-    // Disable dragging and dropping images
     const disableDragAndDrop = (event) => {
       event.preventDefault();
     };
 
-    // Disable keyboard shortcuts for saving (Ctrl+S, Ctrl+Shift+S, etc.)
     const disableSaveShortcuts = (event) => {
-      if ((event.ctrlKey || event.metaKey) && (event.key === "s" || event.key === "S" || event.key === "Shift+S")) {
+      if ((event.ctrlKey || event.metaKey) && (event.key.toLowerCase() === "s")) {
         event.preventDefault();
         showAlert("Saving is disabled on this site.", "error");
       }
     };
 
-    // Add event listeners
     document.addEventListener("keydown", blockPrintScreen);
     document.addEventListener("contextmenu", disableRightClick);
     document.addEventListener("dragstart", disableDragAndDrop);
     document.addEventListener("keydown", disableSaveShortcuts);
 
-    // Clean up event listeners
     return () => {
       document.removeEventListener("keydown", blockPrintScreen);
       document.removeEventListener("contextmenu", disableRightClick);
@@ -60,38 +56,50 @@ export const DisableScreenshot = () => {
 };
 
 const App = () => {
+  const navigate = useNavigate();
   const { UserData } = useSelector((state) => state.user);
-  // Define public routes
-  const publicRoutes = [
-    { path: "/signup", element: <SignUp />, label: "SignUp" },
-    { path: "/", element: <Login />, label: "Login" },
-    { path: "*", element: <ErrorPage />, label: "ErrorPage" },
-    { path: "/resetpassword", element: <ResetPassword />, label: 'resetPassword' }
-  ];
+  const role = UserData?.user_id?.role;
+  const isFetching = useIsFetching();
+
+  // // Handle role-based redirection
+  // useEffect(() => {
+  //   if (role) {
+  //     switch (role) {
+  //       case "user":
+  //         navigate("/user/dashboard", { replace: true });
+  //         break;
+  //       case "CollegeAdmin":
+  //         navigate("/librarydashboard", { replace: true });
+  //         break;
+  //       case "SuperAdmin":
+  //         navigate("/sadmin/dashboard", { replace: true });
+  //         break;
+  //       default:
+  //         navigate("/", { replace: true });
+  //     }
+  //   }
+  // }, [role, navigate]);
 
   return (
     <>
       <Header />
-      {/* Define Routes */}
+      {isFetching > 0 && <Loading />}
       <Routes>
-        {[...User_Routes, ...Librarian_Routes, ...SAdmin_Routes , ...publicRoutes].map((route, index) => (
-          <Route
-            exact
-            key={index}
-            path={route.path}
-            element={route.element}
-              />
-        ))}
-        {/* {
-          publicRoutes.map((route, index) => {
-            <Route
-              exact
-              key={index}
-              path={route.path}
-              element={route.element}
-            />
-          })
-        } */}
+        {/* Public Routes */}
+        <Route path="/" element={<Login />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="/resetpassword" element={<ResetPassword />} />
+        <Route path="*" element={<ErrorPage />} />
+
+        {/* Role-based Routes */}
+        {role === "user" &&
+          User_Routes.map(({ path, element }) => <Route key={path} path={path} element={element} />)}
+
+        {role === "CollegeAdmin" &&
+          Librarian_Routes.map(({ path, element }) => <Route key={path} path={path} element={element} />)}
+
+        {role === "SuperAdmin" &&
+          SAdmin_Routes.map(({ path, element }) => <Route key={path} path={path} element={element} />)}
       </Routes>
     </>
   );

@@ -18,7 +18,7 @@ const AllColleges = () => {
   });
 
   // Fetch colleges using React Query
-  const { data: colleges = [], isLoading, error } = useQuery({
+  const { data: colleges = [], error } = useQuery({
     queryKey: ["colleges"],
     queryFn: getColleges,
   });
@@ -77,9 +77,7 @@ const AllColleges = () => {
 
       <Box sx={{ marginTop: 5 }}>
         <Paper elevation={3} sx={{ padding: 2, borderRadius: 2 }}>
-          {isLoading ? (
-            <Typography>Loading colleges...</Typography>
-          ) : error ? (
+          {error ? (
             <Typography color="error">Failed to fetch colleges</Typography>
           ) : (
             <CustomTable data={colleges.data} columns={tableColumns} />

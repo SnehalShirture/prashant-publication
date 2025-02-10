@@ -50,7 +50,7 @@ const Appbar = () => {
     { to: "/user/dashboard", label: "Dashboard", icon: <DashboardIcon /> },
     { to: "/user/shelf", label: "Shelf", icon: <ShelfIcon /> },
     { to: "/user/books", label: "Books", icon: <BookIcon /> },
-    { to: "/user/subscription", label: "Subscription", icon: <SubscriptionIcon /> },
+    // { to: "/user/subscription", label: "Subscription", icon: <SubscriptionIcon /> },
   ];
 
   // Mutation for logout

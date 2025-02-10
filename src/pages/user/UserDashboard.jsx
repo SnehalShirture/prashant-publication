@@ -68,11 +68,10 @@ const Dashboard = () => {
   ];
 
   // Fetch books using React Query
-  const { data: books =[], isLoading, error } = useQuery(
-    {
-        queryKey: ["books.data"],
-        queryFn: getBooks,
-      });
+  const { data: books = [], error } = useQuery({
+    queryKey: ["books.data"],
+    queryFn: getBooks,
+  });
 
   if (error) {
     return <Typography variant="h6" color="error">Error fetching books</Typography>;
@@ -87,7 +86,7 @@ const Dashboard = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        backgroundColor: '#E9F1FA', // Light blue background
+        backgroundColor: '#E9F1FA',
         color: 'white',
         py: 4,
       }}
@@ -100,7 +99,7 @@ const Dashboard = () => {
               sx={{
                 p: 4,
                 borderRadius: '16px',
-                backgroundColor: '#00ABE4', // Bright blue background
+                backgroundColor: '#00ABE4',
                 color: 'white',
                 boxShadow: 6,
                 height: '70%',
@@ -111,7 +110,7 @@ const Dashboard = () => {
                 Total Books
               </Typography>
               <Typography variant="h2" sx={{ fontWeight: 700 }}>
-                {books?.length || 0}
+                {books.length }
               </Typography>
             </Card>
           </Grid>
@@ -120,7 +119,7 @@ const Dashboard = () => {
               sx={{
                 p: 4,
                 borderRadius: '16px',
-                backgroundColor: '#FFFFFF', // White background
+                backgroundColor: '#FFFFFF',
                 color: 'black',
                 boxShadow: 6,
                 height: '70%',
@@ -140,7 +139,7 @@ const Dashboard = () => {
               sx={{
                 p: 4,
                 borderRadius: '16px',
-                backgroundColor: '#00ABE4', // Bright blue background
+                backgroundColor: '#00ABE4',
                 color: 'white',
                 boxShadow: 6,
                 height: '70%',
@@ -165,7 +164,7 @@ const Dashboard = () => {
             sx={{
               mb: 3,
               textShadow: '2px 2px 5px rgba(0,0,0,0.5)',
-              color: '#00ABE4', // Bright blue for the title
+              color: '#00ABE4',
             }}
           >
             Book Categories
@@ -205,13 +204,7 @@ const Dashboard = () => {
 
           {/* Tab Content */}
           <TabPanel value={value} index={value}>
-            {isLoading ? (
-              <Box sx={{ textAlign: 'center', py: 4 }}>
-                <CircularProgress color="inherit" />
-              </Box>
-            ) : (
-              <CustomTable data={filteredBooks} columns={columns} />
-            )}
+            <CustomTable data={filteredBooks} columns={columns} />
           </TabPanel>
         </Box>
       </Container>

@@ -14,14 +14,15 @@ const Collegebooks = () => {
   const [selectedBooks, setSelectedBooks] = useState([]);
   
   const { UserData } = useSelector((state) => state.user);
-  const userId = UserData.user_id._id;
+  console.log("collegeId : ", UserData.user_id.collegeId)
+  const collegeId = UserData.user_id.collegeId;
   const categories = ["All", "Science", "Commerce", "Arts", "Engineering"];
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
   };
 
-  const { data: bookData = [], error, isLoading } = useQuery({
+  const { data: bookData = [], error } = useQuery({
     queryKey: ["books"],
     queryFn: getBooks,
   });
@@ -35,7 +36,7 @@ const Collegebooks = () => {
   const subscriptionMutation = useMutation({
     mutationFn: async () => {
       const subscriptionData = {
-        user_id: userId,
+        collegeId: collegeId,
         subscribedBooks: selectedBooks.map((book) => book._id),
         totalAmount: TotalAmount,
       };
@@ -57,25 +58,23 @@ const Collegebooks = () => {
     { header: "Price", accessorKey: "price" },
     { header: "Publisher", accessorKey: "publisher" },
     { header: "Year Published", accessorKey: "yearPublished" },
-    { header: "Book Path", accessorKey: "bookPdf" },
-    {
-      header: "Details",
-      accessorFn: (row) => row,
-      Cell: ({ cell }) => (
-        <Tooltip title="Details">
-          <a
-            href={`http://localhost:5000/${cell.getValue().bookPdf}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <EastIcon fontSize="small" />
-          </a>
-        </Tooltip>
-      ),
-    },
+    // {
+    //   header: "Details",
+    //   accessorFn: (row) => row,
+    //   Cell: ({ cell }) => (
+    //     <Tooltip title="Details">
+    //       <a
+    //         href={`http://localhost:5000/${cell.getValue().bookPdf}`}
+    //         target="_blank"
+    //         rel="noopener noreferrer"
+    //       >
+    //         <EastIcon fontSize="small" />
+    //       </a>
+    //     </Tooltip>
+    //   ),
+    // },
   ];
 
-  if (isLoading) return <Typography>Loading...</Typography>;
   if (error) return <Typography>Error fetching books</Typography>;
 
   const filteredBooks =
