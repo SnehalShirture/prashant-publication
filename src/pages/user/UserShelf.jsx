@@ -27,7 +27,7 @@ const Shelf = () => {
   const [selectedBook, setSelectedBook] = useState(null);
 
   // Fetch books using React Query
-  const { data: books = [], isLoading, error } = useQuery({
+  const { data: books = [], error } = useQuery({
     queryKey: ["shelfBooks", user_id],
     queryFn: async () => {
       const user = { _id: user_id };
@@ -70,9 +70,7 @@ const Shelf = () => {
       </Box>
 
       {/* Book Grid */}
-      {isLoading ? (
-        <Typography sx={{ mt: 3 }}>Loading books...</Typography>
-      ) : error ? (
+      {error ? (
         <Typography sx={{ mt: 3, color: "red" }}>Error loading books</Typography>
       ) : (
         <Grid container spacing={3} sx={{ mt: 3 }}>

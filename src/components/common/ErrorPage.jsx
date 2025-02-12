@@ -1,25 +1,34 @@
-import React from 'react'
+import React from 'react';
+import { Container, Box, Typography, Button } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { useNavigate } from 'react-router-dom'
 import DangerousIcon from '@mui/icons-material/Dangerous';
+import { useNavigate } from 'react-router-dom';
 
 const ErrorPage = () => {
     const navigate = useNavigate();
+    
     return (
-        <>
-            <div className='main-container'>
-                <div className='error-page'>
-                    <DangerousIcon size={55} color="#F50000" />
-                    <p> <strong>404&nbsp;</strong> || Page not found</p>
-                    <button className='back-button' onClick={() => {navigate("/") }}  >
-                        <ArrowBackIcon size={18} />
-                        back
-                    </button>
-                </div>
-            </div>
-        </>
+        <Container maxWidth="sm" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', textAlign: 'center' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                <DangerousIcon sx={{ fontSize: 80, color: 'error.main' }} />
+                <Typography variant="h4" component="div" fontWeight="bold">
+                    404 | Page Not Found
+                </Typography>
+                <Typography variant="body1" color="text.secondary">
+                    The page you are looking for might have been removed or is temporarily unavailable.
+                </Typography>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    startIcon={<ArrowBackIcon />}
+                    onClick={() => navigate("/")}
+                    sx={{ mt: 2 }}
+                >
+                    Go Home
+                </Button>
+            </Box>
+        </Container>
+    );
+};
 
-    )
-}
-
-export default ErrorPage
+export default ErrorPage;

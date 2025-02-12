@@ -1,5 +1,5 @@
 import React from "react";
-import { Container, Typography, Button, CircularProgress, Box } from "@mui/material";
+import { Container, Typography, Button } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import CustomTable from "../../custom/CustomTable";
@@ -9,17 +9,21 @@ const AllSubscriptions = () => {
   const navigate = useNavigate();
 
   // Fetch subscriptions using React Query
-  const { data: subscriptions = [], isLoading, error } = useQuery({
-    queryKey: ["subscriptions"],
+  const { data: subscriptionsData, error } = useQuery({
+    queryKey: ["subscriptions.data"],
     queryFn: getAllSubscriptions,
   });
 
-  // Table columns with additional data
+  const subscriptions = subscriptionsData?.data || []; // Handle missing data
+
+  console.log("All subscriptions data:", subscriptions);
+
+  // Table columns with adjusted data extraction
   const columns = [
     { header: "Sr. No", accessorFn: (row, index) => index + 1 },
-    { header: "College", accessorFn: (row) => row.college?.clgName || "N/A" },
-    { header: "Librarian", accessorFn: (row) => row.user?.name || "N/A" },
-    { header: "Mobile", accessorFn: (row) => row.user?.mobile || "N/A" },
+    { header: "College", accessorFn: (row) => row.college?.[0]?.clgName || "N/A" },
+    { header: "Librarian", accessorFn: (row) => row.college?.[0]?.librarianName || "N/A" },
+    { header: "Mobile", accessorFn: (row) => row.college?.[0]?.librarianMobile || "N/A" },
     { header: "Total Books", accessorFn: (row) => row.totalBooks || "0" },
     { header: "Total Amount (₹)", accessorFn: (row) => row.totalAmount || "0" },
     { header: "Status", accessorKey: "status" },
@@ -38,15 +42,6 @@ const AllSubscriptions = () => {
     },
   ];
 
-  if (isLoading) {
-    return (
-      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "80vh" }}>
-        <CircularProgress size={50} color="primary" />
-        <Typography variant="h6" sx={{ mt: 2, color: "gray" }}>Loading...</Typography>
-      </Box>
-    );
-  }
-
   if (error) {
     return (
       <Container>
@@ -64,7 +59,7 @@ const AllSubscriptions = () => {
       </Typography>
 
       {/* Display subscriptions in a custom table */}
-      <CustomTable data={subscriptions.data} columns={columns} enablePagination={true} pageSize={5} />
+      <CustomTable data={subscriptions} columns={columns} enablePagination={true} pageSize={5} />
     </Container>
   );
 };

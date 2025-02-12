@@ -13,7 +13,7 @@ const AllBooks = () => {
     const [tabValue, setTabValue] = useState(0);
     const categories = ["All", "Science", "Commerce", "Arts", "Engineering"];
 
-    const { data: bookData = [], error, isLoading } = useQuery({
+    const { data: bookData = [], error } = useQuery({
         queryKey: ["books"],
         queryFn: getBooks,
     });
@@ -37,8 +37,6 @@ const AllBooks = () => {
     const handleDeleteBook = (bookId) => {
         deleteMutation.mutate(bookId);
     };
-
-    if (isLoading) return <Typography>Loading books...</Typography>;
     if (error) return <Typography>Error loading books.</Typography>;
 
     const filteredBooks =
@@ -52,7 +50,6 @@ const AllBooks = () => {
         { header: "Price", accessorKey: "price" },
         { header: "Publisher", accessorKey: "publisher" },
         { header: "Year Published", accessorKey: "yearPublished" },
-        { header: "Book Path", accessorKey: "bookPdf" },
         {
             header: "Actions",
             accessorFn: (row) => row,

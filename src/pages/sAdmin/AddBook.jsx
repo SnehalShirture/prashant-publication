@@ -9,6 +9,9 @@ import {
   InputLabel,
   Select,
   FormControl,
+  Card,
+  CardContent,
+  CircularProgress,
 } from "@mui/material";
 import { CloudUpload } from "@mui/icons-material";
 import { useMutation } from "@tanstack/react-query";
@@ -78,139 +81,69 @@ const AddBookForm = () => {
   });
 
   return (
-    <Box
-      sx={{
-        p: 4,
-        maxWidth: 600,
-        mx: "auto",
-        backgroundColor: "#fff",
-        borderRadius: 2,
-        boxShadow: 3,
-      }}
-    >
-      <Typography variant="h5" fontWeight="bold" gutterBottom>
-        Add New Book
-      </Typography>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          mutation.mutate();
-        }}
-      >
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Book Name"
-              name="name"
-              variant="outlined"
-              value={formData.name}
-              onChange={handleChange}
-              required
-            />
-          </Grid>
+    <Card sx={{ maxWidth: 650, mx: "auto", mt: 4, p: 3, boxShadow: 5 }}>
+      <CardContent>
+        <Typography variant="h5" fontWeight="bold" gutterBottom align="center">
+          Add New Book
+        </Typography>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            mutation.mutate();
+          }}
+        >
+          <Grid container spacing={2}>
+            <Grid item xs={6}>
+              <TextField fullWidth label="Book Name" name="name" variant="outlined" value={formData.name} onChange={handleChange} required />
+            </Grid>
+            <Grid item xs={6}>
+              <TextField fullWidth label="Author" name="author" variant="outlined" value={formData.author} onChange={handleChange} required />
+            </Grid>
 
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Author"
-              name="author"
-              variant="outlined"
-              value={formData.author}
-              onChange={handleChange}
-              required
-            />
-          </Grid>
+            <Grid item xs={6}>
+              <FormControl fullWidth>
+                <InputLabel>Category</InputLabel>
+                <Select name="category" value={formData.category} onChange={handleChange} required>
+                  <MenuItem value="Science">Science</MenuItem>
+                  <MenuItem value="Arts">Arts</MenuItem>
+                  <MenuItem value="Commerce">Commerce</MenuItem>
+                  <MenuItem value="Engineering">Engineering</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={6}>
+              <TextField fullWidth label="Price" name="price" type="number" variant="outlined" value={formData.price} onChange={handleChange} required />
+            </Grid>
 
-          <Grid item xs={12}>
-            <FormControl fullWidth>
-              <InputLabel>Category</InputLabel>
-              <Select name="category" value={formData.category} onChange={handleChange} required>
-                <MenuItem value="Science">Science</MenuItem>
-                <MenuItem value="Arts">Arts</MenuItem>
-                <MenuItem value="Commerce">Commerce</MenuItem>
-                <MenuItem value="Engineering">Engineering</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
+            <Grid item xs={6}>
+              <TextField fullWidth label="Publisher" name="publisher" variant="outlined" value={formData.publisher} onChange={handleChange} required />
+            </Grid>
+            <Grid item xs={6}>
+              <TextField fullWidth label="Other Publisher" name="otherPublisher" variant="outlined" value={formData.otherPublisher} onChange={handleChange} />
+            </Grid>
 
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Price"
-              name="price"
-              type="number"
-              variant="outlined"
-              value={formData.price}
-              onChange={handleChange}
-              required
-            />
-          </Grid>
+            <Grid item xs={12}>
+              <TextField fullWidth label="Year Published" name="yearPublished" type="number" variant="outlined" value={formData.yearPublished} onChange={handleChange} required />
+            </Grid>
 
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Publisher"
-              name="publisher"
-              variant="outlined"
-              value={formData.publisher}
-              onChange={handleChange}
-              required
-            />
-          </Grid>
+            {["Cover Image", "Index Image 1", "Index Image 2", "Book PDF"].map((label, idx) => (
+              <Grid item xs={12} key={idx}>
+                <Button variant="contained" component="label" startIcon={<CloudUpload />} fullWidth>
+                  Upload {label}
+                  <input type="file" hidden accept={label.includes("PDF") ? "application/pdf" : "image/*"} onChange={handleFileChange([setCoverImage, setIndexImage1, setIndexImage2, setBookPdf][idx])} required />
+                </Button>
+              </Grid>
+            ))}
 
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Other Publisher"
-              name="otherPublisher"
-              variant="outlined"
-              value={formData.otherPublisher}
-              onChange={handleChange}
-            />
-          </Grid>
-
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Year Published"
-              name="yearPublished"
-              type="number"
-              variant="outlined"
-              value={formData.yearPublished}
-              onChange={handleChange}
-              required
-            />
-          </Grid>
-
-          {["Cover Image", "Index Image 1", "Index Image 2", "Book PDF"].map((label, idx) => (
-            <Grid item xs={12} key={idx}>
-              <Button variant="contained" component="label" startIcon={<CloudUpload />} fullWidth>
-                Upload {label}
-                <input
-                  type="file"
-                  hidden
-                  accept={label.includes("PDF") ? "application/pdf" : "image/*"}
-                  onChange={handleFileChange([
-                    setCoverImage,
-                    setIndexImage1,
-                    setIndexImage2,
-                    setBookPdf,
-                  ][idx])}
-                  required
-                />
+            <Grid item xs={12}>
+              <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2, py: 1.5 }} disabled={mutation.isLoading}>
+                {mutation.isLoading ? <CircularProgress size={24} /> : "Add Book"}
               </Button>
             </Grid>
-          ))}
-
-          <Grid item xs={12}>
-            <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>
-              {mutation.isLoading ? "Adding..." : "Add Book"}
-            </Button>
           </Grid>
-        </Grid>
-      </form>
-    </Box>
+        </form>
+      </CardContent>
+    </Card>
   );
 };
 

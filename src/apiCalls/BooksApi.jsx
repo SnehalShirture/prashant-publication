@@ -80,3 +80,19 @@ export const fetchShelfBooks = async (user) => {
   }
 };
 
+//fetch books by college id
+export const fetchBooksByCollegeId = async (collegeId) => {
+  const aInstance = createInstance();
+  try {
+    console.log("Request collegeId data:", collegeId);
+    const response = await aInstance.post("getBooksByCollegeId", collegeId );
+    return response.data;
+    
+  } catch (error) {
+    console.error("Error fetching books by college id:", error.message);
+    throw new Error(
+      error.response?.data?.message || "An error occurred while fetching books by college id."
+      );
+    
+  }
+}

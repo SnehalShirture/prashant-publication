@@ -29,7 +29,7 @@ const UserProfile = () => {
     return response.data;
   };
 
-  const { data: readingData = [], isLoading, error } = useQuery({
+  const { data: readingData = [], error } = useQuery({
     queryKey: ["readingData", UserData?.user_id?._id], 
     queryFn: () => fetchReadingData(UserData.user_id._id),
     enabled: !!UserData?.user_id?._id, // Fetch only if user ID exists
@@ -54,9 +54,9 @@ const UserProfile = () => {
     },
   });
 
-  const handleLogout = () =>{
+  const handleLogout = () => {
     logoutMutation.mutate();
-  }
+  };
 
   if (!islogin || !UserData) {
     return (
@@ -101,9 +101,7 @@ const UserProfile = () => {
         </Typography>
         <Divider sx={{ mb: 3 }} />
 
-        {isLoading ? (
-          <Typography>Loading reading data...</Typography>
-        ) : error ? (
+        {error ? (
           <Typography color="error">Error fetching data</Typography>
         ) : readingData.length > 0 ? (
           <LineChart

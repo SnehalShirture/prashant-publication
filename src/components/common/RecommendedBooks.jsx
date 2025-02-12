@@ -42,8 +42,7 @@ const RecommendedBooks = () => {
   const cardBackground = "#FFFFFF";
   const buttonColor = "#F37A24";
 
-  // Correct usage of useQuery in v5 with default value for books
-  const { data: books = [], isLoading, isError, error } = useQuery({
+  const { data: books = [], isError, error } = useQuery({
     queryKey: ["books.data"],
     queryFn: getBooks,
     onError: (error) => {
@@ -52,10 +51,6 @@ const RecommendedBooks = () => {
     }
   });
 
-  // books data 
-  console.log("Books data: ", books.data);
-
-  // Ensure books is an array before calling .filter
   const filteredBooks = Array.isArray(books.data)
     ? books.data.filter((book) => {
         const matchesQuery = searchQuery
@@ -90,7 +85,6 @@ const RecommendedBooks = () => {
     setPage(value);
   };
 
-  // React Query: Add to Shelf Mutation
   const addToShelfMutation = useMutation({
     mutationFn: (book) => {
       const data = {
@@ -124,7 +118,6 @@ const RecommendedBooks = () => {
         justifyContent: "space-between",
       }}
     >
-      {/* Filters Section */}
       <Box
         sx={{
           display: "flex",
@@ -142,11 +135,7 @@ const RecommendedBooks = () => {
           value={searchQuery}
           onChange={handleSearchChange}
           placeholder="Search by book name, author, or category"
-          sx={{
-            flex: 1,
-            bgcolor: "#FFFFFF",
-            borderRadius: 1,
-          }}
+          sx={{ flex: 1, bgcolor: "#FFFFFF", borderRadius: 1 }}
         />
         <FormControl sx={{ minWidth: 200, bgcolor: "#FFFFFF", borderRadius: 1 }}>
           <InputLabel>Category</InputLabel>
@@ -164,11 +153,8 @@ const RecommendedBooks = () => {
         </FormControl>
       </Box>
 
-      {/* Loading and Error States */}
-      {isLoading && <Typography variant="h6">Loading books...</Typography>}
       {isError && <Typography variant="h6" color="error">{error.message || "Failed to fetch books"}</Typography>}
 
-      {/* Books List */}
       <Grid container spacing={3}>
         {paginatedBooks.map((book) => (
           <Grid item xs={12} sm={6} md={4} lg={3} key={book._id}>
@@ -191,73 +177,27 @@ const RecommendedBooks = () => {
                 alt={book.name}
               />
               <CardContent>
-                <Typography
-                  gutterBottom
-                  variant="h6"
-                  component="div"
-                  sx={{ color: primaryColor }}
-                >
+                <Typography gutterBottom variant="h6" sx={{ color: primaryColor }}>
                   {book.name}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   <strong>Author:</strong> {book.author}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  <strong>Category:</strong> {book.category}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  <strong>Price:</strong> ${book.price}
                 </Typography>
               </CardContent>
               <CardActions>
                 <Button
                   size="small"
                   variant="contained"
-                  sx={{ bgcolor: buttonColor, "&:hover": { bgcolor: "#d8681c" } }}
+                  sx={{ bgcolor: buttonColor }}
                   onClick={() => setSelectedBook(book)}
                 >
                   View PDF
-                </Button>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  sx={{
-                    color: primaryColor,
-                    borderColor: primaryColor,
-                    "&:hover": {
-                      bgcolor: primaryColor,
-                      color: "#FFFFFF",
-                    },
-                  }}
-                  onClick={() => handleAddToShelf(book)}
-                >
-                  Add to Shelf
                 </Button>
               </CardActions>
             </Card>
           </Grid>
         ))}
       </Grid>
-
-      {/* Pagination Section */}
-      <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 4 }}>
-        <Pagination
-          count={Math.ceil(filteredBooks.length / itemsPerPage)}
-          page={page}
-          onChange={handlePageChange}
-          variant="outlined"
-          shape="rounded"
-        />
-      </Box>
-
-      {/* PDF Reader Modal */}
-      {selectedBook && (
-        <PDFReader
-          fileUrl={`http://localhost:5000/${selectedBook.bookPdf}`}
-          sessionId={sessionId}
-          onClose={() => setSelectedBook(null)}
-        />
-      )}
     </Box>
   );
 };

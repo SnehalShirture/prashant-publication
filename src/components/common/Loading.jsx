@@ -1,7 +1,7 @@
 import React from "react";
 import { CircularProgress, Box, Typography } from "@mui/material";
 
-const Loading = ({ message = "Loading...", size = 50 }) => {
+const Loading = ({ message = "Loading...", size = 70 }) => {
   return (
     <Box
       display="flex"
