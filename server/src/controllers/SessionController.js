@@ -1,6 +1,6 @@
 import { Session } from "../models/SessionSchema.js";
 import { APiResponse } from "../utils/ApiResponse.js";
-import {ApiError} from "../utils/ApiError.js"
+import { ApiError } from "../utils/ApiError.js"
 import mongoose from "mongoose";
 
 const createSession = async ({ userId, ipAddress, userAgent }) => {
@@ -37,9 +37,9 @@ const getSession = async () => {
             throw new ApiError("No session logs found for the user.", 404);
         }
 
-       
+
         res.status(200).json(new APiResponse(true, 200, logs, "Session logs fetched successfully."));
-       
+
     } catch (error) {
         const status = error.statusCode || 500;
         const message = error.message || "An unexpected error occurred.";
@@ -70,9 +70,9 @@ const updatePageCounter = async (req, res) => {
 
 
 const getReadCounterByUserId = async (req, res) => {
-   
+
     const userId = new mongoose.Types.ObjectId(req.body.userId);
-    
+
     try {
         const readCounter = await Session.aggregate([
             {
@@ -82,96 +82,109 @@ const getReadCounterByUserId = async (req, res) => {
             },
             {
                 $addFields: {
-                    monthYear: {
-                        $dateToString: {
-                            format: "%b %Y",
-                            date: "$loginTime"
-                        }
+                    yearMonth: {
+                        $dateToString: { format: "%Y-%m", date: "$loginTime" }
                     }
                 }
             },
             {
                 $group: {
-                    _id: "$monthYear",
-                    totalPageCounter: { $sum: "$pageCounter" },
+                    _id: "$yearMonth",
+                    totalPageCounter: { $sum: "$pageCounter" }
                 }
             },
             {
-                $sort: {
-                    _id:1
+                $sort: { _id: 1 }
+            },
+            {
+                $addFields: {
+                    fullDate: {
+                        $concat: ["$_id", "-01"] // Convert "YYYY-MM" to "YYYY-MM-01"
+                    }
+                }
+            },
+            {
+                $addFields: {
+                    formattedMonthYear: {
+                        $dateFromString: { dateString: "$fullDate", format: "%Y-%m-%d`" }
+                    }
+                }
+            },
+            {
+                $addFields: {
+                    monthYear: {
+                        $dateToString: { format: "%b %Y", date: "$formattedMonthYear" }
+                    }
                 }
             },
             {
                 $project: {
-                    monthYear: "$_id",
+                    monthYear: 1,
                     totalPageCounter: 1,
                     _id: 0
                 }
             }
-        ])
-        console.log(readCounter)
+        ]);
 
         res.status(200).json(new APiResponse(true, 200, readCounter, "Page reading data"))
     } catch (error) {
-        const status = error.status;
-        const message = error.message;
-        res.status(status).json(new APiResponse(false, status, null, message))
+
+        res.status(500).json(new APiResponse(false, 500, null, error.message))
     }
 }
 
-const getTotalPagesReadByMonth = async (req, res) => {
-    try {
-        const Result = await Session.aggregate([
-            {
-                $addFields: {
-                    monthYear: {
-                        $dateToString: {
-                            format: "%b %Y",
-                            date: "$loginTime"
-                        }
-                    }
-                }
-            },
-    
-            {
-                $group: {
-                    _id: "$monthYear",
-                    totalPagesRead: { $sum: "$pageCounter" },
-                    totalUsers: { $addToSet: "$user_id" } // Collect unique users
-                }
-            },
-            {
-                $addFields: {
-                    totalUsers: { $size: "$totalUsers" }
-                }
-            },
-            {
-                $sort: {
-                    _id: 1
-                }
-            },
-            {
-                $project: {
-                    monthYear: "$_id",
-                    totalPagesRead: 1,
-                    totalUsers: 1,
-                    _id: 0
-                }
-            }
-        ])
+// const getTotalPagesReadByMonth = async (req, res) => {
+//     try {
+//         const Result = await Session.aggregate([
+//             {
+//                 $addFields: {
+//                     monthYear: {
+//                         $dateToString: {
+//                             format: "%b %Y",
+//                             date: "$loginTime"
+//                         }
+//                     }
+//                 }
+//             },
 
-        res.status(200).json(new APiResponse(true, 200, Result, "data by month"))
+//             {
+//                 $group: {
+//                     _id: "$monthYear",
+//                     totalPagesRead: { $sum: "$pageCounter" },
+//                     totalUsers: { $addToSet: "$user_id" }
+//                 }
+//             },
+//             {
+//                 $addFields: {
+//                     totalUsers: { $size: "$totalUsers" },
+                    
+//                 }
+//             },
+//             {
+//                 $sort: { "_id": 1 } // Sort by "YYYY-MM" (Jan → Feb → Mar)
+//             },
+//             {
+//                 $project: {
+//                     monthYear: {
+//                         $dateToString: { format: "%b %Y", date: { $dateFromString: { dateString: { $concat: ["$_id", "-01"] }, format: "%Y-%m-%d" } } }
+//                     },
+//                     totalPagesRead: 1,
+//                     totalUsers: 1,
+//                     _id: 0
+//                 }
+//             }
+//         ]);
 
-    } catch (error) {
-        const status = error.status;
-        const message = error.message;
-        res.status(status).json(new APiResponse(false, status, null, message))
-    }
-}
+//         res.status(200).json(new APiResponse(true, 200, Result, "data by month"))
 
+//     } catch (error) {
+//         res.status(500).json(new APiResponse(false, 500, null, error.message))
+//     }
+// }
 
 
-export { createSession, getSession, updatePageCounter ,getReadCounterByUserId,getTotalPagesReadByMonth }
+
+export { createSession, getSession, updatePageCounter, getReadCounterByUserId, getTotalPagesReadByMonth }
 
 
 

@@ -117,7 +117,7 @@ const addBookToShelf = async (req, res) => {
 
 const getBookShelfByUserId = async (req, res) => {
     try {
-        const { _id: userId } = req.body; // Use _id to match the frontend request
+        const { _id: userId } = req.body; 
 
         if (!userId) {
             throw new ApiError("User ID is required.", 400);

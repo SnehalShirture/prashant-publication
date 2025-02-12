@@ -3,7 +3,7 @@ import { registerUser, getUser, userLogin, userLogout, addBookToShelf, getBookSh
 import { updatePageCounter, getReadCounterByUserId, getTotalPagesReadByMonth } from "../controllers/SessionController.js";
 import { authenticate } from "../middleware/auth.js";
 import { addCollege, updateCollege, getCollegesData } from "../controllers/CollegeController.js";
-
+import { StartReadingSession, stopReadingSession } from "../controllers/ReadingController.js";
 const userRouter = express.Router();
 
 userRouter.post("/register", registerUser);
@@ -11,7 +11,7 @@ userRouter.get("/getUsers", getUser);
 userRouter.post("/login", userLogin);
 userRouter.post("/logout", userLogout)
 userRouter.post("/addToShelf", authenticate, addBookToShelf)
-userRouter.post("/bookShelf", getBookShelfByUserId)
+userRouter.post("/bookShelf", authenticate, getBookShelfByUserId)
 userRouter.post("/sendOTP", sendOtp)
 userRouter.post("/resetPassword", resetPassword)
 userRouter.post("/getUserByClgId", getUserByClgId)
@@ -28,4 +28,10 @@ userRouter.get("/getTotalPagesByMonth", getTotalPagesReadByMonth)
 userRouter.post("/addCollege", addCollege)
 userRouter.post("/updateCollege", updateCollege)
 userRouter.get("/fetchCollegeData", getCollegesData)
+
+
+//ReadingSession routes
+userRouter.post("/StartReadingSession", StartReadingSession)
+userRouter.post("/stopReadingSession", stopReadingSession)
+
 export { userRouter }
