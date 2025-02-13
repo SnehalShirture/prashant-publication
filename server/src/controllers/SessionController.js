@@ -133,54 +133,54 @@ const getReadCounterByUserId = async (req, res) => {
     }
 }
 
-// const getTotalPagesReadByMonth = async (req, res) => {
-//     try {
-//         const Result = await Session.aggregate([
-//             {
-//                 $addFields: {
-//                     monthYear: {
-//                         $dateToString: {
-//                             format: "%b %Y",
-//                             date: "$loginTime"
-//                         }
-//                     }
-//                 }
-//             },
+const getTotalPagesReadByMonth = async (req, res) => {
+    try {
+        const Result = await Session.aggregate([
+            {
+                $addFields: {
+                    monthYear: {
+                        $dateToString: {
+                            format: "%b %Y",
+                            date: "$loginTime"
+                        }
+                    }
+                }
+            },
 
-//             {
-//                 $group: {
-//                     _id: "$monthYear",
-//                     totalPagesRead: { $sum: "$pageCounter" },
-//                     totalUsers: { $addToSet: "$user_id" }
-//                 }
-//             },
-//             {
-//                 $addFields: {
-//                     totalUsers: { $size: "$totalUsers" },
+            {
+                $group: {
+                    _id: "$monthYear",
+                    totalPagesRead: { $sum: "$pageCounter" },
+                    totalUsers: { $addToSet: "$user_id" }
+                }
+            },
+            {
+                $addFields: {
+                    totalUsers: { $size: "$totalUsers" },
                     
-//                 }
-//             },
-//             {
-//                 $sort: { "_id": 1 } // Sort by "YYYY-MM" (Jan → Feb → Mar)
-//             },
-//             {
-//                 $project: {
-//                     monthYear: {
-//                         $dateToString: { format: "%b %Y", date: { $dateFromString: { dateString: { $concat: ["$_id", "-01"] }, format: "%Y-%m-%d" } } }
-//                     },
-//                     totalPagesRead: 1,
-//                     totalUsers: 1,
-//                     _id: 0
-//                 }
-//             }
-//         ]);
+                }
+            },
+            {
+                $sort: { "_id": 1 } // Sort by "YYYY-MM" (Jan → Feb → Mar)
+            },
+            {
+                $project: {
+                    monthYear: {
+                        $dateToString: { format: "%b %Y", date: { $dateFromString: { dateString: { $concat: ["$_id", "-01"] }, format: "%Y-%m-%d" } } }
+                    },
+                    totalPagesRead: 1,
+                    totalUsers: 1,
+                    _id: 0
+                }
+            }
+        ]);
 
-//         res.status(200).json(new APiResponse(true, 200, Result, "data by month"))
+        res.status(200).json(new APiResponse(true, 200, Result, "data by month"))
 
-//     } catch (error) {
-//         res.status(500).json(new APiResponse(false, 500, null, error.message))
-//     }
-// }
+    } catch (error) {
+        res.status(500).json(new APiResponse(false, 500, null, error.message))
+    }
+}
 
 
 

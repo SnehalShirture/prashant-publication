@@ -51,31 +51,15 @@ const Dashboard = () => {
     { header: 'Price', accessorKey: 'price' },
     { header: 'Publisher', accessorKey: 'publisher' },
     { header: 'Year Published', accessorKey: 'yearPublished' },
-    {
-      header: 'Actions',
-      accessorFn: (row) => row,
-      Cell: ({ cell }) => (
-        <Tooltip title="View Details">
-          <IconButton
-            onClick={() => console.log('View Book', cell.getValue())}
-            color="primary"
-          >
-            <AutoStoriesIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
-      ),
-    },
   ];
 
   // Fetch books using React Query
-  const { data: books = [], error } = useQuery({
+  const { data: books = [] } = useQuery({
     queryKey: ["books.data"],
     queryFn: getBooks,
   });
-
-  if (error) {
-    return <Typography variant="h6" color="error">Error fetching books</Typography>;
-  }
+  const totalBooks = books.data
+  console.log(books.data)
 
   const filteredBooks =
     value === 0
@@ -110,7 +94,7 @@ const Dashboard = () => {
                 Total Books
               </Typography>
               <Typography variant="h2" sx={{ fontWeight: 700 }}>
-                {books.length }
+                {/* {totalBooks.length } */}
               </Typography>
             </Card>
           </Grid>

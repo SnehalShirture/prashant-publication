@@ -96,3 +96,37 @@ export const fetchBooksByCollegeId = async (collegeId) => {
     
   }
 }
+
+
+//start book reading counter
+export const startBookReadingCounter = async ({bookId, collegeId}) => {
+  const aInstance = createInstance();
+  try {
+    console.log("Request bookId data:", {bookId, collegeId});
+    const response = await aInstance.post("StartReadingSession", {bookId, collegeId} );
+    return response.data;
+    
+  } catch (error) {
+    console.error("Error starting book reading counter:", error.message);
+    throw new Error(
+      error.response?.data?.message || "An error occurred while starting book reading counter."
+      );
+    
+  }
+}
+
+//stop book reading counter 
+export const stopBookReadingCounter = async ({bookId, collegeId}) => {
+  const aInstance = createInstance();
+  try {
+    console.log("Request bookId data:", {bookId, collegeId});
+    const response = await aInstance.post("stopReadingSession", {bookId, collegeId})
+    return response.data;
+    
+  } catch (error) {
+    console.error("Error stopping book reading counter:", error.message);
+    throw new Error(
+      error.response?.data?.message || "An error occurred while stopping book reading counter."
+      );
+  }
+}
