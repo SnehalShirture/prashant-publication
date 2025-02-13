@@ -113,13 +113,15 @@ const UserBooks = () => {
       return startBookReadingCounter(data);
     },
     onSuccess: (response, book) => {
+
       showAlert(`${book.name} has been started reading!`, "success");
+      setSelectedBook(book);
     },
     onError: (error) => {
       showAlert(error.response?.data?.message || "Failed to start book reading!", "error");
     }
   })
-  const handleStartBookReadingCounter = (book) =>{
+  const handleStartBookReadingCounter = (book) => {
     startBookReadingCounterMutation.mutate(book)
   }
 
@@ -163,6 +165,7 @@ const UserBooks = () => {
     },
     onSuccess: (response, book) => {
       showAlert(`${book.name} has been stopped reading!`, "success");
+      setSelectedBook(null)
     },
     onError: (error) => {
       showAlert(error.response?.data?.message || "Failed to stop book reading!", "error");
@@ -199,7 +202,6 @@ const UserBooks = () => {
                 <Button size="small" variant="contained" sx={{ bgcolor: buttonColor }}
                   disabled={disabledBooks[book._id]}
                   onClick={() => {
-                    setSelectedBook(book);
                     handleStartBookReadingCounter(book);
                   }}>
                   View PDF
