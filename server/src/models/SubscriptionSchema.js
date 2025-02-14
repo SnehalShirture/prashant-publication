@@ -5,9 +5,9 @@ const SubscriptionSchema = mongoose.Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref:"College"
     },
-    plan: {
-        type: String,
-        
+    package: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref:"Package"
     },
     startDate: {
         type: Date,
@@ -37,6 +37,9 @@ const SubscriptionSchema = mongoose.Schema({
     },
     totalAmount:{
         type:Number,
+    },
+    maxReaders:{
+        type:Number
     }
 });
 
