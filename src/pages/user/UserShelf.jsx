@@ -27,14 +27,14 @@ const Shelf = () => {
   const [selectedBook, setSelectedBook] = useState(null);
 
   // Fetch books using React Query
-  const { data: books = [], error } = useQuery({
+  const { data: books = [] } = useQuery({
     queryKey: ["shelfBooks", user_id],
     queryFn: async () => {
       const user = { _id: user_id };
       const response = await fetchShelfBooks(user);
       return response.data;
     },
-    enabled: !!user_id, // Ensure it only runs if user_id exists
+    enabled: !!user_id, 
   });
 
   // Filter books based on search query and category
@@ -70,28 +70,29 @@ const Shelf = () => {
       </Box>
 
       {/* Book Grid */}
-      {error ? (
-        <Typography sx={{ mt: 3, color: "red" }}>Error loading books</Typography>
-      ) : (
-        <Grid container spacing={3} sx={{ mt: 3 }}>
-          {filteredBooks.map((book, index) => (
-            <Grid item xs={12} sm={6} md={3} key={index}>
-              <Card sx={{ height: "100%", display: "flex", flexDirection: "column", boxShadow: 3 }}>
-                <CardMedia component="img" height="200" image={`http://localhost:5000/${book.coverImage}`} alt={book.name} />
-                <CardContent>
-                  <Typography variant="h6" fontWeight="bold">{book.name}</Typography>
-                  <Typography variant="body2" color="text.secondary"><strong>Author:</strong> {book.author}</Typography>
-                  <Typography variant="body2" color="text.secondary"><strong>Category:</strong> {book.category}</Typography>
-                  <Typography variant="body2" color="text.secondary"><strong>Price:</strong> ${book.price}</Typography>
-                  <Button variant="contained" color="primary" sx={{ mt: 2, width: "100%" }} onClick={() => setSelectedBook(book)}>
-                    View PDF
-                  </Button>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      )}
+      <Grid container spacing={3} sx={{ mt: 3 }}>
+        {filteredBooks.map((book, index) => (
+          <Grid item xs={12} sm={6} md={3} key={index}>
+            <Card sx={{ height: "100%", display: "flex", flexDirection: "column", boxShadow: 3 }}>
+              <CardMedia component="img" height="200" image={`http://localhost:5000/${book.coverImage}`} alt={book.name} />
+              <CardContent>
+                <Typography variant="h6" fontWeight="bold">{book.name}</Typography>
+                <Typography variant="body2" color="text.secondary"><strong>Author:</strong> {book.author}</Typography>
+                <Typography variant="body2" color="text.secondary"><strong>Category:</strong> {book.category}</Typography>
+                <Typography variant="body2" color="text.secondary"><strong>Price:</strong> ${book.price}</Typography>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  sx={{ mt: 2, width: "100%" }}
+                  onClick={() => setSelectedBook(book)}
+                >
+                  View PDF
+                </Button>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
 
       {/* PDF Reader Modal */}
       {selectedBook && (

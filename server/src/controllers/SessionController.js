@@ -133,8 +133,7 @@ const getReadCounterByUserId = async (req, res) => {
     }
 }
 
-
- const getTotalPagesReadByMonth = async (req, res) => {
+const getTotalPagesReadByMonth = async (req, res) => {
     try {
         const months = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
         
@@ -175,7 +174,6 @@ const getReadCounterByUserId = async (req, res) => {
         res.status(500).json({ success: false, status: 500, message: error.message });
     }
 };
-
 
 
 export { createSession, getSession, updatePageCounter, getReadCounterByUserId, getTotalPagesReadByMonth }

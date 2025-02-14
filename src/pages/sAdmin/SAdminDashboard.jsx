@@ -9,15 +9,10 @@ const SAdminDashboard = () => {
   const isMobile = useMediaQuery("(max-width:600px)");
 
   // Fetch data using React Query
-  const { data,  error } = useQuery({
+  const { data } = useQuery({
     queryKey: ['bookReadData'], // Define queryKey as an array
     queryFn: getBookReadData, // Define the fetch function
   });
-
-
-  if (error) {
-    return <Typography variant="h6" color="error">Error fetching data.</Typography>;
-  }
 
   const chartData = data?.data || []; // Safely handle data response
 
