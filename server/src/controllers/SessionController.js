@@ -135,21 +135,12 @@ const getReadCounterByUserId = async (req, res) => {
 
 const getTotalPagesReadByMonth = async (req, res) => {
     try {
-        const Result = await Session.aggregate([
-            {
-                $addFields: {
-                    monthYear: {
-                        $dateToString: {
-                            format: "%b %Y",
-                            date: "$loginTime"
-                        }
-                    }
-                }
-            },
-
+        const months = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        
+        const result = await Session.aggregate([
             {
                 $group: {
-                    _id: "$monthYear",
+                    _id: { month: { $month: "$loginTime" }, year: { $year: "$loginTime" } },
                     totalPagesRead: { $sum: "$pageCounter" },
                     totalUsers: { $addToSet: "$user_id" }
                 }
@@ -157,17 +148,20 @@ const getTotalPagesReadByMonth = async (req, res) => {
             {
                 $addFields: {
                     totalUsers: { $size: "$totalUsers" },
-                    
+                    formattedMonthYear: {
+                        $concat: [
+                            { $arrayElemAt: [months, "$_id.month"] }, " ",
+                            { $toString: "$_id.year" }
+                        ]
+                    }
                 }
             },
             {
-                $sort: { "_id": 1 } // Sort by "YYYY-MM" (Jan → Feb → Mar)
+                $sort: { "_id.year": 1, "_id.month": 1 }
             },
             {
                 $project: {
-                    monthYear: {
-                        $dateToString: { format: "%b %Y", date: { $dateFromString: { dateString: { $concat: ["$_id", "-01"] }, format: "%Y-%m-%d" } } }
-                    },
+                    monthYear: "$formattedMonthYear",
                     totalPagesRead: 1,
                     totalUsers: 1,
                     _id: 0
@@ -175,13 +169,11 @@ const getTotalPagesReadByMonth = async (req, res) => {
             }
         ]);
 
-        res.status(200).json(new APiResponse(true, 200, Result, "data by month"))
-
+        res.status(200).json({ success: true, status: 200, data: result, message: "Data by month" });
     } catch (error) {
-        res.status(500).json(new APiResponse(false, 500, null, error.message))
+        res.status(500).json({ success: false, status: 500, message: error.message });
     }
-}
-
+};
 
 
 export { createSession, getSession, updatePageCounter, getReadCounterByUserId, getTotalPagesReadByMonth }

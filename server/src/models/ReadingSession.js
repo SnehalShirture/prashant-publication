@@ -12,6 +12,10 @@ const ReadingSessionSchema = mongoose.Schema({
     startedAt: {
         type: Date,
         default: Date.now(),
+    },
+    user_id:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
     }
 
 });
