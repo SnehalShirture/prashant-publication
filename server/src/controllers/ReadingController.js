@@ -3,7 +3,7 @@ import { ReadingSession } from "../models/ReadingSession.js";
 export const StartReadingSession = async (req, res) => {
     try {
         const { bookId, collegeId } = req.body;
-        const activeReaders = await ReadingSession.countDocuments({ collegeId });
+        const activeReaders = await ReadingSession.countDocuments({ bookId, collegeId });
 
         if (activeReaders >= 3) {
             return res.status(403).json({ message: "Maximum reading limit reached. Try later!" });
