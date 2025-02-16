@@ -1,14 +1,14 @@
 import mongoose from "mongoose";
 
 const SubscriptionSchema = mongoose.Schema({
-    collegeId:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"College"
-    },
-    package: {
+    collegeId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref:"Package"
+        ref: "College"
     },
+    package: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Package"
+    }],
     startDate: {
         type: Date,
     },
@@ -32,14 +32,14 @@ const SubscriptionSchema = mongoose.Schema({
     ],
     status: {
         type: String,
-        default:"pending"
-        
+        default: "pending"
+
     },
-    totalAmount:{
-        type:Number,
+    totalAmount: {
+        type: Number,
     },
-    maxReaders:{
-        type:Number
+    maxReaders: {
+        type: Number
     }
 });
 

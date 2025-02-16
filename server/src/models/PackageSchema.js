@@ -13,7 +13,9 @@ const PackageSchema = mongoose.Schema({
         type: Boolean,
     },
     booksIncluded: [
-        { type: mongoose.Schema.Types.ObjectId }
+        { type: mongoose.Schema.Types.ObjectId ,
+            
+        }
     ],
     prices: [
         {

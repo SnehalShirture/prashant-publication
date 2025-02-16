@@ -69,7 +69,7 @@ const updatePageCounter = async (req, res) => {
 }
 
 
-const getReadCounterByUserId = async (req, res) => {
+/*const getReadCounterByUserId = async (req, res) => {
 
     const userId = new mongoose.Types.ObjectId(req.body.userId);
 
@@ -131,7 +131,69 @@ const getReadCounterByUserId = async (req, res) => {
 
         res.status(500).json(new APiResponse(false, 500, null, error.message))
     }
-}
+}*/
+
+const getReadCounterByUserId = async (req, res) => {
+    try {
+        const userId = new mongoose.Types.ObjectId(req.body.userId);
+
+        const readCounter = await Session.aggregate([
+            {
+                $match: { user_id: userId }
+            },
+            {
+                $addFields: {
+                    yearMonth: {
+                        $dateToString: { format: "%Y-%m", date: "$loginTime" } // Get "YYYY-MM"
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: "$yearMonth",
+                    totalPageCounter: { $sum: "$pageCounter" }
+                }
+            },
+            {
+                $sort: { _id: 1 } 
+            },
+            {
+                $addFields: {
+                    fullDate: {
+                        $concat: ["$_id", "-01"] 
+                    }
+                }
+            },
+            {
+                $addFields: {
+                    formattedMonthYear: {
+                        $dateFromString: { dateString: "$fullDate", format: "%Y-%m-%d" } 
+                    }
+                }
+            },
+            {
+                $addFields: {
+                    monthYear: {
+                        $dateToString: { format: "%b %Y", date: "$formattedMonthYear" } 
+                    }
+                }
+            },
+            {
+                $project: {
+                    monthYear: 1,
+                    totalPageCounter: 1,
+                    _id: 0
+                }
+            }
+        ]);
+
+        console.log(readCounter);
+        res.status(200).json(new APiResponse(true, 200, readCounter, "Page reading data"));
+    } catch (error) {
+        res.status(500).json(new APiResponse(false, 500, null, error.message));
+    }
+};
+
 
 const getTotalPagesReadByMonth = async (req, res) => {
     try {
