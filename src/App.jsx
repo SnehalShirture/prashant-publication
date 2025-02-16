@@ -11,6 +11,7 @@ import "./index.css";
 import { useIsFetching } from "@tanstack/react-query";
 import Loading from "./components/common/Loading";
 import { useAlert } from "./custom/CustomAlert";
+import Footer from "./components/common/Footer";
 
 export const DisableScreenshot = () => {
   const { showAlert } = useAlert();
@@ -61,25 +62,6 @@ const App = () => {
   const role = UserData?.user_id?.role;
   const isFetching = useIsFetching();
 
-  // // Handle role-based redirection
-  // useEffect(() => {
-  //   if (role) {
-  //     switch (role) {
-  //       case "user":
-  //         navigate("/user/dashboard", { replace: true });
-  //         break;
-  //       case "CollegeAdmin":
-  //         navigate("/librarydashboard", { replace: true });
-  //         break;
-  //       case "SuperAdmin":
-  //         navigate("/sadmin/dashboard", { replace: true });
-  //         break;
-  //       default:
-  //         navigate("/", { replace: true });
-  //     }
-  //   }
-  // }, [role, navigate]);
-
   return (
     <>
       <Header />
@@ -101,6 +83,7 @@ const App = () => {
         {role === "SuperAdmin" &&
           SAdmin_Routes.map(({ path, element }) => <Route key={path} path={path} element={element} />)}
       </Routes>
+      <Footer/>
     </>
   );
 };

@@ -36,7 +36,6 @@ export const getBooks = async () => {
 export const deleteBook = async (reqdeldata) => {
   const aInstance = createInstance(); // Ensure `createInstance` initializes Axios.
   try {
-    console.log("Deleting book with ID:", reqdeldata);
     const response = await aInstance.post('deleteBook', reqdeldata); // Use DELETE with ID in the URL.
     return response.data; // Return the response data.
   } catch (error) {
@@ -48,8 +47,6 @@ export const deleteBook = async (reqdeldata) => {
 export const addToShelf = async (data, token) => {
   const aInstance = createInstance();
   try {
-    console.log("Data:", data);
-    console.log("Token:", token); 
     const response = await aInstance.post("addToShelf", data, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -66,11 +63,14 @@ export const addToShelf = async (data, token) => {
 };
 
 //fetch shelf books 
-export const fetchShelfBooks = async (user) => {
+export const fetchShelfBooks = async (user , token) => {
   const aInstance = createInstance();
   try {
-    console.log("Request data:", user);
-    const response = await aInstance.post("/bookShelf", user); 
+    const response = await aInstance.post("bookShelf", user, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        },
+        });
     return response.data;
   } catch (error) {
     console.error("Error fetching shelf books:", error.message);
@@ -84,7 +84,6 @@ export const fetchShelfBooks = async (user) => {
 export const fetchBooksByCollegeId = async (collegeId) => {
   const aInstance = createInstance();
   try {
-    console.log("Request collegeId data:", collegeId);
     const response = await aInstance.post("getBooksByCollegeId", collegeId );
     return response.data;
     
@@ -102,7 +101,7 @@ export const fetchBooksByCollegeId = async (collegeId) => {
 export const startBookReadingCounter = async ({bookId, collegeId}) => {
   const aInstance = createInstance();
   try {
-    console.log("Request bookId data:", {bookId, collegeId});
+    console.log(" req data ", {bookId, collegeId})
     const response = await aInstance.post("StartReadingSession", {bookId, collegeId} );
     return response.data;
     
@@ -119,7 +118,6 @@ export const startBookReadingCounter = async ({bookId, collegeId}) => {
 export const stopBookReadingCounter = async ({bookId, collegeId}) => {
   const aInstance = createInstance();
   try {
-    console.log("Request bookId data:", {bookId, collegeId});
     const response = await aInstance.post("stopReadingSession", {bookId, collegeId})
     return response.data;
     
