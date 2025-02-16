@@ -3,8 +3,8 @@ import { registerUser, getUser, userLogin, userLogout, addBookToShelf, getBookSh
 import { updatePageCounter, getReadCounterByUserId, getTotalPagesReadByMonth } from "../controllers/SessionController.js";
 import { authenticate } from "../middleware/auth.js";
 import { addCollege, updateCollege, getCollegesData } from "../controllers/CollegeController.js";
-import { StartReadingSession, stopReadingSession ,getCurrentReaders } from "../controllers/ReadingController.js";
-import { createPackage,getPackagesByCategory,updateAllPackagesPrice } from "../controllers/PackageController.js";
+import { StartReadingSession, stopReadingSession, getCurrentReaders } from "../controllers/ReadingController.js";
+import { createPackage, getPackagesByCategory, updateAllPackagesPrice, getAllPackages } from "../controllers/PackageController.js";
 
 const userRouter = express.Router();
 
@@ -40,6 +40,8 @@ userRouter.get("/getCurrentReaders", getCurrentReaders)
 
 //Package Routes
 userRouter.post("/createPackage", createPackage)
+userRouter.get("/getAllPackages", getAllPackages)
+
 userRouter.get("/getPackagesByCategory", getPackagesByCategory)
 userRouter.post("/updateAllPackagesPrice", updateAllPackagesPrice)
 

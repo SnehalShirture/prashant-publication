@@ -63,7 +63,7 @@ const compressPDF = async (bookPdf) => {
 
 const createBook = async (req, res) => {
     try {
-        const { name, author, category, price, publisher, otherPublisher, yearPublished } = req.body;
+        const { name, author, category, price, publisher, otherPublisher, yearPublished ,academicYear,type } = req.body;
 
         const coverImage = req.files.coverImage ? req.files.coverImage[0].path : null;
         const indexImage1 = req.files.indexImage1 ? req.files.indexImage1[0].path : null;
@@ -80,6 +80,7 @@ const createBook = async (req, res) => {
         // fs.unlinkSync(bookPdf);
 
         const book = await Book.create({
+            
             name,
             author,
             category,
@@ -91,6 +92,8 @@ const createBook = async (req, res) => {
             indexImage1,
             indexImage2,
             bookPdf,
+            academicYear,
+            type,
         })
         res.status(201).json(
             new APiResponse(true, 201, book, "Book added successfully.")
