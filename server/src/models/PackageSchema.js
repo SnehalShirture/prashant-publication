@@ -15,17 +15,12 @@ const PackageSchema = mongoose.Schema({
     },
     booksIncluded: [
         {
-            type: mongoose.Schema.Types.ObjectId, ref: "Book"
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Book"
         }
     ],
-    prices: [
-        {
-            maxReaders: { type: Number },
-            Price: { type: Number }
-        }
-    ]
+    prices: []
 })
-
 
 
 // Pre-save middleware to populate booksIncluded before saving

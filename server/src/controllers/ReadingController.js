@@ -1,12 +1,14 @@
 import { ReadingSession } from "../models/ReadingSession.js";
+import { APiResponse } from "../utils/ApiResponse.js";
 
-export const StartReadingSession = async (req, res) => {
+const StartReadingSession = async (req, res) => {
     try {
         const { bookId, collegeId } = req.body;
         const activeReaders = await ReadingSession.countDocuments({ bookId, collegeId });
 
         if (activeReaders >= 3) {
             return res.status(403).json({ message: "Maximum reading limit reached. Try later!" });
+
         }
 
         const read = await ReadingSession.create({ bookId, collegeId });
@@ -18,7 +20,7 @@ export const StartReadingSession = async (req, res) => {
 }
 
 
-export const stopReadingSession = async (req, res) => {
+const stopReadingSession = async (req, res) => {
     try {
         const { bookId, collegeId } = req.body;
         await ReadingSession.deleteOne({ bookId, collegeId });
@@ -30,7 +32,7 @@ export const stopReadingSession = async (req, res) => {
 
 
 
-export const getCurrentReaders = async (req, res) => {
+const getCurrentReaders = async (req, res) => {
     try {
         const readers = await ReadingSession.aggregate([
             {
@@ -49,9 +51,10 @@ export const getCurrentReaders = async (req, res) => {
             }
         ]);
 
-        return res.json(readers);
+         res.status(200).json(readers);
     } catch (error) {
-        console.log(error);
         return res.status(500).json({ message: "Internal Server Error" });
     }
 }
+
+export{getCurrentReaders,stopReadingSession,StartReadingSession}

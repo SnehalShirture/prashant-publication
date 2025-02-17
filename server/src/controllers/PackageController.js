@@ -1,5 +1,7 @@
 import { Package } from "../models/PackageSchema.js";
 import { APiResponse } from "../utils/ApiResponse.js";
+
+
 const createPackage = async (req, res) => {
   try {
 
@@ -19,68 +21,6 @@ const getAllPackages = async (req, res) => {
     res.status(500).json(new APiResponse(false, 500, null, error.message))
   }
 }
-/*const updateAllPackagesPrice = async (req, res) => {
-    try {
-      const { maxReaders, price } = req.body;
-  
-      const result = await Package.updateMany(
-        {},
-        [
-          {
-            $set: {
-              prices: {
-                $let: {
-                  vars: {
-                    // Map over prices array to update any matching element
-                    updated: {
-                      $map: {
-                        input: { $ifNull: ["$prices", []] },
-                        as: "item",
-                        in: {
-                          $cond: [
-                            { $eq: ["$$item.maxReaders", maxReaders] },
-                            { maxReaders: maxReaders, Price: price },
-                            "$$item"
-                          ]
-                        }
-                      }
-                    }
-                  },
-                  in: {
-                    // If an element with the given maxReaders exists, use the updated array;
-                    // otherwise, append a new element.
-                    $cond: [
-                      {
-                        $in: [
-                          maxReaders,
-                          {
-                            $map: {
-                              input: { $ifNull: ["$prices", []] },
-                              as: "p",
-                              in: "$$p.maxReaders"
-                            }
-                          }
-                        ]
-                      },
-                      "$$updated",
-                      { $concatArrays: ["$$updated", [{ maxReaders: maxReaders, Price: price }]] }
-                    ]
-                  }
-                }
-              }
-            }
-          }
-        ]
-      );
-  
-      res
-        .status(200)
-        .json({ message: "All packages updated", modifiedCount: result.modifiedCount });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  };
-  */
 
 
 const updateAllPackagesPrice = async (req, res) => {
@@ -129,13 +69,12 @@ const updateAllPackagesPrice = async (req, res) => {
       ]
     );
 
-    res
-      .status(200)
-      .json({ message: "All packages updated", result });
+    res.status(200).json(new APiResponse(true, 200, result, "All packages updated"));
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json(new APiResponse(false, 500, null, error.message));
   }
 };
+
 
 
 const getPackagesByCategory = async (req, res) => {
@@ -176,13 +115,11 @@ const getPackagesByCategory = async (req, res) => {
       }
     ]);
 
-    res.status(200).json(results);
+    res.status(200).json(new APiResponse(true, 200, results, "Packages By Category"));
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json(new APiResponse(false, 500, null, error.message));
   }
 };
-
-
 
 
 export { createPackage, getAllPackages, updateAllPackagesPrice, getPackagesByCategory }

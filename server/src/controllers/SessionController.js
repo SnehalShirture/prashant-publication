@@ -30,20 +30,17 @@ const createSession = async ({ userId, ipAddress, userAgent }) => {
     }
 }
 
+
 const getSession = async () => {
     try {
         const logs = await Session.find({ user_id: req.params.userId });
         if (logs.length === 0) {
             throw new ApiError("No session logs found for the user.", 404);
         }
-
-
         res.status(200).json(new APiResponse(true, 200, logs, "Session logs fetched successfully."));
 
     } catch (error) {
-        const status = error.statusCode || 500;
-        const message = error.message || "An unexpected error occurred.";
-        res.status(status).json(new APiResponse(false, status, null, message));
+        res.status(500).json(new APiResponse(false, 500, null, message));
     }
 }
 
@@ -62,76 +59,11 @@ const updatePageCounter = async (req, res) => {
 
         res.status(200).json(new APiResponse(true, 200, session, "pageCounter updated"))
     } catch (error) {
-        const status = error.statusCode || 500;
-        const message = error.message || "An unexpected error occurred.";
-        res.status(status).json(new APiResponse(false, status, null, message));
+
+        res.status(500).json(new APiResponse(false, 500, null, error.message));
     }
 }
 
-
-/*const getReadCounterByUserId = async (req, res) => {
-
-    const userId = new mongoose.Types.ObjectId(req.body.userId);
-
-    try {
-        const readCounter = await Session.aggregate([
-            {
-                $match: {
-                    user_id: userId
-                }
-            },
-            {
-                $addFields: {
-                    yearMonth: {
-                        $dateToString: { format: "%Y-%m", date: "$loginTime" }
-                    }
-                }
-            },
-            {
-                $group: {
-                    _id: "$yearMonth",
-                    totalPageCounter: { $sum: "$pageCounter" }
-                }
-            },
-            {
-                $sort: { _id: 1 }
-            },
-            {
-                $addFields: {
-                    fullDate: {
-                        $concat: ["$_id", "-01"] // Convert "YYYY-MM" to "YYYY-MM-01"
-                    }
-                }
-            },
-            {
-                $addFields: {
-                    formattedMonthYear: {
-                        $dateFromString: { dateString: "$fullDate", format: "%Y-%m-%d`" }
-                    }
-                }
-            },
-            {
-                $addFields: {
-                    monthYear: {
-                        $dateToString: { format: "%b %Y", date: "$formattedMonthYear" }
-                    }
-                }
-            },
-            {
-                $project: {
-                    monthYear: 1,
-                    totalPageCounter: 1,
-                    _id: 0
-                }
-            }
-        ]);
-
-        res.status(200).json(new APiResponse(true, 200, readCounter, "Page reading data"))
-    } catch (error) {
-
-        res.status(500).json(new APiResponse(false, 500, null, error.message))
-    }
-}*/
 
 const getReadCounterByUserId = async (req, res) => {
     try {
@@ -155,26 +87,26 @@ const getReadCounterByUserId = async (req, res) => {
                 }
             },
             {
-                $sort: { _id: 1 } 
+                $sort: { _id: 1 }
             },
             {
                 $addFields: {
                     fullDate: {
-                        $concat: ["$_id", "-01"] 
+                        $concat: ["$_id", "-01"]
                     }
                 }
             },
             {
                 $addFields: {
                     formattedMonthYear: {
-                        $dateFromString: { dateString: "$fullDate", format: "%Y-%m-%d" } 
+                        $dateFromString: { dateString: "$fullDate", format: "%Y-%m-%d" }
                     }
                 }
             },
             {
                 $addFields: {
                     monthYear: {
-                        $dateToString: { format: "%b %Y", date: "$formattedMonthYear" } 
+                        $dateToString: { format: "%b %Y", date: "$formattedMonthYear" }
                     }
                 }
             },
@@ -198,7 +130,7 @@ const getReadCounterByUserId = async (req, res) => {
 const getTotalPagesReadByMonth = async (req, res) => {
     try {
         const months = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-        
+
         const result = await Session.aggregate([
             {
                 $group: {
@@ -231,9 +163,9 @@ const getTotalPagesReadByMonth = async (req, res) => {
             }
         ]);
 
-        res.status(200).json({ success: true, status: 200, data: result, message: "Data by month" });
+        res.status(200).json(new APiResponse(true, 200, result, "Data By Month"));
     } catch (error) {
-        res.status(500).json({ success: false, status: 500, message: error.message });
+        res.status(500).json(new APiResponse(false, 500, null, error.message));
     }
 };
 
