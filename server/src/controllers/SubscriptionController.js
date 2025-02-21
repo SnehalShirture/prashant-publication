@@ -29,7 +29,7 @@ const cancelSubscription = async (req, res) => {
 
 const createSubscription = async (req, res) => {
     try {
-        //collegeId,subscribedBooks,totalAmount
+        //collegeId,package,totalAmount
 
         const subscription = await Subscription.create(req.body)
 
@@ -203,30 +203,6 @@ const getAllSubscription = async (req, res) => {
 };
 
 
-
-
-
-// const getActiveSubscription = async (req, res) => {
-//     try {
-
-//         const subscription = await Subscription.find({
-//             isActive: true,
-//             endDate: { $gte: new Date() },
-//         })
-//         .populate("user_id")
-//         if (!subscription) {
-//             throw new ApiError("No active subscription found.", 404);
-//         }
-
-
-//         res.status(200).json(new APiResponse(true, 200, subscription, "Active subscription fetched successfully.")); es.status(200).json(subscription);
-//     } catch (error) {
-
-//         res.status(500).json(new APiResponse(false, 500, null, error.message || "An error occurred."));
-//     }
-// };
-
-
 const getActiveSubscription = async (req, res) => {
     try {
         const subscriptions = await Subscription.aggregate([
@@ -382,4 +358,54 @@ const getExpiredSubscription = async (req, res) => {
 };
 
 
-export { getActiveSubscription, createSubscription, cancelSubscription, getAllSubscription, updateSubscriptionStatus, getBooksByCollegeId, removeBooksFromSubscription, getSubscriptionsByStatus, getExpiredSubscription }
+const fetchBooksByCollegeId = async (req, res) => {
+    try {
+        const collegeId = req.body.collegeId;
+        const booksData = await Subscription.aggregate([
+            { $match: { collegeId: new mongoose.Types.ObjectId(collegeId) } },
+            {
+                $lookup: {
+                    from: "packages",
+                    localField: "package",
+                    foreignField: "_id",
+                    as: "packageDetails"
+                }
+            },
+            {
+                $unwind: "$packageDetails"
+            },
+            {
+                $lookup: {
+                    from: "books",
+                    localField: "packageDetails.booksIncluded",
+                    foreignField: "_id",
+                    as: "packageBooks"
+                }
+            },
+            {
+                $unwind: "$packageBooks"
+            },
+            {
+                $match: { "packageBooks.type": "textbook" }
+            },
+            {
+                $group: {
+                    _id: null,
+                    books: { $addToSet: "$packageBooks" }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    books: 1
+                }
+            }
+        ]);
+        res.status(200).json(new APiResponse(true, 200, booksData, "Books Data"))
+
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+export { getActiveSubscription, createSubscription, cancelSubscription, getAllSubscription, updateSubscriptionStatus, getBooksByCollegeId, removeBooksFromSubscription, getSubscriptionsByStatus, getExpiredSubscription, fetchBooksByCollegeId }

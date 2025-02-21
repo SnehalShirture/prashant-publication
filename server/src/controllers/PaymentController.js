@@ -12,51 +12,76 @@ const razorpay = new Razorpay({
     key_secret: process.env.RAZORPAY_KEY_SECRET,
 })
 
-const createOrder = async (req, res) => {
+/*const createOrder = async (req, res) => {
     try {
-        const { userId, plan } = req.body;
-        console.log(userId,plan);
-        let amount;
-        if (plan === "6Months") {
-            amount = 999;
-        } else if (plan === "1Year") {
-            amount = 1999;
-        } else {
-            throw new BadReqError("Invalid subscription plan selected.");
-        }
+        const { collegeId, amount } = req.body;
+        console.log(collegeId);
+
+        // if (plan === "6Months") {
+        //     amount = 999;
+        // } else if (plan === "1Year") {
+        //     amount = 1999;
+        // } else {
+        //     throw new BadReqError("Invalid subscription plan selected.");
+        // }
 
         // Create Razorpay order
         const options = {
             amount: amount * 100,
             currency: "INR",
             receipt: shortid.generate(),
-            payment_capture: 1, 
+            payment_capture: 1,
         };
 
         const razorpayOrder = await razorpay.orders.create(options);
         console.log(razorpayOrder);
-      
+
         const payment = new Payment({
-            user_id: userId,
+            collegeId: collegeId,
             amount: amount * 100,
             paymentMethod: "UPI",
-            transactionId: razorpayOrder.id, // Razorpay order ID
+            transactionId: razorpayOrder.id, 
             status: "Pending",
         });
         console.log(payment);
         await payment.save();
 
-        res.status(201).json(
-            new APiResponse(true, 201, { razorpayOrder, payment }, "Payment initiated successfully.")
-        );
+        res.status(201).json(new APiResponse(true, 201, { razorpayOrder, payment }, "Payment initiated successfully."));
     }
     catch (error) {
-        const status = error.statusCode || 500;
-        const message = error.message || "An unexpected error occurred.";
-        res.status(status).json(new APiResponse(false, status, null, message));
+        res.status(500).json(new APiResponse(false, 500, null, error.message));
     }
 
-}
+}*/
+
+export const createRazorpayOrder = async (collegeId, totalAmount) => {
+    try {
+        // Create a Razorpay order
+        const options = {
+            amount: totalAmount * 100,
+            currency: "INR",
+            receipt: shortid.generate(),
+            payment_capture: 1,
+        };
+
+        // Razorpay order is created here
+        const razorpayOrder = await razorpay.orders.create(options);
+        console.log(razorpayOrder);
+        // Create a payment record in your MongoDB database
+        const payment = await Payment.create({
+            collegeId,
+            amount: totalAmount * 100,
+            paymentMethod: "UPI",
+            transactionId: razorpayOrder.id, // Razorpay order ID
+            status: "Pending",
+        });
+
+        return { razorpayOrder, payment };
+    } catch (error) {
+        console.error("Error creating Razorpay order:", error);
+        throw error;
+    }
+};
 
 
 const verifyRazorPay = async (req, res) => {
@@ -108,10 +133,10 @@ const verifyRazorPay = async (req, res) => {
 
 const getPaymentDetailsByUserId = async (req, res) => {
     try {
-        const { userId } = req.body;
+        const { collegeId } = req.body;
 
-        const payment = await Payment.findOne({ user_id: userId })
-            .populate("user_id")
+        const payment = await Payment.findOne({ collegeId: collegeId })
+            .populate("collegeId")
 
         if (!payment) {
             throw new BadReqError("No payments found for this user.");
@@ -119,9 +144,7 @@ const getPaymentDetailsByUserId = async (req, res) => {
 
         res.status(200).json(new APiResponse(true, 200, payment, "Payments fetched successfully."));
     } catch (error) {
-        const status = error.statusCode || 500;
-        const message = error.message || "An unexpected error occurred.";
-        res.status(status).json(new APiResponse(false, status, null, message));
+        res.status(500).json(new APiResponse(false, 500, null, error.message));
     }
 };
 

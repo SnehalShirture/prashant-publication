@@ -122,4 +122,6 @@ const getPackagesByCategory = async (req, res) => {
 };
 
 
+
+
 export { createPackage, getAllPackages, updateAllPackagesPrice, getPackagesByCategory }

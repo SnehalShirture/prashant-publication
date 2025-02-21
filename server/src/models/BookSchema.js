@@ -26,19 +26,36 @@ const BookSchema = mongoose.Schema({
 });
 
 
+
 BookSchema.post("save", async function (doc, next) {
     try {
-        const { category, academicYear, _id } = doc;
+        const { category, academicYear, type, _id } = doc;
 
-        await mongoose.model("Package").updateMany(
-            { category, academicYear },
-            { $addToSet: { booksIncluded: _id } }
-        );
+        if (type === "textbook") {
+            await mongoose.model("Package").updateMany(
+                { category, academicYear },
+                { $addToSet: { booksIncluded: _id } }
+            );
+        }
     } catch (error) {
         return next(error);
     }
     next();
 });
 
+
+// Pre-remove middleware to update packages when a book is deleted
+BookSchema.pre("findOneAndDelete", async function (next) {
+    try {
+        const bookId = this.getQuery()._id;
+        await mongoose.model("Package").updateMany(
+            {},
+            { $pull: { booksIncluded: bookId } }
+        );
+    } catch (error) {
+        return next(error);
+    }
+    next();
+});
 
 export const Book = mongoose.model('Book', BookSchema);

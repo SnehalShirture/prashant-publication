@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { createOrder } from "../controllers/PaymentController.js";
 
 const SubscriptionSchema = mongoose.Schema({
     collegeId: {
@@ -42,5 +43,27 @@ const SubscriptionSchema = mongoose.Schema({
         type: Number
     }
 });
+
+
+SubscriptionSchema.post("save", async function (doc, next) {
+    try {
+        console.log("Subscription created successfully:", doc);
+
+        // Example: Automatically create a payment after subscription
+        /*await Payment.create({
+            user_id: doc.collegeId,
+            amount: doc.totalAmount,
+            status: "Pending",
+            paymentMethod: "UPI",
+        });*/
+        await createRazorpayOrder(doc.collegeId, doc.totalAmount);
+       
+    } catch (error) {
+        console.error("Error in post-save subscription trigger:", error);
+        return next(error);
+    }
+    next();
+});
+
 
 export const Subscription = mongoose.model("Subscription", SubscriptionSchema) 

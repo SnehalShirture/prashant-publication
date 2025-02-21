@@ -1,13 +1,12 @@
 import mongoose from "mongoose";
 
 const PaymentSchema = mongoose.Schema({
-    user_id: {
+    collegeId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
+        ref: 'College',
     },
     amount: {
         type: Number,
-        required: true
     },
     paymentDate: {
         type: Date,
@@ -24,6 +23,10 @@ const PaymentSchema = mongoose.Schema({
     status: {
         type: String,
         default: 'Pending'
+    },
+    subscriptionId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Subscription"
     }
 });
 
