@@ -54,7 +54,7 @@ const razorpay = new Razorpay({
 
 }*/
 
-export const createRazorpayOrder = async (collegeId, totalAmount) => {
+export const createRazorpayOrder = async (collegeId, totalAmount, _id) => {
     try {
         // Create a Razorpay order
         const options = {
@@ -64,18 +64,20 @@ export const createRazorpayOrder = async (collegeId, totalAmount) => {
             payment_capture: 1,
         };
 
-        // Razorpay order is created here
+        // Razorpay order is created
         const razorpayOrder = await razorpay.orders.create(options);
-        console.log(razorpayOrder);
-        // Create a payment record in your MongoDB database
+        console.log("razorpayOrder : ",razorpayOrder);
+
         const payment = await Payment.create({
             collegeId,
             amount: totalAmount * 100,
             paymentMethod: "UPI",
             transactionId: razorpayOrder.id, // Razorpay order ID
-            status: "Pending",
+            subscriptionId: _id,
+            status:"paid"
         });
 
+        console.log("payment created successfully",payment);
         return { razorpayOrder, payment };
     } catch (error) {
         console.error("Error creating Razorpay order:", error);
@@ -98,7 +100,7 @@ const verifyRazorPay = async (req, res) => {
             throw new BadReqError("Invalid Razorpay signature.");
         }
 
-        const event = req.body; //from razorpay's webhook request
+        const event = req.body; 
         console.log("event", event);
         // Handle payment captured event
         if (event.event === "payment.captured") {
@@ -114,12 +116,6 @@ const verifyRazorPay = async (req, res) => {
                 throw new BadReqError("Payment record not found for order ID.");
             }
 
-            const subscription = await createSubscription({
-                userId: payment.user_id,
-                plan: payment.amount === 99900 ? "6Months" : "1Year",
-                paymentId: payment._id
-            })
-            console.log("Subscription saved successfully", subscription);
         }
 
         res.status(200).json(new APiResponse(true, 200, null, "Webhook verified and processed."));
@@ -149,4 +145,4 @@ const getPaymentDetailsByUserId = async (req, res) => {
 };
 
 
-export { getPaymentDetailsByUserId, createOrder, verifyRazorPay }
+export { getPaymentDetailsByUserId, verifyRazorPay }

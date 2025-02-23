@@ -112,14 +112,15 @@ const getBooksByCollegeId = async (req, res) => {
 };
 
 
-const updateSubscriptionStatus = async (req, res) => {
+const updateSubscriptionStatus = async (subscriptionId) => {
     try {
-        const { subscriptionId, plan } = req.body;
+        
 
         const startDate = new Date();
         let endDate = new Date(startDate);
 
-        switch (plan) {
+        endDate.setFullYear(endDate.getFullYear() + 1);
+        /*switch (plan) {
             case "6months":
                 endDate.setMonth(endDate.getMonth() + 6);
                 break;
@@ -128,7 +129,7 @@ const updateSubscriptionStatus = async (req, res) => {
                 break;
             case "1year":
                 endDate.setFullYear(endDate.getFullYear() + 1);
-        }
+        }*/
 
         const subscription = await Subscription.findOneAndUpdate(
             { _id: subscriptionId },
@@ -137,7 +138,7 @@ const updateSubscriptionStatus = async (req, res) => {
                 startDate,
                 endDate,
                 isActive: true,
-                plan,
+                plan:"1year",
 
             },
             { new: true }
@@ -147,9 +148,11 @@ const updateSubscriptionStatus = async (req, res) => {
             throw new ApiError("Subscription not found", 404)
         }
 
-        res.status(200).json(new APiResponse(true, 200, subscription, "Subscription updated Successfully"));
+        console.log(`Subscription ${subscriptionId} updated successfully!`,subscription);
+       // res.status(200).json(new APiResponse(true, 200, subscription, "Subscription updated Successfully"));
     } catch (error) {
-        res.status(500).json(new APiResponse(false, 500, null, error.message));
+        console.error("Error updating subscription:", error);
+        //res.status(500).json(new APiResponse(false, 500, null, error.message));
     }
 };
 

@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { updateSubscriptionStatus } from "../controllers/SubscriptionController.js";
 
 const PaymentSchema = mongoose.Schema({
     collegeId: {
@@ -28,6 +29,20 @@ const PaymentSchema = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Subscription"
     }
+});
+
+PaymentSchema.post("save",async function (doc,next) {
+    try {
+        console.log("doc",doc);
+        if (doc.status === "paid") {
+            console.log(`Updating subscription ${doc.subscriptionId} after successful payment...`);
+            
+            await updateSubscriptionStatus(doc.subscriptionId);
+        }
+    } catch (error) {
+        console.error("Error in post-save payment trigger:", error);
+    }
+    next();
 });
 
 export const Payment = mongoose.model("Payment", PaymentSchema)
