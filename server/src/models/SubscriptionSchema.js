@@ -44,7 +44,7 @@ const SubscriptionSchema = mongoose.Schema({
 });
 
 
-SubscriptionSchema.post("save", async function (doc, next) {
+/*SubscriptionSchema.post("save", async function (doc, next) {
     try {
         
         const { collegeId, totalAmount, _id } = doc;
@@ -56,7 +56,7 @@ SubscriptionSchema.post("save", async function (doc, next) {
         return next(error);
     }
     next();
-});
+});*/
 
 
 export const Subscription = mongoose.model("Subscription", SubscriptionSchema) 

@@ -54,8 +54,9 @@ const razorpay = new Razorpay({
 
 }*/
 
-export const createRazorpayOrder = async (collegeId, totalAmount, _id) => {
+export const createRazorpayOrder = async (req, res) => {
     try {
+        const { collegeId, totalAmount, subscriptionId } = req.body;
         // Create a Razorpay order
         const options = {
             amount: totalAmount * 100,
@@ -66,22 +67,24 @@ export const createRazorpayOrder = async (collegeId, totalAmount, _id) => {
 
         // Razorpay order is created
         const razorpayOrder = await razorpay.orders.create(options);
-        console.log("razorpayOrder : ",razorpayOrder);
+        console.log("razorpayOrder : ", razorpayOrder);
 
         const payment = await Payment.create({
             collegeId,
             amount: totalAmount * 100,
             paymentMethod: "UPI",
-            transactionId: razorpayOrder.id, // Razorpay order ID
-            subscriptionId: _id,
-            status:"paid"
+            transactionId: razorpayOrder.id, 
+            subscriptionId: subscriptionId,
+            status: "paid"
         });
 
-        console.log("payment created successfully",payment);
-        return { razorpayOrder, payment };
+        console.log("payment created successfully", payment);
+        //return { razorpayOrder, payment };
+        res.status(200).json(new APiResponse(true, 200, payment, "payment created successfully"))
     } catch (error) {
         console.error("Error creating Razorpay order:", error);
-        throw error;
+        res.status(500).json(new APiResponse(false, 500, null, error.message))
+
     }
 };
 
@@ -100,7 +103,7 @@ const verifyRazorPay = async (req, res) => {
             throw new BadReqError("Invalid Razorpay signature.");
         }
 
-        const event = req.body; 
+        const event = req.body;
         console.log("event", event);
         // Handle payment captured event
         if (event.event === "payment.captured") {
