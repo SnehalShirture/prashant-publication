@@ -1,20 +1,89 @@
-import React from "react";
-import { Box, Typography, Grid, Card, CardContent, Avatar, useMediaQuery } from "@mui/material";
-import { Book, AttachMoney, LibraryBooks } from "@mui/icons-material";
-import { BarChart } from '@mui/x-charts/BarChart'; 
-import { useQuery } from '@tanstack/react-query'; 
-import { getBookReadData } from "../../apiCalls/UserApi"; 
+import React, { useState } from "react";
+import { Box, Typography, Grid, Card, CardContent, Avatar, useMediaQuery, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem, Checkbox, FormControlLabel } from "@mui/material";
+import { Book, Add,  AttachMoney, LibraryBooks  } from "@mui/icons-material";
+import { BarChart } from '@mui/x-charts/BarChart';
+import { useQuery , useMutation, useQueryClient  } from '@tanstack/react-query';
+import { getBookReadData } from "../../apiCalls/UserApi";
+import CustomTable from "../../custom/CustomTable";
+import { fetchAllPackages , createPackage } from "../../apiCalls/PackageApi";
+import { useAlert } from "../../custom/CustomAlert";
 
 const SAdminDashboard = () => {
+  const { showAlert } = useAlert();
+  
   const isMobile = useMediaQuery("(max-width:600px)");
+  const [open, setOpen] = useState(false);
+  const [newPackage, setNewPackage] = useState({
+    category: "arts",
+    academicYear: "FY",
+    price: "",
+    booksIncluded:""
+  });
+  const queryClient = useQueryClient();
 
-  // Fetch data using React Query
+
+  //createPackage
+  const { mutate: addPackage }  = useMutation({
+    mutationFn : createPackage,
+    onSuccess: () => {
+      queryClient.invalidateQueries(["packagedata.data"]); 
+      showAlert("Package Added Successfully","success")
+      setOpen(false);
+    },
+    onError: (error) => {
+      console.error("Failed to add package:", error.message);
+      showAlert("Failed to add package. Please try again","error")
+    },
+  });
+  
+  const handleSubmit = () => {
+    if (!newPackage.category || !newPackage.academicYear  || !newPackage.price) {
+      showAlert("Please fill all required fields." , "error");
+      return;
+    }
+  
+    const packageData = {
+      category: newPackage.category,
+      academicYear: newPackage.academicYear,
+      prices: [{ Price: Number(newPackage.price) }], 
+      // booksIncluded: newPackage.booksIncluded
+    };  
+    addPackage(packageData);
+  };
+
+  //getAllPackages 
+  const { data : packagedata=[] } = useQuery({
+    queryKey: ["packagedata.data"],
+    queryFn: fetchAllPackages,
+  })
+  console.log("pachage data : " ,  packagedata.data)
+
+  //fetch bookReadData
   const { data } = useQuery({
-    queryKey: ['bookReadData'], // Define queryKey as an array
-    queryFn: getBookReadData, // Define the fetch function
+    queryKey: ['bookReadData'],
+    queryFn: getBookReadData,
   });
 
-  const chartData = data?.data || []; // Safely handle data response
+  const chartData = data?.data || [];
+
+  const packageColumns = [
+    { header: "Sr. No", accessorFn: (row, index) => index + 1 },
+    { header: "Category", accessorFn: (row) => row.category },
+    { header: "Academic Year", accessorFn: (row) => row.academicYear },
+    { 
+      header: "Price (₹)", 
+      accessorFn: (row) => row.prices?.[0]?.Price || "N/A" 
+    },
+    { 
+      header: "Books Included", 
+      accessorFn: (row) => row.booksIncluded?.length || 0 
+    },
+  ];
+  
+
+  const handleChange = (e) => {
+    setNewPackage({ ...newPackage, [e.target.name]: e.target.value });
+  };
 
   return (
     <Box sx={{ p: 3, backgroundColor: "#f5f5f5", minHeight: "100vh" }}>
@@ -77,6 +146,7 @@ const SAdminDashboard = () => {
         </Grid>
       </Grid>
 
+
       <Box sx={{ mt: 4, width: "100%", overflowX: "auto" }}>
         <Typography variant="h6" fontWeight="bold" gutterBottom>
           Total Pages Read by Month
@@ -93,6 +163,41 @@ const SAdminDashboard = () => {
           />
         </Box>
       </Box>
+
+      <Box sx={{ mt: 4 }}>
+        <CustomTable columns={packageColumns} data={packagedata?.data || []} />
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+          <Button sx={{marginTop:"10px"}}
+           variant="contained"
+           color="primary" 
+           startIcon={<Add />} 
+           onClick={() => setOpen(true)}>
+            Add Package
+          </Button>
+        </Box>
+      </Box>
+
+      {/* Add Package Dialog */}
+      <Dialog open={open} onClose={() => setOpen(false)}>
+        <DialogTitle>Add New Package</DialogTitle>
+        <DialogContent>
+          <TextField fullWidth select name="category" label="Category" value={newPackage.category} onChange={handleChange} margin="dense">
+            <MenuItem value="arts">Arts</MenuItem>
+            <MenuItem value="commerce">Commerce</MenuItem>
+            <MenuItem value="science">Science</MenuItem>
+          </TextField>
+          <TextField fullWidth select name="academicYear" label="Academic Year" value={newPackage.academicYear} onChange={handleChange} margin="dense">
+            <MenuItem value="FY">FY</MenuItem>
+            <MenuItem value="SY">SY</MenuItem>
+            <MenuItem value="TY">TY</MenuItem>
+          </TextField>
+          <TextField fullWidth type="number" name="price" label="Price (₹)" value={newPackage.price} onChange={handleChange} margin="dense" />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpen(false)} color="secondary">Cancel</Button>
+          <Button onClick={handleSubmit} color="primary" variant="contained">Create</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
