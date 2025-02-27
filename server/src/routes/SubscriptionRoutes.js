@@ -1,5 +1,7 @@
 import express from 'express'
-import { createSubscription, getActiveSubscription, cancelSubscription,removeBooksFromSubscription ,getBooksByCollegeId,updateSubscriptionStatus,getAllSubscription,getSubscriptionsByStatus,getExpiredSubscription,fetchBooksByCollegeId} from '../controllers/SubscriptionController.js'
+import { createSubscription, getActiveSubscription, cancelSubscription,removeBooksFromSubscription ,
+        getBooksByCollegeId,updateSubscriptionStatus,getAllSubscription,getSubscriptionsByStatus,getExpiredSubscription,
+        fetchBooksByCollegeId ,getSubscriptionByCollegeId} from '../controllers/SubscriptionController.js'
 import { authenticate } from '../middleware/auth.js';
 
 const SubscriptionRouter = express.Router();
@@ -15,6 +17,7 @@ SubscriptionRouter.get("/getExpiredSubscription", getExpiredSubscription);
 
 SubscriptionRouter.post("/cancelsubscription", cancelSubscription);
 SubscriptionRouter.post("/fetchBooksByCollegeId", fetchBooksByCollegeId);
+SubscriptionRouter.post("/getSubscriptionByCollegeId", getSubscriptionByCollegeId);
 
 
 export { SubscriptionRouter }

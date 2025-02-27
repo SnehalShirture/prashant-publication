@@ -412,5 +412,56 @@ const fetchBooksByCollegeId = async (req, res) => {
 }
 
 
+const getSubscriptionByCollegeId = async (req, res) => {
+    try {
+        const { collegeId } = req.body;
 
-export { getActiveSubscription, createSubscription, cancelSubscription, getAllSubscription, updateSubscriptionStatus, getBooksByCollegeId, removeBooksFromSubscription, getSubscriptionsByStatus, getExpiredSubscription, fetchBooksByCollegeId }
+        const subscriptions = await Subscription.aggregate([
+            {
+                $match: { collegeId: new mongoose.Types.ObjectId(collegeId) } // Filter by collegeId
+            },
+            {
+                $lookup: {
+                    from: "colleges",
+                    localField: "collegeId",
+                    foreignField: "_id",
+                    as: "college"
+                }
+            },
+            {
+                $unwind: "$college" // Convert array to object
+            },
+            {
+                $lookup: {
+                    from: "books",
+                    localField: "subscribedBooks",
+                    foreignField: "_id",
+                    as: "books"
+                }
+            },
+            {
+                $addFields: {
+                    totalBooks: { $size: "$books" }
+                }
+            },
+            {
+                $project: {
+                    subscribedBooks: 0, // Exclude the subscribedBooks array
+                }
+            }
+        ]);
+
+        if (!subscriptions.length) {
+            return res.status(404).json(new APiResponse(false, 404, null, "No subscriptions found for this college"));
+        }
+
+        res.status(200).json(new APiResponse(true, 200, subscriptions, "Fetched Subscriptions for College"));
+    } catch (error) {
+        res.status(500).json(new APiResponse(false, 500, null, error.message));
+    }
+};
+
+
+export { getActiveSubscription, createSubscription, cancelSubscription, getAllSubscription, updateSubscriptionStatus, 
+        getBooksByCollegeId, removeBooksFromSubscription, getSubscriptionsByStatus, getExpiredSubscription, fetchBooksByCollegeId ,
+        getSubscriptionByCollegeId }
