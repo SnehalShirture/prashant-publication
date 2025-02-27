@@ -77,14 +77,12 @@ export const createRazorpayOrder = async (req, res) => {
             subscriptionId: subscriptionId,
             status: "paid"
         });
-
         console.log("payment created successfully", payment);
         //return { razorpayOrder, payment };
         res.status(200).json(new APiResponse(true, 200, payment, "payment created successfully"))
     } catch (error) {
         console.error("Error creating Razorpay order:", error);
         res.status(500).json(new APiResponse(false, 500, null, error.message))
-
     }
 };
 
@@ -93,6 +91,7 @@ const verifyRazorPay = async (req, res) => {
     try {
         const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
 
+        
         const shasum = crypto.createHmac("sha256", secret);
         shasum.update(JSON.stringify(req.body));
         const digest = shasum.digest("hex");
@@ -120,7 +119,6 @@ const verifyRazorPay = async (req, res) => {
             }
 
         }
-
         res.status(200).json(new APiResponse(true, 200, null, "Webhook verified and processed."));
     } catch (error) {
         const status = error.statusCode || 500;
