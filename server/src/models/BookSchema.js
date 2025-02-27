@@ -53,9 +53,9 @@ BookSchema.pre("findOneAndDelete", async function (next) {
             { $pull: { booksIncluded: bookId } }
         );
 
-        await mongoose.model("Bookshelf").updateMany(
+        await mongoose.model("User").updateMany(
             {},
-            { $pull: { books: bookId } }
+            { $pull: { bookShelf: bookId } }
         );
 
     } catch (error) {
