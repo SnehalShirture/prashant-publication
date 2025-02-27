@@ -158,7 +158,7 @@ const UserBooks = () => {
           <Grid item xs={12} sm={6} md={4} lg={3} key={book._id}>
             <Card
               sx={{
-                height: 430,
+                height: 370,
                 display: "flex",
                 flexDirection: "column",
                 boxShadow: 5,

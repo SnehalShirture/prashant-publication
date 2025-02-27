@@ -58,22 +58,22 @@ const SuperAdminAppBar = () => {
   ];
 
   // Mutation for logout
-    const logoutMutation = useMutation({
-      mutationFn: async () => {
-        const userdata = { userId: UserData.user_id._id };
-        return await userlogout(userdata);
-      },
-      onSuccess: () => {
-        dispatch(logout());
-        showAlert("You have been logged out successfully", "success");
-        navigate("/");
-      },
-      onError: (error) => {
-        console.log(error.message);
-        showAlert("Error logging out. Please try again later", "error");
-      },
-    });
-    
+  const logoutMutation = useMutation({
+    mutationFn: async () => {
+      const userdata = { userId: UserData.user_id._id };
+      return await userlogout(userdata);
+    },
+    onSuccess: () => {
+      dispatch(logout());
+      showAlert("You have been logged out successfully", "success");
+      navigate("/");
+    },
+    onError: (error) => {
+      console.log(error.message);
+      showAlert("Error logging out. Please try again later", "error");
+    },
+  });
+
 
   const handleLogout = () => {
     logoutMutation.mutate();
@@ -82,8 +82,16 @@ const SuperAdminAppBar = () => {
   return (
     <Box>
       {/* AppBar */}
-      <AppBar position="sticky">
-        <Toolbar>
+      <Box sx={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        background: "linear-gradient(135deg,rgb(133, 164, 231), #292929)", // Use 'background' instead of 'bgcolor'
+        color: "white",
+        p: 2,
+
+      }}>
+        <>
           {/* Mobile Menu Button */}
           <IconButton
             edge="start"
@@ -131,10 +139,10 @@ const SuperAdminAppBar = () => {
             >
               {UserData?.user_id?.name
                 ? UserData.user_id.name
-                    .split(" ")
-                    .map((word) => word[0])
-                    .join("")
-                    .toUpperCase()
+                  .split(" ")
+                  .map((word) => word[0])
+                  .join("")
+                  .toUpperCase()
                 : "U"}
             </Avatar>
           </IconButton>
@@ -159,10 +167,10 @@ const SuperAdminAppBar = () => {
               >
                 {UserData?.user_id?.name
                   ? UserData.user_id.name
-                      .split(" ")
-                      .map((word) => word[0])
-                      .join("")
-                      .toUpperCase()
+                    .split(" ")
+                    .map((word) => word[0])
+                    .join("")
+                    .toUpperCase()
                   : "U"}
               </Avatar>
               <Box sx={{ ml: 2 }}>
@@ -193,8 +201,8 @@ const SuperAdminAppBar = () => {
               Logout
             </MenuItem>
           </Menu>
-        </Toolbar>
-      </AppBar>
+        </>
+      </Box>
 
       {/* Mobile Drawer */}
       <Drawer
@@ -224,10 +232,10 @@ const SuperAdminAppBar = () => {
             <Avatar sx={{ bgcolor: "#ff5722", color: "white" }}>
               {UserData?.user_id?.name
                 ? UserData.user_id.name
-                    .split(" ")
-                    .map((word) => word[0])
-                    .join("")
-                    .toUpperCase()
+                  .split(" ")
+                  .map((word) => word[0])
+                  .join("")
+                  .toUpperCase()
                 : "U"}
             </Avatar>
             <Box>

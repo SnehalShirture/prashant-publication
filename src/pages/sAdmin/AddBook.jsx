@@ -9,9 +9,6 @@ import {
   InputLabel,
   Select,
   FormControl,
-  Card,
-  CardContent,
-  CircularProgress,
 } from "@mui/material";
 import { CloudUpload } from "@mui/icons-material";
 import { useMutation } from "@tanstack/react-query";
@@ -21,6 +18,7 @@ import { useAlert } from "../../custom/CustomAlert";
 const AddBookForm = () => {
   const { showAlert } = useAlert();
   const [formData, setFormData] = useState({
+    subjectCode: "",
     name: "",
     author: "",
     category: "",
@@ -28,6 +26,10 @@ const AddBookForm = () => {
     publisher: "",
     otherPublisher: "",
     yearPublished: "",
+    academicYear: "",
+    currentSemester: "",
+    university: "",
+    type: "",
   });
 
   const [coverImage, setCoverImage] = useState(null);
@@ -37,6 +39,7 @@ const AddBookForm = () => {
 
   const resetForm = () => {
     setFormData({
+      subjectCode: "",
       name: "",
       author: "",
       category: "",
@@ -44,6 +47,10 @@ const AddBookForm = () => {
       publisher: "",
       otherPublisher: "",
       yearPublished: "",
+      academicYear: "",
+      currentSemester: "",
+      university: "",
+      type: "",
     });
     setCoverImage(null);
     setIndexImage1(null);
@@ -81,9 +88,9 @@ const AddBookForm = () => {
   });
 
   return (
-    <Card sx={{ maxWidth: 650, mx: "auto", mt: 4, p: 3, boxShadow: 5 }}>
-      <CardContent>
-        <Typography variant="h5" fontWeight="bold" gutterBottom align="center">
+    <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", backgroundColor: "#f5f5f5", p: 3 }}>
+      <Box>
+        <Typography variant="h4" fontWeight="bold" gutterBottom align="center" color="primary">
           Add New Book
         </Typography>
         <form
@@ -92,39 +99,41 @@ const AddBookForm = () => {
             mutation.mutate();
           }}
         >
-          <Grid container spacing={2}>
-            <Grid item xs={6}>
-              <TextField fullWidth label="Book Name" name="name" variant="outlined" value={formData.name} onChange={handleChange} required />
-            </Grid>
-            <Grid item xs={6}>
-              <TextField fullWidth label="Author" name="author" variant="outlined" value={formData.author} onChange={handleChange} required />
-            </Grid>
+          <Grid container spacing={3}>
+            {[
+              { label: "Subject Code", name: "subjectCode" },
+              { label: "Book Name", name: "name", required: true },
+              { label: "Author", name: "author", required: true },
+              { label: "Price", name: "price", type: "number", required: true },
+              { label: "Publisher", name: "publisher", required: true },
+              { label: "Other Publisher", name: "otherPublisher" },
+              { label: "Year Published", name: "yearPublished", type: "number", required: true },
+              { label: "Current Semester", name: "currentSemester" },
+              { label: "University", name: "university" },
+            ].map(({ label, name, type, required }, idx) => (
+              <Grid item xs={12} sm={6} key={idx}>
+                <TextField fullWidth label={label} name={name} variant="outlined" value={formData[name]} onChange={handleChange} type={type} required={required} />
+              </Grid>
+            ))}
 
-            <Grid item xs={6}>
-              <FormControl fullWidth>
-                <InputLabel>Category</InputLabel>
-                <Select name="category" value={formData.category} onChange={handleChange} required>
-                  <MenuItem value="Science">Science</MenuItem>
-                  <MenuItem value="Arts">Arts</MenuItem>
-                  <MenuItem value="Commerce">Commerce</MenuItem>
-                  <MenuItem value="Engineering">Engineering</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={6}>
-              <TextField fullWidth label="Price" name="price" type="number" variant="outlined" value={formData.price} onChange={handleChange} required />
-            </Grid>
-
-            <Grid item xs={6}>
-              <TextField fullWidth label="Publisher" name="publisher" variant="outlined" value={formData.publisher} onChange={handleChange} required />
-            </Grid>
-            <Grid item xs={6}>
-              <TextField fullWidth label="Other Publisher" name="otherPublisher" variant="outlined" value={formData.otherPublisher} onChange={handleChange} />
-            </Grid>
-
-            <Grid item xs={12}>
-              <TextField fullWidth label="Year Published" name="yearPublished" type="number" variant="outlined" value={formData.yearPublished} onChange={handleChange} required />
-            </Grid>
+            {[
+              { label: "Category", name: "category", options: ["arts", "commerce", "science"] },
+              { label: "Academic Year", name: "academicYear", options: ["FY", "SY", "TY"] },
+              { label: "Type", name: "type", options: ["textbook", "reference"] },
+            ].map(({ label, name, options }, idx) => (
+              <Grid item xs={12} sm={6} key={idx}>
+                <FormControl fullWidth>
+                  <InputLabel>{label}</InputLabel>
+                  <Select name={name} value={formData[name]} onChange={handleChange} required>
+                    {options.map((option) => (
+                      <MenuItem key={option} value={option}>
+                        {option.charAt(0).toUpperCase() + option.slice(1)}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+            ))}
 
             {["Cover Image", "Index Image 1", "Index Image 2", "Book PDF"].map((label, idx) => (
               <Grid item xs={12} key={idx}>
@@ -136,14 +145,14 @@ const AddBookForm = () => {
             ))}
 
             <Grid item xs={12}>
-              <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2, py: 1.5 }} disabled={mutation.isLoading}>
-                {mutation.isLoading ? <CircularProgress size={24} /> : "Add Book"}
+              <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 3, py: 1.5 }}>
+                Add Book
               </Button>
             </Grid>
           </Grid>
         </form>
-      </CardContent>
-    </Card>
+      </Box>
+    </Box>
   );
 };
 

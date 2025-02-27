@@ -77,7 +77,7 @@ const CollegeAppbar = () => {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          background: "#00ABE4",
+          background: "linear-gradient(135deg,rgb(133, 164, 231), #292929)", // Use 'background' instead of 'bgcolor'
           color: "white",
           p: 2,
         }}

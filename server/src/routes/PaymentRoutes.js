@@ -4,7 +4,7 @@ import { authenticate } from '../middleware/auth.js';
 
 const PaymentRouter = express.Router()
 
-PaymentRouter.get("/createRazorpayOrder", createRazorpayOrder);
+PaymentRouter.post("/createRazorpayOrder", createRazorpayOrder);
 
 PaymentRouter.get("/paymentDetailsById", getPaymentDetailsByUserId);
 

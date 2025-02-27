@@ -5,6 +5,7 @@ import { zoomPlugin } from "@react-pdf-viewer/zoom"; // Correct import for zoom 
 import axios from "axios";
 import CloseIcon from "@mui/icons-material/Close"; // Importing Material UI close icon
 import { DisableScreenshot } from "../../App";
+import Footer from "./Footer";
 
 const PDFReader = ({ fileUrl, sessionId, onClose }) => {
   const zoomPluginInstance = zoomPlugin();
@@ -106,11 +107,20 @@ const PDFReader = ({ fileUrl, sessionId, onClose }) => {
 
         {/* PDF Viewer */}
         <div
-          style={{
+           style={{
             flex: 1,
-            overflow: "auto", // Allow scrolling only for the PDF content
+            overflow: "auto", // Allow scrolling
+            scrollbarWidth: "none", // Firefox
+            msOverflowStyle: "none", // IE/Edge
           }}
         >
+           <style>
+            {`
+              div::-webkit-scrollbar {
+                display: none;
+              }
+            `}
+          </style>
           <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
             <Viewer
               fileUrl={fileUrl}
