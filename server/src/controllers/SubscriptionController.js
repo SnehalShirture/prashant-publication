@@ -418,7 +418,7 @@ const getSubscriptionByCollegeId = async (req, res) => {
 
         const subscriptions = await Subscription.aggregate([
             {
-                $match: { collegeId: new mongoose.Types.ObjectId(collegeId) } // Filter by collegeId
+                $match: { collegeId: new mongoose.Types.ObjectId(collegeId) } 
             },
             {
                 $lookup: {
@@ -430,6 +430,20 @@ const getSubscriptionByCollegeId = async (req, res) => {
             },
             {
                 $unwind: "$college" // Convert array to object
+            },
+            {
+                $lookup:{
+                    from: "packages",
+                    localField: "packageId",
+                    foreignField: "_id",
+                    as: "package"
+                }
+            },
+            {
+                $unwind: { 
+                    path: "$package", 
+                    preserveNullAndEmptyArrays: true  // Preserve null if no package exists
+                }
             },
             {
                 $lookup: {
