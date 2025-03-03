@@ -434,7 +434,7 @@ const getSubscriptionByCollegeId = async (req, res) => {
             {
                 $lookup:{
                     from: "packages",
-                    localField: "packageId",
+                    localField: "package",
                     foreignField: "_id",
                     as: "package"
                 }
