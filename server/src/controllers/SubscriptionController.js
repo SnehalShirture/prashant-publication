@@ -114,7 +114,7 @@ const getBooksByCollegeId = async (req, res) => {
 
 const updateSubscriptionStatus = async (subscriptionId) => {
     try {
-        
+
 
         const startDate = new Date();
         let endDate = new Date(startDate);
@@ -138,7 +138,7 @@ const updateSubscriptionStatus = async (subscriptionId) => {
                 startDate,
                 endDate,
                 isActive: true,
-                plan:"1year",
+                plan: "1year",
 
             },
             { new: true }
@@ -148,8 +148,8 @@ const updateSubscriptionStatus = async (subscriptionId) => {
             throw new ApiError("Subscription not found", 404)
         }
 
-        console.log(`Subscription ${subscriptionId} updated successfully!`,subscription);
-       // res.status(200).json(new APiResponse(true, 200, subscription, "Subscription updated Successfully"));
+        console.log(`Subscription ${subscriptionId} updated successfully!`, subscription);
+        // res.status(200).json(new APiResponse(true, 200, subscription, "Subscription updated Successfully"));
     } catch (error) {
         console.error("Error updating subscription:", error);
         //res.status(500).json(new APiResponse(false, 500, null, error.message));
@@ -388,9 +388,9 @@ const fetchBooksByCollegeId = async (req, res) => {
             {
                 $unwind: "$packageBooks"
             },
-            {
-                $match: { "packageBooks.type": "textbook" }
-            },
+            // {
+            //     $match: { "packageBooks.type": "textbook" }
+            // },
             {
                 $group: {
                     _id: null,
@@ -418,7 +418,7 @@ const getSubscriptionByCollegeId = async (req, res) => {
 
         const subscriptions = await Subscription.aggregate([
             {
-                $match: { collegeId: new mongoose.Types.ObjectId(collegeId) } 
+                $match: { collegeId: new mongoose.Types.ObjectId(collegeId) }
             },
             {
                 $lookup: {
@@ -432,7 +432,7 @@ const getSubscriptionByCollegeId = async (req, res) => {
                 $unwind: "$college" // Convert array to object
             },
             {
-                $lookup:{
+                $lookup: {
                     from: "packages",
                     localField: "package",
                     foreignField: "_id",
@@ -440,8 +440,8 @@ const getSubscriptionByCollegeId = async (req, res) => {
                 }
             },
             {
-                $unwind: { 
-                    path: "$package", 
+                $unwind: {
+                    path: "$package",
                     preserveNullAndEmptyArrays: true  // Preserve null if no package exists
                 }
             },
@@ -473,9 +473,13 @@ const getSubscriptionByCollegeId = async (req, res) => {
     } catch (error) {
         res.status(500).json(new APiResponse(false, 500, null, error.message));
     }
-};
 
 
-export { getActiveSubscription, createSubscription, cancelSubscription, getAllSubscription, updateSubscriptionStatus, 
-        getBooksByCollegeId, removeBooksFromSubscription, getSubscriptionsByStatus, getExpiredSubscription, fetchBooksByCollegeId ,
-        getSubscriptionByCollegeId }
+}
+
+
+export {
+    getActiveSubscription, createSubscription, cancelSubscription, getAllSubscription, updateSubscriptionStatus,
+    getBooksByCollegeId, removeBooksFromSubscription, getSubscriptionsByStatus, getExpiredSubscription, fetchBooksByCollegeId,
+    getSubscriptionByCollegeId
+}
