@@ -1,5 +1,5 @@
 import express from "express";
-import { registerUser, getUser, userLogin, userLogout, addBookToShelf, getBookShelfByUserId, sendOtp, resetPassword, getUserByClgId, updatePassword } from "../controllers/UserController.js";
+import { registerUser, getUser, userLogin, userLogout, addBookToShelf, getBookShelfByUserId, sendOtp, resetPassword, getUserByClgId, updatePassword, deleteBookFromShelfByUserId } from "../controllers/UserController.js";
 import { updatePageCounter, getReadCounterByUserId, getTotalPagesReadByMonth } from "../controllers/SessionController.js";
 import { authenticate } from "../middleware/auth.js";
 import { addCollege, updateCollege, getCollegesData } from "../controllers/CollegeController.js";
@@ -14,6 +14,7 @@ userRouter.post("/login", userLogin);
 userRouter.post("/logout", userLogout)
 userRouter.post("/addToShelf", authenticate, addBookToShelf)
 userRouter.post("/bookShelf", authenticate, getBookShelfByUserId)
+userRouter.post("/deleteBookFromShelfByUserId", deleteBookFromShelfByUserId)
 userRouter.post("/sendOTP", sendOtp)
 userRouter.post("/resetPassword", resetPassword)
 userRouter.post("/getUserByClgId", getUserByClgId)

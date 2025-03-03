@@ -117,7 +117,7 @@ const addBookToShelf = async (req, res) => {
 
 const getBookShelfByUserId = async (req, res) => {
     try {
-        const { _id: userId } = req.body; 
+        const { _id: userId } = req.body;
 
         if (!userId) {
             throw new ApiError("User ID is required.", 400);
@@ -134,6 +134,22 @@ const getBookShelfByUserId = async (req, res) => {
     }
 };
 
+
+const deleteBookFromShelfByUserId = async (req, res) => {
+    try {
+        const { userId, bookId } = req.body;
+        console.log(req.body);
+        const deletedBookFromShelf = await User.findOneAndUpdate(
+            { _id: userId },
+            { $pull: { bookShelf: bookId } },
+            { new: true }
+        );
+        console.log(deletedBookFromShelf);
+        res.status(200).json(new APiResponse(true, 200, deletedBookFromShelf, "book successfully deleted from shelf"))
+    } catch (error) {
+        res.status(500).json(new APiResponse(false, 500, null, error.message))
+    }
+}
 
 const sendOtp = async (req, res) => {
     const { email } = req.body;
@@ -222,6 +238,6 @@ const updatePassword = async (req, res) => {
 
 
 
-export { registerUser, getUser, userLogin, userLogout, addBookToShelf, getBookShelfByUserId, sendOtp, resetPassword, getUserByClgId, updatePassword }
+export { registerUser, getUser, userLogin, userLogout, addBookToShelf, getBookShelfByUserId, sendOtp, resetPassword, getUserByClgId, updatePassword, deleteBookFromShelfByUserId }
 
 
