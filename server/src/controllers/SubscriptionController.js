@@ -440,12 +440,6 @@ const getSubscriptionByCollegeId = async (req, res) => {
                 }
             },
             {
-                $unwind: {
-                    path: "$package",
-                    preserveNullAndEmptyArrays: true  // Preserve null if no package exists
-                }
-            },
-            {
                 $lookup: {
                     from: "books",
                     localField: "subscribedBooks",
