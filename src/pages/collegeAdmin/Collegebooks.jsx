@@ -142,13 +142,13 @@ const Collegebooks = () => {
               <Card key={order._id} sx={{ mb: 2 }}>
                 <CardHeader title={`Order #${index + 1}`} subheader={`Status: ${order.status}`} />
                 <CardContent>
-                  <Typography><strong>College Name:</strong> {order.college?.clgName || "N/A"}</Typography>
-                  <Typography><strong>College Address:</strong> {order.college?.clgAddress || "N/A"}</Typography>
-                  <Typography><strong>College Stream:</strong> {order.college?.clgStream || "N/A"}</Typography>
-                  <Typography><strong>Director Name:</strong> {order.college?.directorName || "N/A"}</Typography>
-                  <Typography><strong>Librarian Name:</strong> {order.college?.librarianName || "N/A"}</Typography>
-                  <Typography><strong>Librarian Mobile:</strong> {order.college?.librarianMobile || "N/A"}</Typography>
-                  <Typography><strong>Librarian Email:</strong> {order.college?.librarianEmail || "N/A"}</Typography>
+                  <Typography><strong>College Name:</strong> {order.college[0]?.clgName || "N/A"}</Typography>
+                  <Typography><strong>College Address:</strong> {order.college[0]?.clgAddress || "N/A"}</Typography>
+                  <Typography><strong>College Stream:</strong> {order.college[0]?.clgStream || "N/A"}</Typography>
+                  <Typography><strong>Director Name:</strong> {order.college[0]?.directorName || "N/A"}</Typography>
+                  <Typography><strong>Librarian Name:</strong> {order.college[0]?.librarianName || "N/A"}</Typography>
+                  <Typography><strong>Librarian Mobile:</strong> {order.college[0]?.librarianMobile || "N/A"}</Typography>
+                  <Typography><strong>Librarian Email:</strong> {order.college[0]?.librarianEmail || "N/A"}</Typography>
 
                   <Divider sx={{ my: 1 }} />
 

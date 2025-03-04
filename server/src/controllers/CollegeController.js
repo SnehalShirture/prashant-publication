@@ -19,8 +19,6 @@ const addCollege = async (req, res) => {
         // Generate password
         const generatedPassword = generatePassword();
         
-       
-       
         let salt = await bcrypt.genSalt(10)
         let hashedPassword = await bcrypt.hash(generatedPassword, salt)
 
@@ -43,6 +41,7 @@ const addCollege = async (req, res) => {
 
     }
 }
+
 
 const updateCollege = async (req, res) => {
     try {

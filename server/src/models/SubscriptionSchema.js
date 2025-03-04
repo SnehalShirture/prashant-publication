@@ -44,19 +44,19 @@ const SubscriptionSchema = mongoose.Schema({
 });
 
 
-/*SubscriptionSchema.post("save", async function (doc, next) {
-    try {
+// SubscriptionSchema.post("save", async function (doc, next) {
+//     try {
         
-        const { collegeId, totalAmount, _id } = doc;
+//         const { collegeId, totalAmount, _id } = doc;
 
-        await createRazorpayOrder(collegeId, totalAmount, _id);
+//         await createRazorpayOrder(collegeId, totalAmount, _id);
 
-    } catch (error) {
-        console.error("Error in post-save subscription trigger:", error);
-        return next(error);
-    }
-    next();
-});*/
+//     } catch (error) {
+//         console.error("Error in post-save subscription trigger:", error);
+//         return next(error);
+//     }
+//     next();
+// });
 
 
 export const Subscription = mongoose.model("Subscription", SubscriptionSchema) 

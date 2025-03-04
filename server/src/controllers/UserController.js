@@ -8,15 +8,27 @@ import { ApiError } from '../utils/ApiError.js';
 import { BadReqError } from '../utils/BadReqError.js';
 import { APiResponse } from '../utils/ApiResponse.js';
 import mongoose from 'mongoose';
+import { generatePassword } from '../middleware/generatePassword.js';
+
 
 const registerUser = async (req, res) => {
     try {
+        const { name, lastname, email } = req.body;
+        const generatedPassword = generatePassword();
+
         let salt = await bcrypt.genSalt(10)
-        let hashedPassword = await bcrypt.hash(req.body.password, salt)
-        req.body.password = hashedPassword
+        let hashedPassword = await bcrypt.hash(generatedPassword, salt)
 
-        const newUser = await User.create(req.body);
+        const newUser = await User.create({
+            name,
+            lastname,
+            email,
+            password: hashedPassword
 
+        });
+
+        const message = `logged in with your email ${email} and password ${generatedPassword}`;
+        sendMessage(email, message)
         res.status(200).json(new APiResponse(true, 200, newUser, "user created successfully.."));
     } catch (error) {
         res.status(500).json(new APiResponse(false, 500, null, error.message));

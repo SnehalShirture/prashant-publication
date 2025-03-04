@@ -38,6 +38,7 @@ const UserSchema = mongoose.Schema({
     //         type: String,
     //     }
     // ]
+
     otp: {
         type: String,
         default: null
