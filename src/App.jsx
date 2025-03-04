@@ -89,3 +89,19 @@ const App = () => {
 };
 
 export default App;
+
+// import React from "react";
+// import AboutUs from "./components/common/AboutUs";
+// import Home from "./components/common/Home";
+// import OurTeam from "./components/common/OurTeam";
+
+// const App = () =>{
+//   return(
+//     <div>
+//       <Home/>
+//       <AboutUs/>
+//       <OurTeam/>
+//     </div>
+//   )
+// }
+// export default App

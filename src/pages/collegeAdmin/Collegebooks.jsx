@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Box, Tabs, Tab, Typography, Container, Button, IconButton } from "@mui/material";
+import { Box, Tabs, Tab, Typography, Container, Button, IconButton, Card, CardContent, CardHeader, Divider } from "@mui/material";
 import CustomTable from "../../custom/CustomTable";
 import { getBooks, fetchBooksByCollegeId } from "../../apiCalls/BooksApi";
-import { createsubscription } from "../../apiCalls/SubscriptionApi";
+import { createsubscription, getSubscriptionByClgId } from "../../apiCalls/SubscriptionApi";
 import { useSelector } from "react-redux";
 import { useAlert } from "../../custom/CustomAlert";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import PDFReader from "../../components/common/PDFReader";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-
 
 const categories = ["All", "Science", "Commerce", "Arts"];
 
@@ -18,7 +17,6 @@ const Collegebooks = () => {
   const [categoryTab, setCategoryTab] = useState(0);
   const [selectedBooks, setSelectedBooks] = useState([]);
   const [selectedBook, setSelectedBook] = useState(null);
-
 
   const { UserData } = useSelector((state) => state.user);
   const collegeId = UserData.user_id.collegeId;
@@ -35,14 +33,12 @@ const Collegebooks = () => {
     queryKey: ["books"],
     queryFn: getBooks
   });
-  console.log(" bookData :", bookData)
 
   const { data: subscribedBooks = [] } = useQuery({
     queryKey: ["subscribedBooks"],
     queryFn: () => fetchBooksByCollegeId({ collegeId })
   });
 
-  console.log("subscribedBooks  :", subscribedBooks)
   const TotalAmount = selectedBooks.reduce((acc, book) => acc + (Number(book.price) || 0), 0);
 
   const subscriptionMutation = useMutation({
@@ -62,6 +58,12 @@ const Collegebooks = () => {
     },
   });
 
+  const { data: subscriptionData = [] } = useQuery({
+    queryKey: ["subscriptionData"],
+    queryFn: () => getSubscriptionByClgId({ collegeId }),
+  });
+  console.log("subscriptionData : ", subscriptionData)
+
   const columns = [
     { header: "Sr. No", accessorFn: (row, index) => index + 1 },
     { header: "Title", accessorKey: "name" },
@@ -76,13 +78,12 @@ const Collegebooks = () => {
     ...columns,
     {
       header: "Action",
-      accessorFn: (row) => (
+      accessorFn: (row) =>
         row.bookPdf ? (
           <IconButton color="primary" onClick={() => setSelectedBook(row)}>
             <OpenInNewIcon />
           </IconButton>
-        ) : null
-      ),
+        ) : null,
     },
   ];
 
@@ -124,29 +125,74 @@ const Collegebooks = () => {
       )}
 
       <Box>
-        {tabValue === 0 && <CustomTable data={filteredBooks} columns={columns} enableSelection={true} onSelectedBooksChange={setSelectedBooks} />}
-        {tabValue === 1 && <CustomTable data={subscribedBooks.data} columns={subscribedColumns} />}
-        {tabValue === 2 && <Typography>college orders</Typography>}
+        {tabValue === 0 && (
+          <CustomTable
+            data={filteredBooks}
+            columns={columns}
+            enableSelection={true}
+            onSelectedBooksChange={setSelectedBooks}
+          />
+        )}
+        {tabValue === 1 && (
+          <CustomTable data={subscribedBooks.data} columns={subscribedColumns} />
+        )}
+        {tabValue === 2 && (
+          <Box>
+            {subscriptionData?.data?.map((order, index) => (
+              <Card key={order._id} sx={{ mb: 2 }}>
+                <CardHeader title={`Order #${index + 1}`} subheader={`Status: ${order.status}`} />
+                <CardContent>
+                  <Typography><strong>College Name:</strong> {order.college?.clgName || "N/A"}</Typography>
+                  <Typography><strong>College Address:</strong> {order.college?.clgAddress || "N/A"}</Typography>
+                  <Typography><strong>College Stream:</strong> {order.college?.clgStream || "N/A"}</Typography>
+                  <Typography><strong>Director Name:</strong> {order.college?.directorName || "N/A"}</Typography>
+                  <Typography><strong>Librarian Name:</strong> {order.college?.librarianName || "N/A"}</Typography>
+                  <Typography><strong>Librarian Mobile:</strong> {order.college?.librarianMobile || "N/A"}</Typography>
+                  <Typography><strong>Librarian Email:</strong> {order.college?.librarianEmail || "N/A"}</Typography>
+
+                  <Divider sx={{ my: 1 }} />
+
+                  <Typography><strong>Total Books:</strong> {order.totalBooks}</Typography>
+                  <Typography><strong>Total Amount (₹):</strong> {order.totalAmount}</Typography>
+                  <Typography><strong>Max Readers:</strong> {order.maxReaders}</Typography>
+                  <Typography><strong>Start Date:</strong> {new Date(order.startDate).toLocaleDateString()}</Typography>
+                  <Typography><strong>End Date:</strong> {new Date(order.endDate).toLocaleDateString()}</Typography>
+                  <Typography><strong>Is Active:</strong> {order.isActive ? "Yes" : "No"}</Typography>
+
+                  <Divider sx={{ my: 1 }} />
+
+                  <Typography variant="h6"><strong>Books:</strong></Typography>
+                  {order.books?.map((book) => (
+                    <Typography key={book._id}>
+                      - {book.name} by {book.author} (Category: {book.category})
+                    </Typography>
+                  ))}
+
+                  <Divider sx={{ my: 1 }} />
+                  <Typography varient="h6"> <strong>- Acadamic Year : </strong> </Typography>
+                  {order.books?.map((pkg) => (
+                    <Typography key={pkg._id}>
+                      {pkg.academicYear}&nbsp;
+                     ({pkg.category})
+                      
+                    </Typography>
+                  ))}
+                </CardContent>
+              </Card>
+            ))}
+          </Box>
+        )}
+
       </Box>
 
-      {tabValue === 0 && selectedBooks.length > 0 && (
-        <Box sx={{ mt: 2 }}>
-          <Typography variant="h6">Total Amount: Rs. {TotalAmount}</Typography>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => subscriptionMutation.mutate()}
-            sx={{ mt: 1 }}
-          >
-            Subscribe to Selected Books
-          </Button>
-        </Box>
-      )}
-      {selectedBook && (
+       {/* PDF Reader Modal */}
+       {selectedBook && (
         <PDFReader
           fileUrl={`http://localhost:5000/${selectedBook.bookPdf}`}
           sessionId={UserData._id}
-          onClose={() => setSelectedBook(null)}
+          onClose={() => { 
+           setSelectedBook(null);
+          }}
         />
       )}
     </Container>
@@ -154,5 +200,3 @@ const Collegebooks = () => {
 };
 
 export default Collegebooks;
-
-

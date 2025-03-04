@@ -13,13 +13,16 @@ import {
   FormControl,
   Button,
 } from "@mui/material";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { fetchShelfBooks, startBookReadingCounter, stopBookReadingCounter } from "../../apiCalls/BooksApi";
-import { useSelector } from "react-redux";
+import { useQuery, useMutation , useQueryClient } from "@tanstack/react-query";
+import { fetchShelfBooks, bookRemoveFromShelf ,startBookReadingCounter, stopBookReadingCounter } from "../../apiCalls/BooksApi";
+import { useDispatch, useSelector } from "react-redux";
 import PDFReader from "../../components/common/PDFReader";
 import { useAlert } from "../../custom/CustomAlert";
+import { removeShelf } from "../../reduxwork/ShelfSlice"
 
 const Shelf = () => {
+  const dispatch = useDispatch();
+  const queryClient = useQueryClient(); 
   const { showAlert } = useAlert();
   const { UserData } = useSelector((state) => state.user);
   const userId = UserData.user_id._id;
@@ -38,6 +41,35 @@ const Shelf = () => {
       return response.data;
     },
   });
+
+  //delete book from shelf
+  const { mutate: deleteBook} = useMutation({
+    mutationFn: (book) => {
+      const data = { 
+        userId : userId , 
+        bookId  : book._id
+      };
+      console.log("data : " , data)
+      return bookRemoveFromShelf(data, token);
+    },
+    onSuccess: (book) => {
+      dispatch(removeShelf(book._id))
+      showAlert("Book successfully deleted from shelf!", "success");
+      queryClient.invalidateQueries(["shelfBooks", userId]); // Refresh the book list
+    },
+    onError: (error) => {
+      console.log(
+        "Error deleting book from shelf:",
+        error.message
+      )
+      showAlert(error.response?.data?.message || "Failed to delete book!", "error");
+    },
+  });
+
+  const handleDeleteBook = (book) => {
+    deleteBook(book);
+  };
+
 
   const filteredBooks = books.filter((book) =>
     (book.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -114,10 +146,9 @@ const Shelf = () => {
           <InputLabel>Category</InputLabel>
           <Select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
             <MenuItem value="">All</MenuItem>
-            <MenuItem value="Science">Science</MenuItem>
-            <MenuItem value="Arts">Arts</MenuItem>
-            <MenuItem value="Commerce">Commerce</MenuItem>
-            <MenuItem value="Engineering">Engineering</MenuItem>
+            <MenuItem value="science">Science</MenuItem>
+            <MenuItem value="arts">Arts</MenuItem>
+            <MenuItem value="commerce">Commerce</MenuItem>
           </Select>
         </FormControl>
       </Box>
@@ -128,7 +159,7 @@ const Shelf = () => {
           <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
             <Card
               sx={{
-                height: 400,
+                height: 450,
                 display: "flex",
                 flexDirection: "column",
                 boxShadow: 5,
@@ -159,6 +190,10 @@ const Shelf = () => {
                     <strong>Price:</strong> ${book.price}
                   </Typography>
                 </Box>
+                <Box sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                }}>
                 <Button
                   size="small"
                   variant="contained"
@@ -173,6 +208,17 @@ const Shelf = () => {
                 >
                   View PDF
                 </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  color="error"
+                  sx={{ mt: 1, fontWeight: "bold", borderRadius: 2 }}
+                  onClick={() => handleDeleteBook(book)}
+                >
+                  Delete from Shelf
+                </Button>
+
+                </Box>
               </CardContent>
             </Card>
           </Grid>

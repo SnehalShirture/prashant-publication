@@ -34,6 +34,6 @@ export const SAdmin_Routes = [
   { path: "/sadmin/allbooks", element: <AllBooks />, label: "superAdmin AllBooks" },
   { path: "/sadmin/colleges", element: <AllColleges />, label: "superAdmin Colleges" },
   { path: "/sadmin/orders", element: <AllSubscriptions />, label: "superAdmin subscription" },
-  { path: "/sadmin/orderdetail", element: <OrderDetail />, label: "superAdmin Order Detail" },
+  { path: "/sadmin/orderdetail",  element: <OrderDetail /> , label : "superAdmin OrderDetail"} ,
   { path: "/sadmin/profile", element: <SAdminProfile />, label: "superAdmin Profile" },
 ]

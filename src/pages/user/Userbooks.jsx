@@ -16,7 +16,7 @@ import {
   Pagination,
 } from "@mui/material";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { fetchBooksByCollegeId, addToShelf, startBookReadingCounter, stopBookReadingCounter} from "../../apiCalls/BooksApi";
+import { fetchBooksForUser, addToShelf, startBookReadingCounter, stopBookReadingCounter } from "../../apiCalls/BooksApi";
 import { useDispatch, useSelector } from "react-redux";
 import { addShelf } from "../../reduxwork/ShelfSlice";
 import { useAlert } from "../../custom/CustomAlert";
@@ -34,27 +34,36 @@ const UserBooks = () => {
   const [selectedBook, setSelectedBook] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedType, setSelectedType] = useState("");
   const [page, setPage] = useState(1);
-  const itemsPerPage = 4; // Adjusted for better layout
+  const itemsPerPage = 8; // Adjusted for better layout
 
-  const { data } = useQuery({
+  const BookTypes = ["All", "textbook", "reference"]
+  const BookCategories = ["All", "arts", "science", "commerce"]
+
+
+  const { data: userBooks = [] } = useQuery({
     queryKey: ["userBooks.data", collegeId],
-    queryFn: () => fetchBooksByCollegeId({ collegeId }),
+    queryFn: () => fetchBooksForUser({ collegeId }),
   });
 
-  const booksData = data?.data || [];
+  const booksData = userBooks?.data?.[0]?.books || [];
+  console.log(" booksData : ", booksData)
+
 
   // Filtering Books
   const filteredBooks = booksData.filter((book) => {
     const matchesQuery = searchQuery
       ? [book.name, book.author, book.category]
-          .join(" ")
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase())
+        .join(" ")
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase())
       : true;
     const matchesCategory = selectedCategory ? book.category === selectedCategory : true;
-    return matchesQuery && matchesCategory;
+    const matchesType = selectedType ? book.type === selectedType : true;
+    return matchesQuery && matchesCategory && matchesType;
   });
+
 
   // Pagination Logic
   const totalPages = Math.ceil(filteredBooks.length / itemsPerPage);
@@ -63,10 +72,7 @@ const UserBooks = () => {
     Math.min(page * itemsPerPage, filteredBooks.length)
   );
 
-  const handleAddToShelf = (book) => {
-    addToShelfMutation.mutate(book);
-  };
-
+  // books add to shelf
   const addToShelfMutation = useMutation({
     mutationFn: (book) => {
       const data = {
@@ -83,6 +89,9 @@ const UserBooks = () => {
       showAlert(error.response?.data?.message || "Failed to add book to shelf.", "error");
     },
   });
+  const handleAddToShelf = (book) => {
+    addToShelfMutation.mutate(book);
+  };
 
   const handleStartBookReadingCounter = (book) => {
     startBookReadingCounterMutation.mutate(book);
@@ -140,14 +149,30 @@ const UserBooks = () => {
           placeholder="Search by name, author, or category"
           sx={{ flexGrow: 1 }}
         />
+        {/* form control for select category */}
         <FormControl sx={{ minWidth: 150 }}>
           <InputLabel>Category</InputLabel>
-          <Select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
+          <Select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+          >
             <MenuItem value="">All</MenuItem>
-            <MenuItem value="Science">Science</MenuItem>
-            <MenuItem value="Arts">Arts</MenuItem>
-            <MenuItem value="Commerce">Commerce</MenuItem>
-            <MenuItem value="Engineering">Engineering</MenuItem>
+            {BookCategories.filter((category) => category !== "All").map((category, index) => (
+              <MenuItem key={index} value={category}>{category}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        {/* form control for select types of books */}
+        <FormControl sx={{ minWidth: 150 }}>
+          <InputLabel>Type</InputLabel>
+          <Select
+            value={selectedType}
+            onChange={(e) => setSelectedType(e.target.value)}
+          >
+            <MenuItem value="">All</MenuItem>
+            {BookTypes.filter((type) => type !== "All").map((type, index) => (
+              <MenuItem key={index} value={type}>{type}</MenuItem>
+            ))}
           </Select>
         </FormControl>
       </Box>
@@ -158,7 +183,7 @@ const UserBooks = () => {
           <Grid item xs={12} sm={6} md={4} lg={3} key={book._id}>
             <Card
               sx={{
-                height: 370,
+                height: 400,
                 display: "flex",
                 flexDirection: "column",
                 boxShadow: 5,
@@ -168,7 +193,7 @@ const UserBooks = () => {
               }}
             >
               <CardMedia component="img" height="220" image={`http://localhost:5000/${book.coverImage}`} alt={book.name} />
-              <CardContent sx={{ flexGrow: 1 }}>
+              <CardContent>
                 <Typography gutterBottom variant="h6" sx={{ color: "#4A90E2" }}>{book.name}</Typography>
                 <Typography variant="body2" color="text.secondary">
                   <strong>Author:</strong> {book.author}

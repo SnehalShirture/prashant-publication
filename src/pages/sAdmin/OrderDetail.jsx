@@ -24,6 +24,7 @@ const OrderDetail = () => {
       </Container>
     );
   }
+  console.log(" subscription dettail : " , subscription.data)
 
   // State for status update
   const [selectedStatus, setSelectedStatus] = useState(subscription.status || "");

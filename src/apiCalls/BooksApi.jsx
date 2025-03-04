@@ -62,6 +62,27 @@ export const addToShelf = async (data, token) => {
   }
 };
 
+//remove book from shelf
+export const bookRemoveFromShelf = async (data, token) => {
+  const aInstance = createInstance();
+  try {
+    const response = await aInstance.post("deleteBookFromShelfByUserId", data, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        },
+        });
+        console.log(response);
+        return response.data;
+    
+  } catch (error) {
+    console.error("Error removing from shelf:", error.message);
+    throw new Error(
+      error.response?.data?.message || "An error occurred while removing from shelf"
+      );
+    
+  }
+}
+
 //fetch shelf books 
 export const fetchShelfBooks = async (user , token) => {
   const aInstance = createInstance();
@@ -129,3 +150,19 @@ export const stopBookReadingCounter = async ({bookId, collegeId}) => {
   }
 }
 
+// fetch books for user 
+export const fetchBooksForUser = async (collegeId) => {
+  const aInstance = createInstance();
+  try {
+    const response = await aInstance.post("fetchBooksByCollegeId", collegeId);
+    console.log("response : " , response)
+    return response.data;
+    
+  } catch (error) {
+    console.error("Error fetching books for user:", error.message);
+    throw new Error(
+      error.response?.data?.message || "An error occurred while fetching books for user."
+      );
+    
+  }
+}

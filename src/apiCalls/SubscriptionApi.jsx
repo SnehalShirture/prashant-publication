@@ -45,3 +45,18 @@ export const updateSubscriptionStatus = async ({ subscriptionId, status }) => {
     );
   }
 };
+
+//get subscription by clg id
+export const getSubscriptionByClgId = async (collegeId) => {
+  const aInstance = createInstance();
+  try {
+    const response = await aInstance.post("getSubscriptionByCollegeId",collegeId )
+      return response.data;
+    
+  } catch (error) {
+    console.error("Error getting subscription by college id:", error.message);
+    throw new Error(
+      error.response?.data?.message || "An error occurred while getting subscription by college id"
+      );
+  }
+}
