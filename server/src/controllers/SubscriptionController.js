@@ -114,8 +114,6 @@ const getBooksByCollegeId = async (req, res) => {
 
 const updateSubscriptionStatus = async (subscriptionId) => {
     try {
-
-
         const startDate = new Date();
         let endDate = new Date(startDate);
 
@@ -148,24 +146,11 @@ const updateSubscriptionStatus = async (subscriptionId) => {
             throw new ApiError("Subscription not found", 404)
         }
 
-        console.log(`Subscription ${subscriptionId} updated successfully!`, subscription);
-        // res.status(200).json(new APiResponse(true, 200, subscription, "Subscription updated Successfully"));
+         res.status(200).json(new APiResponse(true, 200, subscription, "Subscription updated Successfully"));
     } catch (error) {
-        console.error("Error updating subscription:", error);
-        //res.status(500).json(new APiResponse(false, 500, null, error.message));
+        res.status(500).json(new APiResponse(false, 500, null, error.message));
     }
 };
-
-
-// const getAllSubscription = async (req, res) => {
-//     try {
-//         const subscriptions = await Subscription.find()
-//         .populate("user_id")
-//         res.status(200).json(new APiResponse(true, 200, subscriptions, "fetched All Subscriptions"))
-//     } catch (error) {
-//         res.status(500).json(new APiResponse(false, 500, null, error.message))
-//     }
-// }
 
 
 const getAllSubscription = async (req, res) => {
@@ -428,9 +413,7 @@ const getSubscriptionByCollegeId = async (req, res) => {
                     as: "college"
                 }
             },
-            {
-                $unwind: "$college" // Convert array to object
-            },
+            
             {
                 $lookup: {
                     from: "packages",
@@ -470,6 +453,8 @@ const getSubscriptionByCollegeId = async (req, res) => {
 
 
 }
+
+
 
 
 export {
