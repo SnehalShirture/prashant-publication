@@ -142,14 +142,6 @@ const Collegebooks = () => {
               <Card key={order._id} sx={{ mb: 2 }}>
                 <CardHeader title={`Order #${index + 1}`} subheader={`Status: ${order.status}`} />
                 <CardContent>
-                  <Typography><strong>College Name:</strong> {order.college?.clgName || "N/A"}</Typography>
-                  <Typography><strong>College Address:</strong> {order.college?.clgAddress || "N/A"}</Typography>
-                  <Typography><strong>College Stream:</strong> {order.college?.clgStream || "N/A"}</Typography>
-                  <Typography><strong>Director Name:</strong> {order.college?.directorName || "N/A"}</Typography>
-                  <Typography><strong>Librarian Name:</strong> {order.college?.librarianName || "N/A"}</Typography>
-                  <Typography><strong>Librarian Mobile:</strong> {order.college?.librarianMobile || "N/A"}</Typography>
-                  <Typography><strong>Librarian Email:</strong> {order.college?.librarianEmail || "N/A"}</Typography>
-
                   <Divider sx={{ my: 1 }} />
 
                   <Typography><strong>Total Books:</strong> {order.totalBooks}</Typography>
@@ -173,8 +165,8 @@ const Collegebooks = () => {
                   {order.books?.map((pkg) => (
                     <Typography key={pkg._id}>
                       {pkg.academicYear}&nbsp;
-                     ({pkg.category})
-                      
+                      ({pkg.category})
+
                     </Typography>
                   ))}
                 </CardContent>
@@ -185,13 +177,13 @@ const Collegebooks = () => {
 
       </Box>
 
-       {/* PDF Reader Modal */}
-       {selectedBook && (
+      {/* PDF Reader Modal */}
+      {selectedBook && (
         <PDFReader
           fileUrl={`http://localhost:5000/${selectedBook.bookPdf}`}
           sessionId={UserData._id}
-          onClose={() => { 
-           setSelectedBook(null);
+          onClose={() => {
+            setSelectedBook(null);
           }}
         />
       )}
