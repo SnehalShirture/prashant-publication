@@ -461,18 +461,16 @@ const getSubscriptionByCollegeId = async (req, res) => {
 
 export const sendQuotation = async (req, res) => {
     try {
-        const { email, pdfurl } = req.body;
+        const { email, pdfurl ,pdfname} = req.body;
         const quotation = await Subscription.findOneAndUpdate(req.body);
 
         const message = "your Quotation is : ";
-        await sendMessage(email, message, pdfurl);
+        await sendMessage(email, message, pdfurl,pdfname);
         res.status(200).json(new APiResponse(true,200,quotation,"quotation send successfully"))
     } catch (error) {
         res.status(500).json(new APiResponse(false, 500, null, error.message))
     }
 }
-
-
 
 
 export {
