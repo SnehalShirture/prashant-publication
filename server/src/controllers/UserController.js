@@ -24,7 +24,6 @@ const registerUser = async (req, res) => {
             lastname,
             email,
             password: hashedPassword
-
         });
 
         const message = `logged in with your email ${email} and password ${generatedPassword}`;

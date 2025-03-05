@@ -3,6 +3,7 @@ import { Subscription } from "../models/SubscriptionSchema.js";
 import { APiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js"
 import mongoose from "mongoose";
+import { sendMessage } from "../middleware/MessageMiddleware.js";
 
 
 const cancelSubscription = async (req, res) => {
@@ -146,7 +147,7 @@ const updateSubscriptionStatus = async (subscriptionId) => {
             throw new ApiError("Subscription not found", 404)
         }
 
-         res.status(200).json(new APiResponse(true, 200, subscription, "Subscription updated Successfully"));
+        res.status(200).json(new APiResponse(true, 200, subscription, "Subscription updated Successfully"));
     } catch (error) {
         res.status(500).json(new APiResponse(false, 500, null, error.message));
     }
@@ -177,6 +178,10 @@ const getAllSubscription = async (req, res) => {
                     totalBooks: { $size: "$books" }
                 }
             },
+            {
+                $sort: { startDate: -1 } // Sort newest first (descending order)
+            },
+
             {
                 $project: {
                     subscribedBooks: 0,
@@ -413,7 +418,7 @@ const getSubscriptionByCollegeId = async (req, res) => {
                     as: "college"
                 }
             },
-            
+
             {
                 $lookup: {
                     from: "packages",
@@ -452,6 +457,19 @@ const getSubscriptionByCollegeId = async (req, res) => {
     }
 
 
+}
+
+export const sendQuotation = async (req, res) => {
+    try {
+        const { email, pdfurl } = req.body;
+        const quotation = await Subscription.findOneAndUpdate(req.body);
+
+        const message = "your Quotation is : ";
+        await sendMessage(email, message, pdfurl);
+        res.status(200).json(new APiResponse(true,200,quotation,"quotation send successfully"))
+    } catch (error) {
+        res.status(500).json(new APiResponse(false, 500, null, error.message))
+    }
 }
 
 

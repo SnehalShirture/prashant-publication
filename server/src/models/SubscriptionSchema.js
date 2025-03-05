@@ -40,13 +40,16 @@ const SubscriptionSchema = mongoose.Schema({
     },
     maxReaders: {
         type: Number
+    },
+    subscriptionQuotation: {
+        type: String
     }
 });
 
 
 // SubscriptionSchema.post("save", async function (doc, next) {
 //     try {
-        
+
 //         const { collegeId, totalAmount, _id } = doc;
 
 //         await createRazorpayOrder(collegeId, totalAmount, _id);
