@@ -1,13 +1,14 @@
-import { 
-  Container, Typography, Paper, Grid, 
-  Button, MenuItem, Select, FormControl, InputLabel 
+import {
+  Container, Typography, Paper, Grid,
+  Button, Box, MenuItem, Select, FormControl, InputLabel
 } from "@mui/material";
 import React, { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import CustomTable from "../../custom/CustomTable"; 
+import CustomTable from "../../custom/CustomTable";
 import { updateSubscriptionStatus } from "../../apiCalls/SubscriptionApi";
 import { useAlert } from "../../custom/CustomAlert";
+import { sendQuotation } from "../../apiCalls/SubscriptionApi";
 
 const OrderDetail = () => {
   const { showAlert } = useAlert();
@@ -24,7 +25,7 @@ const OrderDetail = () => {
       </Container>
     );
   }
-  console.log(" subscription dettail : " , subscription.data)
+  console.log(" subscription detail : ", subscription)
 
   // State for status update
   const [selectedStatus, setSelectedStatus] = useState(subscription.status || "");
@@ -57,11 +58,38 @@ const OrderDetail = () => {
     mutation.mutate(selectedStatus);
   };
 
+  // Handle Send Quotation
+  const handleSendPdf = async () => {
+    const collegeEmail = collegeDetails?.librarianEmail;
+    if (!collegeEmail) {
+        showAlert("College email not found!", "warning");
+        return;
+    }
+
+    try {
+        const pdfName = `Subscription_Quotation_${collegeDetails?.clgName}.pdf`;
+
+        const payload = {
+            subscriptionId: subscription._id,
+            email: collegeEmail,
+            pdfurl: subscription?.subscriptionQuotation,
+            pdfname: pdfName,
+        };
+        console.log("payload : " , payload)
+
+        await sendQuotation(payload);
+        showAlert("Quotation sent to College Email successfully!", "success");
+    } catch (error) {
+        console.error("Error sending quotation:", error.message);
+        showAlert("Failed to send quotation. Please try again.", "error");
+    }
+};
+
   const collegeDetails = subscription.college?.[0];
   // Librarian Details
   const librarianData = {
     userName: collegeDetails?.librarianName || "N/A",
-    userEmail: collegeDetails?.librarianEmail|| "N/A",
+    userEmail: collegeDetails?.librarianEmail || "N/A",
     userMobile: collegeDetails?.librarianMobile || "N/A",
   };
 
@@ -173,12 +201,26 @@ const OrderDetail = () => {
       </Typography>
 
       {/* Subscribed Books Table */}
-      <CustomTable 
-        data={bookData} 
-        columns={bookColumns} 
-        enablePagination={true} 
-        pageSize={5} 
+      <CustomTable
+        data={bookData}
+        columns={bookColumns}
+        enablePagination={true}
+        pageSize={5}
       />
+
+      <Box sx={{
+        display: 'flex',
+        justifyContent: 'flex-end',
+      }}>
+      <Button
+        variant="contained"
+        color="secondary"
+        sx={{ mt: 2 , mb : 3}}
+        onClick={handleSendPdf}
+      >
+        Send PDF to College Email
+      </Button>
+      </Box>
     </Container>
   );
 };

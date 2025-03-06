@@ -472,6 +472,28 @@ export const sendQuotation = async (req, res) => {
     }
 }
 
+export const updateSubscriptionQuotation = async (req, res) => {
+    try {
+        const { _id,  subscriptionQuotation } = req.body;
+
+        const updatedSubscription = await Subscription.findByIdAndUpdate(
+            _id,
+            { subscriptionQuotation },
+            { new: true }
+        );
+
+        if (!updatedSubscription) {
+            return res.status(404).json({ message: 'Subscription not found' });
+        }
+
+        res.status(200).json(updatedSubscription);
+    } catch (error) {
+        console.error('Error updating subscription quotation:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+
 
 export {
     getActiveSubscription, createSubscription, cancelSubscription, getAllSubscription, updateSubscriptionStatus,

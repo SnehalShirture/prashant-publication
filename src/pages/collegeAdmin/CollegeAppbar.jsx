@@ -12,6 +12,8 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
+  AppBar,
+  Toolbar
 } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -50,6 +52,7 @@ const CollegeAppbar = () => {
     { to: "/librarydashboard", label: "Dashboard", icon: <DashboardIcon /> },
     { to: "/library/students", label: "All Students", icon: <GroupIcon /> },
     { to: "/library/books", label: "Books", icon: <BookIcon /> },
+    { to: "/SubscriptionPDF", label: "SubscriptionPDF", icon: <BookIcon /> },
   ];
 
   // Mutation for logout
@@ -70,18 +73,10 @@ const CollegeAppbar = () => {
   });
 
   return (
-    <Box>
+    <>
       {/* Header Section */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          background: "linear-gradient(135deg,rgb(133, 164, 231), #292929)", // Use 'background' instead of 'bgcolor'
-          color: "white",
-          p: 2,
-        }}
-      >
+      <AppBar  position="sticky" sx={{background: "linear-gradient(135deg,rgb(133, 164, 231), #292929)" }}>
+      <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
         {/* Mobile Menu Button */}
         <IconButton
           edge="start"
@@ -189,7 +184,8 @@ const CollegeAppbar = () => {
             </MenuItem>
           </Menu>
         </Box>
-      </Box>
+        </Toolbar>
+      </AppBar>
 
       {/* Drawer for Mobile Navigation */}
       <Drawer
@@ -215,7 +211,7 @@ const CollegeAppbar = () => {
           ))}
         </List>
       </Drawer>
-    </Box>
+    </>
   );
 };
 
