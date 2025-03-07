@@ -10,6 +10,14 @@ import { APiResponse } from '../utils/ApiResponse.js';
 import mongoose from 'mongoose';
 import { generatePassword } from '../middleware/generatePassword.js';
 
+export const uploadBulkStudents = async (req, res) => {
+    try {
+        const students = await User.insertMany(req.body)
+        res.status(200).json(new APiResponse(true, 200, students, "Students Registered Successfully"))
+    } catch (error) {
+        res.status(500).json(new APiResponse(false, 500, null, error.message))
+    }
+}
 
 const registerUser = async (req, res) => {
     try {
