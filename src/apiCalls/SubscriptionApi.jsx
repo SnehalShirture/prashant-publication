@@ -33,10 +33,10 @@ export const getAllSubscriptions = async () => {
 }
 
 //update subscription status
-export const updateSubscriptionStatus = async ({ subscriptionId, status }) => {
+export const updateSubscriptionStatus = async (data) => {
   const aInstance = createInstance();
   try {
-    const response = await aInstance.post("updateSubscriptionStatus", { subscriptionId, status });
+    const response = await aInstance.post("updateSubscriptionStatus", data);
     return response.data;
   } catch (error) {
     console.error("Error updating subscription status:", error.message);
@@ -58,5 +58,37 @@ export const getSubscriptionByClgId = async (collegeId) => {
     throw new Error(
       error.response?.data?.message || "An error occurred while getting subscription by college id"
       );
+  }
+}
+
+//sendQuotation 
+export const sendQuotation = async (quotationData) => {
+  const aInstance = createInstance();
+  try {
+    const response = await aInstance.post("sendQuotation", quotationData);
+    return response.data;
+    
+  } catch (error) {
+    console.error("Error sending quotation:", error.message);
+    throw new Error(
+      error.response?.data?.message || "An error occurred while sending quotation"
+      );
+  }
+}
+
+//updateSubscriptionQuotation
+export const updateSubscriptionQuotation = async (quotationData) => {
+  const aInstance = createInstance();
+  try {
+    const response = await aInstance.post("updateSubscriptionQuotation", quotationData);
+    console.log("quotationData :" , quotationData)
+    return response.data;
+    
+  } catch (error) {
+    console.error("Error updating subscription quotation:", error.message);
+    throw new Error(
+      error.response?.data?.message || "An error occurred while updating subscription quotation"
+      );
+    
   }
 }

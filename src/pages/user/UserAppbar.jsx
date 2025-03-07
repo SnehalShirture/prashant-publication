@@ -12,6 +12,8 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
+  AppBar,
+  Toolbar
 } from "@mui/material";
 import { Link, useNavigate, useNavigation } from "react-router-dom";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -76,18 +78,11 @@ const handleLogout = () => {
 };
 
   return (
-    <Box>
+    <>
       {/* Header Section */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          background: "linear-gradient(135deg,rgb(133, 164, 231), #292929)", // Use 'background' instead of 'bgcolor'
-          color: "white",
-          p: 2,
-        }}
-      >
+      <AppBar position="sticky" sx={{background: "linear-gradient(135deg,rgb(133, 164, 231), #292929)" }}>
+      <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
+
         {/* Mobile Menu Button */}
         <IconButton
           edge="start"
@@ -214,7 +209,8 @@ const handleLogout = () => {
             </Link>
           </Menu>
         </Box>
-      </Box>
+        </Toolbar>
+      </AppBar>
 
       {/* Drawer for Mobile Navigation */}
       <Drawer
@@ -308,7 +304,7 @@ const handleLogout = () => {
           </Typography>
         </Box>
       </Drawer>
-    </Box>
+    </>
   );
 };
 

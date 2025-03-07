@@ -59,7 +59,7 @@ const AllStudents = () => {
   const fetchStudentsMutation = useMutation({
     mutationFn: ({ collegeId }) => getstudentbyclgid({ collegeId }),
     onSuccess: (studentsData) => {
-      console.log(" studentsData : " , studentsData)
+      console.log("studentsData : " , studentsData)
       setStudents(studentsData.data);
     },
     onError: (error) => {
@@ -70,7 +70,6 @@ const AllStudents = () => {
   useEffect(() => {
     fetchStudentsMutation.mutate({ collegeId });
   }, [collegeId]);
-  
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -194,95 +193,95 @@ const AllStudents = () => {
           </Button>
         </Box>
       </Paper>
+         {/* Add Student Modal */}
+         <Modal open={open} onClose={handleClose}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 400,
+            bgcolor: "background.paper",
+            borderRadius: 2,
+            boxShadow: 24,
+            p: 4,
+          }}
+        >
+          <Typography variant="h6" gutterBottom>
+            Add New Student
+          </Typography>
+          <Box component="form" onSubmit={handleAddStudent}>
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="First Name"
+                  name="name"
+                  value={addStudent.name}
+                  onChange={handleInputChange}
+                  required
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Last Name"
+                  name="lastName"
+                  value={addStudent.lastName}
+                  onChange={handleInputChange}
+                  required
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Email Address"
+                  name="email"
+                  type="email"
+                  value={addStudent.email}
+                  onChange={handleInputChange}
+                  required
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Password"
+                  name="password"
+                  type="password"
+                  value={addStudent.password}
+                  onChange={handleInputChange}
+                  required
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Mobile Number"
+                  name="mobile"
+                  value={addStudent.mobile}
+                  onChange={handleInputChange}
+                  required
+                />
+              </Grid>
+              <Grid item xs={12} sx={{ textAlign: "right" }}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  sx={{ borderRadius: 2 }}
+                  disabled={addStudentMutation.isLoading}
+                >
+                  {addStudentMutation.isLoading ? "Adding..." : "Submit"}
+                </Button>
+              </Grid>
+            </Grid>
+          </Box>
+        </Box>
+      </Modal>
     </Box>
   );
 };
 
 export default AllStudents;
-
-// import React, { useState } from "react";
-// import { Box, Button, Typography } from "@mui/material";
-// import * as XLSX from "xlsx";
-// import { useMutation } from "@tanstack/react-query";
-// import { registeruser } from "../../apiCalls/UserApi";
-// import { useSelector } from "react-redux";
-
-// const AllStudents = () => {
-//   const { UserData } = useSelector((state) => state.user);
-//   const collegeId = UserData.user_id.collegeId;
-//   const [students, setStudents] = useState([]);
-
-//   // Mutation for bulk student registration
-//   const registerStudentsMutation = useMutation({
-//     mutationFn: async (studentsList) => {
-//       const registerPromises = studentsList.map((student) =>
-//         registeruser(student)
-//       );
-//       return Promise.all(registerPromises);
-//     },
-//     onSuccess: () => {
-//       console.log("All students registered successfully!");
-//     },
-//     onError: (error) => console.error("Error registering students:", error.message),
-//   });
-
-//   // Function to handle file upload
-//   const handleFileUpload = (event) => {
-//     const file = event.target.files[0];
-//     if (!file) return;
-
-//     const reader = new FileReader();
-//     reader.onload = (e) => {
-//       const data = new Uint8Array(e.target.result);
-//       const workbook = XLSX.read(data, { type: "array" });
-//       const sheetName = workbook.SheetNames[0];
-//       const sheet = workbook.Sheets[sheetName];
-
-//       // Convert sheet data to JSON
-//       const parsedData = XLSX.utils.sheet_to_json(sheet);
-
-//       // Extract only required columns
-//       const filteredData = parsedData.map((row) => ({
-//         name: row["name"] || row["Name"] || "", // Handle different column name variations
-//         lastName: row["lastName"] || row["Last Name"] || "",
-//         email: row["email"] || row["Email"] || "",
-//         mobile: row["mobile"] || row["Mobile"] || "",
-//         password: "defaultPassword", // Assign a default password (changeable later)
-//         role: "user",
-//         collegeId: collegeId,
-//       }));
-
-//       setStudents(filteredData);
-//     };
-//     reader.readAsArrayBuffer(file);
-//   };
-
-//   return (
-//     <Box sx={{ padding: 3 }}>
-//       <Typography variant="h5" gutterBottom>
-//         Import Students Data
-//       </Typography>
-
-//       <Button variant="outlined" component="label">
-//         Select Excel File
-//         <input type="file" hidden accept=".xlsx, .xls" onChange={handleFileUpload} />
-//       </Button>
-
-//       {students.length > 0 && (
-//         <Box sx={{ marginTop: 2 }}>
-//           <Typography>{students.length} students ready for import.</Typography>
-//           <Button
-//             variant="contained"
-//             color="primary"
-//             onClick={() => registerStudentsMutation.mutate(students)}
-//             disabled={registerStudentsMutation.isLoading}
-//           >
-//             {registerStudentsMutation.isLoading ? "Importing..." : "Save Students"}
-//           </Button>
-//         </Box>
-//       )}
-//     </Box>
-//   );
-// };
-
-// export default AllStudents;

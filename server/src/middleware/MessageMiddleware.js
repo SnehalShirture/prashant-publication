@@ -17,7 +17,7 @@ const sendMessage = async (email, message, pdfurl = null, pdfname = null) => {
     to: email,
     subject: 'Your Pass Code',
     text: message,
-    attachments: pdfFilePath
+    attachments: pdfurl
       ? [
         {
           filename: pdfname,

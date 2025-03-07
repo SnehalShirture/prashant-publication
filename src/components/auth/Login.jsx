@@ -4,14 +4,14 @@ import {
   Button,
   Box,
   Typography,
-  Container,
+  Grid,
+  Card,
+  CardContent,
   Modal,
-  Backdrop,
   Fade,
   IconButton,
   InputAdornment,
 } from "@mui/material";
-import { styled } from "@mui/system";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { loginuser, sendotp } from "../../apiCalls/UserApi";
@@ -20,12 +20,6 @@ import { login } from "../../reduxwork/UserSlice";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { useAlert } from "../../custom/CustomAlert";
-
-const StyledContainer = styled(Container)(() => ({
-  borderRadius: "8px",
-  boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
-  background: "#fff",
-}));
 
 const modalStyle = {
   position: "absolute",
@@ -48,7 +42,6 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  // React Query Mutations
   const loginMutation = useMutation({
     mutationFn: loginuser,
     onSuccess: (response) => {
@@ -73,20 +66,17 @@ const Login = () => {
       }
     },
     onError: (error) => {
-      console.error("Login Failed:", error.message);
       showAlert("Error: " + error.message, "error");
     },
   });
 
   const sendOtpMutation = useMutation({
     mutationFn: sendotp,
-    onSuccess: (res) => {
-      console.log(res);
+    onSuccess: () => {
       showAlert("OTP sent successfully to your email!", "success");
       navigate("/resetpassword", { state: { email } });
     },
-    onError: (error) => {
-      console.error("Failed to send OTP:", error.message);
+    onError: () => {
       showAlert("Failed to send OTP. Please try again.", "error");
     },
   });
@@ -96,11 +86,9 @@ const Login = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    const loginData = new FormData(e.target);
-    const reqData = Object.fromEntries(loginData);
-    loginMutation.mutate(reqData);
+    loginMutation.mutate(formData);
   };
 
   const handleSendOtp = () => {
@@ -108,145 +96,79 @@ const Login = () => {
   };
 
   return (
-    <StyledContainer maxWidth="sm">
-      <Box
-        sx={{
-          padding: "10px",
-          marginTop: 8,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
-      >
-        <Typography
-          component="h1"
-          variant="h4"
-          sx={{
-            fontWeight: "bold",
-            marginBottom: 2,
-            color: "#00ABE4",
-          }}
-        >
-          Welcome Back 🙏!!!
-        </Typography>
+    <Grid container justifyContent="center" alignItems="center" sx={{ background: "#f3f4f6" , padding:3 }}>
+      <Grid item xs={12} sm={8} md={6} lg={4}>
+        <Card sx={{borderRadius: "16px", boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)", padding: 3 , width:"100%"}}>
+          <CardContent>
+            <Box textAlign="center" mb={3}>
+              <Typography variant="h3" fontWeight="bold" color="#1d4ed8">
+                Welcome Back!
+              </Typography>
+              <Typography variant="body1" mt={1} color="textSecondary">
+                Log in to access your account.
+              </Typography>
+            </Box>
 
-        <Typography variant="body1" align="center" sx={{ marginBottom: 4 }}>
-          Log in to access your account and continue exploring our library.
-        </Typography>
+            <Box component="form" onSubmit={handleSubmit}>
+              <TextField
+                required
+                fullWidth
+                id="email"
+                label="Email Address"
+                name="email"
+                autoComplete="email"
+                value={formData.email}
+                onChange={handleChange}
+                margin="normal"
+              />
+              <TextField
+                required
+                fullWidth
+                name="password"
+                label="Password"
+                type={showPassword ? "text" : "password"}
+                id="password"
+                value={formData.password}
+                onChange={handleChange}
+                margin="normal"
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                color="primary"
+                sx={{ mt: 3, borderRadius: "8px", py: 1.5 }}
+              >
+                Log In
+              </Button>
+            </Box>
 
-        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
-          <TextField
-            required
-            fullWidth
-            id="email"
-            label="Email Address"
-            name="email"
-            autoComplete="email"
-            value={formData.email}
-            onChange={handleChange}
-            sx={{
-              mb: 2,
-              "& .MuiOutlinedInput-root": {
-                borderRadius: "8px",
-              },
-            }}
-          />
-          <TextField
-            required
-            fullWidth
-            name="password"
-            label="Password"
-            type={showPassword ? "text" : "password"}
-            id="password"
-            value={formData.password}
-            onChange={handleChange}
-            sx={{
-              mb: 3,
-              "& .MuiOutlinedInput-root": {
-                borderRadius: "8px",
-              },
-            }}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    onClick={() => setShowPassword(!showPassword)}
-                    edge="end"
-                    sx={{
-                      color: "#00ABE4",
-                    }}
-                  >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-          />
-          <Button
-            type="submit"
-            fullWidth
-            variant="outlined"
-            color="primary"
-            disabled={loginMutation.isLoading}
-            sx={{
-              py: 1.5,
-              fontSize: "1rem",
-              fontWeight: "bold",
-              borderRadius: "8px",
-            }}
-          >
-            {loginMutation.isLoading ? "Logging In..." : "Log In"}
-          </Button>
-        </Box>
+            <Box mt={2} display="flex" justifyContent="space-between">
+              <Button color="primary" onClick={() => setIsModalOpen(true)}>
+                Forgot Password?
+              </Button>
+              <Button color="primary" onClick={() => navigate("/signup")}> 
+                Sign Up
+              </Button>
+            </Box>
+          </CardContent>
+        </Card>
+      </Grid>
 
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            width: "100%",
-            mt: 2,
-          }}
-        >
-          <Button
-            variant="text"
-            color="primary"
-            onClick={() => setIsModalOpen(true)}
-            sx={{ fontWeight: "bold" }}
-          >
-            Forgot Password
-          </Button>
-          <Button
-            variant="text"
-            color="primary"
-            onClick={() => navigate("/signup")}
-            sx={{ fontWeight: "bold" }}
-          >
-            Don't have an account? Sign Up
-          </Button>
-        </Box>
-      </Box>
-
-      {/* Forgot Password Modal */}
-      <Modal
-        open={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        closeAfterTransition
-        BackdropComponent={Backdrop}
-        BackdropProps={{
-          timeout: 500,
-        }}
-      >
+      <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <Fade in={isModalOpen}>
           <Box sx={modalStyle}>
-            <Typography
-              variant="h6"
-              component="h2"
-              sx={{ mb: 2, fontWeight: "bold", color: "#00ABE4" }}
-            >
+            <Typography variant="h6" mb={2} color="#1d4ed8">
               Forgot Password
-            </Typography>
-            <Typography variant="body2" sx={{ mb: 2 }}>
-              Enter your Registered Email to receive OTP
             </Typography>
             <TextField
               required
@@ -255,23 +177,15 @@ const Login = () => {
               variant="outlined"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              sx={{ mb: 3 }}
+              margin="normal"
             />
-            <Button
-              onClick={handleSendOtp}
-              variant="contained"
-              color="primary"
-              fullWidth
-              sx={{
-                borderRadius: "8px",
-              }}
-            >
+            <Button fullWidth variant="contained" onClick={handleSendOtp} sx={{ mt: 2 }}>
               Send OTP
             </Button>
           </Box>
         </Fade>
       </Modal>
-    </StyledContainer>
+    </Grid>
   );
 };
 

@@ -24,7 +24,7 @@ import AddBoxIcon from "@mui/icons-material/AddBox";
 import SubscriptionsIcon from '@mui/icons-material/Subscriptions';
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../reduxwork/UserSlice";
-import { useMutation } from "@tanstack/react-query"; // Import React Query's useMutation
+import { useMutation } from "@tanstack/react-query";
 import { userlogout } from "../../apiCalls/UserApi";
 import { useAlert } from "../../custom/CustomAlert";
 

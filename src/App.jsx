@@ -12,6 +12,7 @@ import { useIsFetching } from "@tanstack/react-query";
 import Loading from "./components/common/Loading";
 import { useAlert } from "./custom/CustomAlert";
 import Footer from "./components/common/Footer";
+import SubscriptionPDF from "./custom/SubscriptionPdf";
 
 export const DisableScreenshot = () => {
   const { showAlert } = useAlert();
@@ -72,6 +73,7 @@ const App = () => {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/resetpassword" element={<ResetPassword />} />
         <Route path="*" element={<ErrorPage />} />
+        <Route path="SubscriptionPDF" element={<SubscriptionPDF />} />
 
         {/* Role-based Routes */}
         {role === "user" &&
