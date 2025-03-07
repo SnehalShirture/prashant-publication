@@ -19,20 +19,19 @@ export const uploadBulkStudents = async (req, res) => {
     }
 }
 
-const registerUser = async (req, res) => {
+const activateUser = async (req, res) => {
     try {
-        const { name, lastname, email } = req.body;
+        const { email } = req.body;
         const generatedPassword = generatePassword();
 
         let salt = await bcrypt.genSalt(10)
         let hashedPassword = await bcrypt.hash(generatedPassword, salt)
 
-        const newUser = await User.create({
-            name,
-            lastname,
-            email,
-            password: hashedPassword
-        });
+        const newUser = await User.findOneAndUpdate(
+            { email: email },
+            { password: hashedPassword },
+            { new: true }
+        );
 
         const message = `logged in with your email ${email} and password ${generatedPassword}`;
         sendMessage(email, message)
@@ -257,6 +256,6 @@ const updatePassword = async (req, res) => {
 
 
 
-export { registerUser, getUser, userLogin, userLogout, addBookToShelf, getBookShelfByUserId, sendOtp, resetPassword, getUserByClgId, updatePassword, deleteBookFromShelfByUserId }
+export { activateUser, getUser, userLogin, userLogout, addBookToShelf, getBookShelfByUserId, sendOtp, resetPassword, getUserByClgId, updatePassword, deleteBookFromShelfByUserId }
 
 
