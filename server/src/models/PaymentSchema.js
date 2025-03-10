@@ -31,18 +31,18 @@ const PaymentSchema = mongoose.Schema({
     }
 });
 
-PaymentSchema.post("save",async function (doc,next) {
-    try {
-        console.log("doc",doc);
-        if (doc.status === "paid") {
-            console.log(`Updating subscription ${doc.subscriptionId} after successful payment...`);
+// PaymentSchema.post("save",async function (doc,next) {
+//     try {
+//         console.log("doc",doc);
+//         if (doc.status === "paid") {
+//             console.log(`Updating subscription ${doc.subscriptionId} after successful payment...`);
             
-            await updateSubscriptionStatus(doc.subscriptionId);
-        }
-    } catch (error) {
-        console.error("Error in post-save payment trigger:", error);
-    }
-    next();
-});
+//             await updateSubscriptionStatus(doc.subscriptionId);
+//         }
+//     } catch (error) {
+//         console.error("Error in post-save payment trigger:", error);
+//     }
+//     next();
+// });
 
 export const Payment = mongoose.model("Payment", PaymentSchema)

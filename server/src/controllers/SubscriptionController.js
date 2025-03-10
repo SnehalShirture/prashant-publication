@@ -5,6 +5,10 @@ import { ApiError } from "../utils/ApiError.js"
 import mongoose from "mongoose";
 import { sendMessage } from "../middleware/MessageMiddleware.js";
 
+import PDFDocument from "pdfkit"
+import fs from "fs"
+import { Writable } from "stream";
+import path from "path";
 
 const cancelSubscription = async (req, res) => {
     try {
@@ -174,12 +178,20 @@ const getAllSubscription = async (req, res) => {
                 }
             },
             {
+                $lookup: {
+                    from: "packages",
+                    localField: "package",
+                    foreignField: "_id",
+                    as: "package"
+                }
+            },
+            {
                 $addFields: {
                     totalBooks: { $size: "$books" }
                 }
             },
             {
-                $sort: { startDate: -1 } // Sort newest first (descending order)
+                $sort: { startDate: -1 }
             },
 
             {
@@ -459,40 +471,122 @@ const getSubscriptionByCollegeId = async (req, res) => {
 
 }
 
+export const generateQuotationpdf = async (req, res) => {
+    try {
+        const { subscriptionId } = req.body;
+
+        const subscription = await Subscription.findById(subscriptionId)
+            .populate("_id")
+            .populate("collegeId")
+            .populate("package")
+            .populate("subscribedBooks")
+            .lean();
+
+        if (!subscription) {
+            return res.status(404).json({ message: "Subscription not found" });
+        }
+
+        // Ensure uploads/quotations folder exists
+        const folderPath = path.join("uploads", "quotations");
+        if (!fs.existsSync(folderPath)) {
+            fs.mkdirSync(folderPath, { recursive: true });
+        }
+
+        // Define file path
+        const pdfFilePath = path.join(folderPath, `quotation_${subscriptionId}.pdf`).replace(/\\/g, "/");
+
+        const doc = new PDFDocument({ size: "A4", margin: 50 });
+
+        const writeStream = fs.createWriteStream(pdfFilePath);
+        doc.pipe(writeStream);
+        doc.font("Times New Roman")
+        doc.font("Helvetica-Bold").fontSize(20).text("Quotation Details", { align: "center", underline: true }).moveDown(2);
+
+        // Subscription Info
+        /*doc.text(` Status: ${subscription.status}`);
+        doc.text(` Total Amount: ${subscription.totalAmount}`);
+        doc.text(` Max Readers: ${subscription.maxReaders}`);
+        doc.text(` Start Date: ${subscription.startDate ? new Date(subscription.startDate).toDateString() : "N/A"}`);
+        doc.text(` End Date: ${subscription.endDate ? new Date(subscription.endDate).toDateString() : "N/A"}`);
+        doc.text(` Active: ${subscription.isActive ? "Yes" : "No"}`).moveDown();*/
+
+        doc.text(` Status: ${subscription.status}`);
+        doc.text(` Total Amount: ₹${subscription.totalAmount}`);
+        doc.text(` Max Readers: ${subscription.maxReaders}`);
+
+        // Display Start Date & End Date only if subscription is active
+        if (subscription.isActive) {
+            doc.text(` Start Date: ${subscription.startDate ? new Date(subscription.startDate).toDateString() : "N/A"}`);
+            doc.text(` End Date: ${subscription.endDate ? new Date(subscription.endDate).toDateString() : "N/A"}`);
+        }
+        doc.text(` Active: ${subscription.isActive ? "Yes" : "No"}`).moveDown();
+
+
+        // College Info
+        if (subscription.collegeId) {
+            doc.fontSize(14).text(" College Details:", { underline: true }).moveDown(0.5);
+            doc.fontSize(12).text(` Name: ${subscription.collegeId.clgName}`);
+            doc.text(` Address: ${subscription.collegeId.clgAddress}`);
+            doc.text(` Librarian Name: ${subscription.collegeId.librarianName}`);
+            doc.text(` Librarian Email: ${subscription.collegeId.librarianEmail}`)
+            doc.text(` Librarian Mobile No.: ${subscription.collegeId.librarianMobile}`).moveDown();
+        }
+
+        // Package Info
+        if (subscription.package.length) {
+            doc.fontSize(14).text(" Subscribed Packages:", { underline: true }).moveDown(0.5);
+
+            subscription.package.forEach((pkg, index) => {
+                doc.text(`${index + 1}. ${pkg.academicYear} ${pkg.category} Total Books : ${pkg.booksIncluded.length} , Price - ${String.fromCharCode(8377)} ${pkg.prices[0].Price} `);
+            })
+            // subscription.package.forEach((pkg, index) => {
+
+            //     const packagePrice = Array.isArray(pkg.prices) && pkg.prices.length > 0 
+            //     ? pkg.prices[0].price 
+            //     : "N/A";            
+
+            //doc.fontSize(12).text(` ${index + 1}. ${pkg.academicYear} - ${pkg.category}  ${packagePrice}`);
+
+            doc.moveDown();
+        }
+
+        // Subscribed Books Info
+        if (subscription.subscribedBooks.length) {
+            doc.fontSize(14).text(" Subscribed Books:", { underline: true }).moveDown(0.5);
+            subscription.subscribedBooks.forEach((book, index) => {
+                doc.fontSize(12).text(` ${index + 1}. ${book.name} by ${book.author}`);
+            });
+            doc.moveDown();
+        }
+
+        // Finalize PDF
+        doc.end();
+        writeStream.on("finish", async () => {
+            await Subscription.findByIdAndUpdate(subscriptionId, {
+                subscriptionQuotation: pdfFilePath
+            }, { new: true });
+
+
+            res.json({ message: "PDF generated successfully", pdfUrl: pdfFilePath });
+        });
+
+    } catch (error) {
+        console.error("Error generating PDF:", error.message);
+    }
+}
+
 export const sendQuotation = async (req, res) => {
     try {
-        const { email, pdfurl ,pdfname} = req.body;
+        const { email, pdfurl } = req.body;
         const quotation = await Subscription.findOneAndUpdate(req.body);
 
         const message = "your Quotation is : ";
-        await sendMessage(email, message, pdfurl,pdfname);
-        res.status(200).json(new APiResponse(true,200,quotation,"quotation send successfully"))
+        await sendMessage(email, message, pdfurl);
+        res.status(200).json(new APiResponse(true, 200, quotation, "quotation send successfully"))
     } catch (error) {
         res.status(500).json(new APiResponse(false, 500, null, error.message))
     }
 }
-
-export const updateSubscriptionQuotation = async (req, res) => {
-    try {
-        const { _id,  subscriptionQuotation } = req.body;
-
-        const updatedSubscription = await Subscription.findByIdAndUpdate(
-            _id,
-            { subscriptionQuotation },
-            { new: true }
-        );
-
-        if (!updatedSubscription) {
-            return res.status(404).json({ message: 'Subscription not found' });
-        }
-
-        res.status(200).json(updatedSubscription);
-    } catch (error) {
-        console.error('Error updating subscription quotation:', error);
-        res.status(500).json({ message: 'Internal server error' });
-    }
-};
-
 
 
 export {

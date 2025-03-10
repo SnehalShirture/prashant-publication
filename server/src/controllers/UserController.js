@@ -19,6 +19,16 @@ export const uploadBulkStudents = async (req, res) => {
     }
 }
 
+const registerUser = async (req, res) => {
+    try {
+        const user = await User.create(req.body)
+        res.status(200).json(new APiResponse(true, 200, user, "User created Successfully"))
+    } catch (error) {
+        res.status(500).json(new APiResponse(false, 500, null, error.message))
+    }
+}
+
+
 const activateUser = async (req, res) => {
     try {
         const { email } = req.body;
@@ -76,7 +86,7 @@ const userLogin = async (req, res) => {
 
         const populatedSession = await sessionResponse.session.populate("user_id");
         // Generate token
-        const token = jwt.sign({ userId: user._id }, 'Secret Key', { expiresIn: '1d' });
+        const token = jwt.sign({ userId: user._id }, 'Secret Key', { expiresIn: '7d' });
 
         res.status(200).json(new APiResponse(true, 200,
             {
@@ -256,6 +266,6 @@ const updatePassword = async (req, res) => {
 
 
 
-export { activateUser, getUser, userLogin, userLogout, addBookToShelf, getBookShelfByUserId, sendOtp, resetPassword, getUserByClgId, updatePassword, deleteBookFromShelfByUserId }
+export { activateUser,registerUser, getUser, userLogin, userLogout, addBookToShelf, getBookShelfByUserId, sendOtp, resetPassword, getUserByClgId, updatePassword, deleteBookFromShelfByUserId }
 
 

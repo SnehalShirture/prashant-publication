@@ -2,7 +2,7 @@ import nodemailer from 'nodemailer'
 import dotenv from 'dotenv'
 dotenv.config();
 
-const sendMessage = async (email, message, pdfurl = null, pdfname = null) => {
+const sendMessage = async (email, message, pdfurl = null) => {
   console.log(email, message);
   const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -20,7 +20,7 @@ const sendMessage = async (email, message, pdfurl = null, pdfname = null) => {
     attachments: pdfurl
       ? [
         {
-          filename: pdfname,
+          filename: "Quotation PDF",
           path: pdfurl,
           contentType: 'application/pdf',
         },

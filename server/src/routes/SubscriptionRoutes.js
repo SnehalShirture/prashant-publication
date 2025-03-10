@@ -2,7 +2,7 @@ import express from 'express'
 import {
         createSubscription, getActiveSubscription, cancelSubscription, removeBooksFromSubscription,
         getBooksByCollegeId, updateSubscriptionStatus, getAllSubscription, getSubscriptionsByStatus, getExpiredSubscription,
-        fetchBooksByCollegeId, getSubscriptionByCollegeId, sendQuotation , updateSubscriptionQuotation
+        fetchBooksByCollegeId, getSubscriptionByCollegeId, sendQuotation  ,generateQuotationpdf
 } from '../controllers/SubscriptionController.js'
 import { authenticate } from '../middleware/auth.js';
 
@@ -21,7 +21,7 @@ SubscriptionRouter.post("/cancelsubscription", cancelSubscription);
 SubscriptionRouter.post("/fetchBooksByCollegeId", fetchBooksByCollegeId);
 SubscriptionRouter.post("/getSubscriptionByCollegeId", getSubscriptionByCollegeId);
 SubscriptionRouter.post("/sendQuotation", sendQuotation);
-SubscriptionRouter.post("/updateSubscriptionQuotation", updateSubscriptionQuotation);
+SubscriptionRouter.get("/generateQuotationpdf", generateQuotationpdf);
 
 
 export { SubscriptionRouter }
