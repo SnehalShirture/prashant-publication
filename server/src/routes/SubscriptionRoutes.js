@@ -8,20 +8,20 @@ import { authenticate } from '../middleware/auth.js';
 
 const SubscriptionRouter = express.Router();
 
-SubscriptionRouter.post("/createsubscription", createSubscription);
+SubscriptionRouter.post("/createsubscription", authenticate,createSubscription);
 SubscriptionRouter.post("/removeBooksFromSubscription", removeBooksFromSubscription);
-SubscriptionRouter.post("/getBooksByCollegeId", getBooksByCollegeId);
-SubscriptionRouter.post("/updateSubscriptionStatus", updateSubscriptionStatus);
-SubscriptionRouter.get("/getAllSubscription", getAllSubscription);
+SubscriptionRouter.post("/getBooksByCollegeId",authenticate, getBooksByCollegeId);
+SubscriptionRouter.post("/updateSubscriptionStatus",authenticate, updateSubscriptionStatus);
+SubscriptionRouter.get("/getAllSubscription",authenticate, getAllSubscription);
 SubscriptionRouter.get("/getActiveSubscription", getActiveSubscription);
 SubscriptionRouter.post("/getSubscriptionsByStatus", getSubscriptionsByStatus);
 SubscriptionRouter.get("/getExpiredSubscription", getExpiredSubscription);
 
 SubscriptionRouter.post("/cancelsubscription", cancelSubscription);
-SubscriptionRouter.post("/fetchBooksByCollegeId", fetchBooksByCollegeId);
+SubscriptionRouter.post("/fetchBooksByCollegeId",authenticate, fetchBooksByCollegeId);
 SubscriptionRouter.post("/getSubscriptionByCollegeId", getSubscriptionByCollegeId);
-SubscriptionRouter.post("/sendQuotation", sendQuotation);
-SubscriptionRouter.post("/generateQuotationpdf", generateQuotationpdf);
+SubscriptionRouter.post("/sendQuotation",authenticate, sendQuotation);
+SubscriptionRouter.post("/generateQuotationpdf",authenticate, generateQuotationpdf);
 
 
 export { SubscriptionRouter }
