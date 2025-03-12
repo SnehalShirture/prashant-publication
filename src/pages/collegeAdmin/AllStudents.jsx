@@ -7,22 +7,30 @@ import {
   TextField,
   Grid,
   Modal,
+  FormControlLabel,
+  Switch,
+  Tooltip,
+  IconButton
 } from "@mui/material";
 import CustomTable from "../../custom/CustomTable";
 import { useSelector } from "react-redux";
-import { useMutation } from "@tanstack/react-query";
-import { registeruser, getstudentbyclgid } from "../../apiCalls/UserApi";
+import { useMutation , useQueryClient } from "@tanstack/react-query";
+import { registeruser, getstudentbyclgid  , uploadBulkStudents , activateUser } from "../../apiCalls/UserApi";
 import * as XLSX from "xlsx";
+import { useAlert } from "../../custom/CustomAlert";
+
 
 const AllStudents = () => {
+  const { showAlert } = useAlert();
   const { UserData } = useSelector((state) => state.user);
   const collegeId = UserData.user_id.collegeId;
+  const queryClient = useQueryClient();
+
 
   const [addStudent, setAddStudent] = useState({
     name: "",
     lastName: "",
     email: "",
-    password: "",
     mobile: "",
     role: "user",
     collegeId: collegeId,
@@ -30,6 +38,7 @@ const AllStudents = () => {
   const [students, setStudents] = useState([]);
   const [open, setOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
+
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -39,11 +48,11 @@ const AllStudents = () => {
     mutationFn: (newStudent) => registeruser(newStudent),
     onSuccess: (newStudent) => {
       setStudents((prevStudents) => [...prevStudents, newStudent]);
+      queryClient.invalidateQueries(["students", collegeId]);
       setAddStudent({
         name: "",
         lastName: "",
         email: "",
-        password: "",
         mobile: "",
         role: "user",
         collegeId: collegeId,
@@ -84,12 +93,28 @@ const AllStudents = () => {
     const newStudent = {
       name: `${addStudent.name} ${addStudent.lastName}`,
       email: addStudent.email,
-      password: addStudent.password,
       mobile: addStudent.mobile,
       role: addStudent.role,
       collegeId: addStudent.collegeId,
     };
     addStudentMutation.mutate(newStudent);
+  };
+
+  //active students
+  const activateStudentMutation = useMutation({
+    mutationFn: (email) => activateUser({ email: email }),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["students", collegeId]);
+      showAlert("Student activated successfully", "success");
+    },
+    onError: (error) => {
+      console.error("Error activating student:", error.message);
+      showAlert("Failed to activate student. Please try again.", "error");
+    },
+  });
+
+  const handleActivateStudent = (email) => {
+    activateStudentMutation.mutate(email);
   };
 
   // Handle file upload and parsing Excel data with validation
@@ -129,17 +154,32 @@ const AllStudents = () => {
             role: "user",
             collegeId: collegeId,
           }));
+          const existingEmails = new Set(students.map((student) => student.email));
 
+          const uniqueStudents = formattedData.filter(
+            (student) => !existingEmails.has(student.email)
+          );
+          
+          if (uniqueStudents.length === 0) {
+            showAlert("All students already exist!", "warning");
+            setUploading(false);
+            return;
+          }
+          
+          addBulkStudentsMutation.mutate(uniqueStudents);
+          fetchStudentsMutation.mutate({ collegeId });
+          
           const newStudents = formattedData.filter(
             (newStudent) =>
               !students.some((existing) => existing.email === newStudent.email)
           );
 
           setStudents((prevStudents) => [...prevStudents, ...newStudents]);
-          alert("Students uploaded successfully!");
+          showAlert("Students uploaded successfully!" , "success");
+          console.log("formattedData : " , formattedData)
         } catch (error) {
           console.error("Error reading Excel file:", error);
-          alert("Failed to read Excel file. Please upload a valid file.");
+          showAlert("Failed to read Excel file. Please upload a valid file." , "error");
         } finally {
           setUploading(false);
           e.target.value = null;
@@ -149,11 +189,46 @@ const AllStudents = () => {
     }
   };
 
+  //mutation for uploadBulkStudents
+  const addBulkStudentsMutation =  useMutation({
+    mutationFn: (newStudent) => uploadBulkStudents(newStudent),
+    onSuccess: () => {
+      showAlert("Students uploaded successfully!" , "success");
+      setStudents([]);
+      fetchStudentsMutation.mutate({ collegeId });
+      },
+      onError: (error) => {
+        console.error("Error uploading students:", error.message);
+        showAlert("Failed to upload students. Please try again." , "error");
+        },
+    });
+
+    
   const tableColumns = [
-    { accessorKey: "name", header: "Student Name", size: 250 },
+    { accessorKey: "name", header: "Student Name", size: 200 },
     { accessorKey: "email", header: "Email Address", size: 250 },
     { accessorKey: "mobile", header: "Mobile", size: 250 },
+    {
+      header: "Actions",
+      size: 150,
+      Cell: ({ row }) => (
+        <FormControlLabel
+          control={
+            <Switch
+              checked={row.original.password}
+              onChange={(e) =>
+                handleActivateStudent(row.original.email, e.target.checked)
+              }
+              color="success"
+            />
+          }
+          label={row.original.password ? "Active" : "Inactive"}
+        />
+      ),
+    },
+    
   ];
+  //njl864ho
 
   return (
     <Box sx={{ padding: 3, bgcolor: "#f5f5f5" }}>
@@ -244,17 +319,7 @@ const AllStudents = () => {
                   required
                 />
               </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Password"
-                  name="password"
-                  type="password"
-                  value={addStudent.password}
-                  onChange={handleInputChange}
-                  required
-                />
-              </Grid>
+             
               <Grid item xs={12}>
                 <TextField
                   fullWidth

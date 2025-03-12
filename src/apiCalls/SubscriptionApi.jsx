@@ -76,6 +76,22 @@ export const sendQuotation = async (quotationData) => {
   }
 }
 
+//generateQuotationpdf
+export const generateQuotationpdf = async (quotationData) => {
+  const aInstance = createInstance();
+  try {
+    const response = await aInstance.post("generateQuotationpdf", quotationData);
+    return response.data;
+    
+  } catch (error) {
+    console.error("Error generating quotation pdf:", error.message);
+    throw new Error(
+      error.response?.data?.message || "An error occurred while generating quotation pdf"
+    );
+    
+  }
+}
+
 //updateSubscriptionQuotation
 export const updateSubscriptionQuotation = async (quotationData) => {
   const aInstance = createInstance();

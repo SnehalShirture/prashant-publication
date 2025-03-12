@@ -4,7 +4,7 @@ import { createInstance } from "./axiosInstance";
 export const registeruser = async (userReqData) => {
     let aInstance = createInstance()
     try {
-        const response = await aInstance.post("register", userReqData, { headers: { "Content-Type": "application/json" } });
+        const response = await aInstance.post("registerUser", userReqData, { headers: { "Content-Type": "application/json" } });
         console.log(response)
         return response.data;
 
@@ -13,6 +13,43 @@ export const registeruser = async (userReqData) => {
         console.log("Registration Error:", error.message);
         throw new Error(error.response?.data?.message || "An error occurred during registration.");
 
+    }
+}
+//activateUser
+export const activateUser = async (userReqData) => {
+    let aInstance = createInstance()
+    try {
+        const response = await aInstance.post("activateUser", userReqData, { headers: {
+            "Content-Type": "application/json"
+            } });
+            console.log(response)
+            return response.data;
+        
+    } catch (error) {
+        // Log the full error response for debugging
+        console.log("Activation Error:", error.message);
+        throw new Error(error.response?.data?.message || "An error occurred during activation.");
+        
+    }
+}
+
+//uploadBulkStudents 
+export const uploadBulkStudents = async (studentReqData) => {
+    let aInstance = createInstance()
+    try {
+        const response = await aInstance.post("uploadBulkStudents", studentReqData, 
+            { headers:
+            { "Content-Type": "application/json" } 
+            });
+            console.log(response)
+            return response.data;
+        
+    } catch (error) {
+        // Log the full error response for debugging
+        console.log("Upload Bulk Students Error:", error.message);
+        throw new Error(error.response?.data?.message || "An error occurred during uploading bulk students.");
+
+        
     }
 }
 

@@ -1,9 +1,9 @@
 import React from "react";
 import { Container, Typography, Button } from "@mui/material";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery  , useMutation} from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import CustomTable from "../../custom/CustomTable";
-import { getAllSubscriptions , updateSubscriptionQuotation } from "../../apiCalls/SubscriptionApi";
+import { getAllSubscriptions , updateSubscriptionQuotation , generateQuotationpdf } from "../../apiCalls/SubscriptionApi";
 import { PDFDownloadLink, pdf } from "@react-pdf/renderer";
 import SubscriptionPDF from "../../custom/SubscriptionPdf";
 import { useAlert } from "../../custom/CustomAlert";
@@ -56,7 +56,21 @@ const AllSubscriptions = () => {
     // setTimeout(() => URL.revokeObjectURL(url), 100);
   };
 
-
+  //generateQuotationMutation
+  const generateQuotationMutation = useMutation({
+    mutationFn: async ({ subscriptionId }) => {
+      console.log("Sending Subscription ID to API:", subscriptionId); // Debugging
+      return await generateQuotationpdf({ subscriptionId });
+    },
+    onSuccess: (response) => {
+      showAlert("Quotation PDF generated successfully!", "success");
+      console.log("Quotation PDF generated successfully!" , response);
+    },
+    onError: (error) => {
+      showAlert("Failed to generate PDF. Try again.", "error");
+      console.error("Error generating PDF:", error.message);
+    },
+  });
 
   // Table columns
   const columns = [
@@ -68,11 +82,27 @@ const AllSubscriptions = () => {
     { header: "Total Amount (₹)", accessorFn: (row) => row.totalAmount || "0" },
     { header: "Status", accessorKey: "status" },
     {
-      header: "Action",
+      header: "Generate Quotation",
       accessorFn: (row) => (
         <Button
           variant="outlined"
           color="primary"
+          size="small"
+          onClick={() => {
+            console.log("Subscription ID for PDF:", row._id); // Debugging log
+            generateQuotationMutation.mutate({ subscriptionId: row._id });
+          }}
+        >
+          {generateQuotationMutation.isLoading ? "Generating..." : "Generate PDF"}
+        </Button>
+      ),
+    },
+    {
+      header: "View Details",
+      accessorFn: (row) => (
+        <Button
+          variant="outlined"
+          color="secondary"
           size="small"
           onClick={() => navigate(`/sadmin/orderdetail`, { state: row })}
         >
@@ -80,37 +110,24 @@ const AllSubscriptions = () => {
         </Button>
       ),
     },
-    {
-      header: "Open PDF",
-      accessorFn: (row) => (
-        <Button
-          variant="outlined"
-          color="warning"
-          size="small"
-          onClick={() => handleOpenPDF(row)}
-        >
-          Open PDF
-        </Button>
-      )
-    },
-    {
-      header: "PDF",
-      accessorFn: (row) => (
-        <PDFDownloadLink
-            document={<SubscriptionPDF data={[row]} />}
-            fileName={`Subscription_${row.college?.[0]?.clgName || "N/A"}.pdf`}
-          >
-        <Button
-          variant="outlined"
-          color="secondary"
-          size="small"
-          onClick={() => handleGetBase64URL(row)}
-        >
-          Download PDF
-        </Button>
-       </PDFDownloadLink>
-      ),
-    },
+    // {
+    //   header: "PDF",
+    //   accessorFn: (row) => (
+    //     <PDFDownloadLink
+    //         document={<SubscriptionPDF data={[row]} />}
+    //         fileName={`Subscription_${row.college?.[0]?.clgName || "N/A"}.pdf`}
+    //       >
+    //     <Button
+    //       variant="outlined"
+    //       color="secondary"
+    //       size="small"
+    //       onClick={() => handleGetBase64URL(row)}
+    //     >
+    //       Download PDF
+    //     </Button>
+    //    </PDFDownloadLink>
+    //   ),
+    // },
   ];
 
   return (

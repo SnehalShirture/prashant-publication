@@ -73,7 +73,6 @@ const App = () => {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/resetpassword" element={<ResetPassword />} />
         <Route path="*" element={<ErrorPage />} />
-        <Route path="SubscriptionPDF" element={<SubscriptionPDF />} />
 
         {/* Role-based Routes */}
         {role === "user" &&

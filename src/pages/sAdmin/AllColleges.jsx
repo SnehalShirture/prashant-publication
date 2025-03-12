@@ -30,6 +30,8 @@ const AllColleges = () => {
       queryClient.invalidateQueries(["colleges"]); // Refresh college list
       handleClose();
     },
+    onError: (error) => console.error("Error adding college:", error.message),
+  
   });
 
   const handleOpen = () => setOpen(true);

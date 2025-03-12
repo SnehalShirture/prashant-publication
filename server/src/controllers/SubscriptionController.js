@@ -498,7 +498,7 @@ export const generateQuotationpdf = async (req, res) => {
 
         const writeStream = fs.createWriteStream(pdfFilePath);
         doc.pipe(writeStream);
-        doc.font("Times New Roman")
+       doc.font("Times-Roman");
         doc.font("Helvetica-Bold").fontSize(20).text("Quotation Details", { align: "center", underline: true }).moveDown(2);
 
         // Subscription Info
@@ -528,7 +528,8 @@ export const generateQuotationpdf = async (req, res) => {
             doc.fontSize(14).text(" Subscribed Packages:", { underline: true }).moveDown(0.5);
 
             subscription.package.forEach((pkg, index) => {
-                doc.text(`${index + 1}. ${pkg.academicYear} ${pkg.category} Total Books : ${pkg.booksIncluded.length} , Price - ${String.fromCharCode(8377)} ${pkg.prices[0].Price} `);
+                doc.text(`${index + 1}. ${pkg.academicYear} ${pkg.category} Total Books : ${pkg.booksIncluded.length} `);
+                // doc.text(`${index + 1}. ${pkg.academicYear} ${pkg.category} Total Books : ${pkg.booksIncluded.length} , Price - ${String.fromCharCode(8377)} ${pkg.prices[0].Price} `);
             })
 
             doc.moveDown();

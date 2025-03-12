@@ -21,7 +21,7 @@ SubscriptionRouter.post("/cancelsubscription", cancelSubscription);
 SubscriptionRouter.post("/fetchBooksByCollegeId", fetchBooksByCollegeId);
 SubscriptionRouter.post("/getSubscriptionByCollegeId", getSubscriptionByCollegeId);
 SubscriptionRouter.post("/sendQuotation", sendQuotation);
-SubscriptionRouter.get("/generateQuotationpdf", generateQuotationpdf);
+SubscriptionRouter.post("/generateQuotationpdf", generateQuotationpdf);
 
 
 export { SubscriptionRouter }

@@ -52,7 +52,6 @@ const CollegeAppbar = () => {
     { to: "/librarydashboard", label: "Dashboard", icon: <DashboardIcon /> },
     { to: "/library/students", label: "All Students", icon: <GroupIcon /> },
     { to: "/library/books", label: "Books", icon: <BookIcon /> },
-    { to: "/SubscriptionPDF", label: "SubscriptionPDF", icon: <BookIcon /> },
   ];
 
   // Mutation for logout

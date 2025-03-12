@@ -117,6 +117,32 @@ const OrderDetail = () => {
     status: subscription.status || "Pending",
   })) || [];
 
+  // Mutation to send quotation email
+  const sendQuotationMutation = useMutation({
+    mutationFn: async () => {
+      if (!subscription.subscriptionQuotation) {
+        showAlert("Please generate the quotation first!", "warning");
+        return;
+      }
+
+      const payload = {
+        email: collegeDetails?.librarianEmail,
+        pdfurl: subscription.subscriptionQuotation,
+      };
+      console.log("payload : " , payload)
+
+      return await sendQuotation(payload);
+    },
+    onSuccess: (response) => {
+      showAlert("Quotation sent successfully!", "success");
+      console.log( "Quotation response : ", response);
+    },
+    onError: (error) => {
+      showAlert("Failed to send quotation. Try again.", "error");
+      console.error("Error sending quotation:", error.message);
+    },
+  });
+
   return (
     <Container sx={{ mt: 4 }}>
       <Typography variant="h4" fontWeight={600} sx={{ mb: 3 }}>
@@ -212,13 +238,22 @@ const OrderDetail = () => {
         display: 'flex',
         justifyContent: 'flex-end',
       }}>
-      <Button
+      {/* <Button
         variant="contained"
         color="secondary"
         sx={{ mt: 2 , mb : 3}}
         onClick={handleSendPdf}
       >
         Send PDF to College Email
+      </Button> */}
+       <Button
+        variant="contained"
+        color="warning"
+        sx={{ mt: 2 , mb : 3}}
+        onClick={() => sendQuotationMutation.mutate()}
+        disabled={sendQuotationMutation.isLoading}
+      >
+        {sendQuotationMutation.isLoading ? "Sending..." : "Send Quotation"}
       </Button>
       </Box>
     </Container>
