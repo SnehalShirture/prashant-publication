@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { createRazorpayOrder } from "../controllers/PaymentController.js";
+
 const SubscriptionSchema = mongoose.Schema({
     collegeId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -19,11 +20,6 @@ const SubscriptionSchema = mongoose.Schema({
         type: Boolean,
         default: false
     },
-    // paymentId: {
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: 'Payment',
-    //     required: true
-    // },
     subscribedBooks: [
         {
             type: mongoose.Schema.Types.ObjectId,
@@ -43,6 +39,9 @@ const SubscriptionSchema = mongoose.Schema({
     },
     subscriptionQuotation: {
         type: String
+    },
+    maintenanceCost:{
+        type:Number
     }
 });
 

@@ -7,7 +7,6 @@ import { sendMessage } from "../middleware/MessageMiddleware.js";
 
 import PDFDocument from "pdfkit"
 import fs from "fs"
-import { Writable } from "stream";
 import path from "path";
 
 const cancelSubscription = async (req, res) => {
@@ -486,7 +485,7 @@ export const generateQuotationpdf = async (req, res) => {
             return res.status(404).json({ message: "Subscription not found" });
         }
 
-        // Ensure uploads/quotations folder exists
+        
         const folderPath = path.join("uploads", "quotations");
         if (!fs.existsSync(folderPath)) {
             fs.mkdirSync(folderPath, { recursive: true });
@@ -503,24 +502,16 @@ export const generateQuotationpdf = async (req, res) => {
         doc.font("Helvetica-Bold").fontSize(20).text("Quotation Details", { align: "center", underline: true }).moveDown(2);
 
         // Subscription Info
-        /*doc.text(` Status: ${subscription.status}`);
-        doc.text(` Total Amount: ${subscription.totalAmount}`);
-        doc.text(` Max Readers: ${subscription.maxReaders}`);
-        doc.text(` Start Date: ${subscription.startDate ? new Date(subscription.startDate).toDateString() : "N/A"}`);
-        doc.text(` End Date: ${subscription.endDate ? new Date(subscription.endDate).toDateString() : "N/A"}`);
-        doc.text(` Active: ${subscription.isActive ? "Yes" : "No"}`).moveDown();*/
-
-        doc.text(` Status: ${subscription.status}`);
+        doc.fontSize(12).text(` Status: ${subscription.status}`);
         doc.text(` Total Amount: ₹${subscription.totalAmount}`);
-        doc.text(` Max Readers: ${subscription.maxReaders}`);
 
         // Display Start Date & End Date only if subscription is active
         if (subscription.isActive) {
+            doc.text(` Max Readers: ${subscription.maxReaders}`);
             doc.text(` Start Date: ${subscription.startDate ? new Date(subscription.startDate).toDateString() : "N/A"}`);
             doc.text(` End Date: ${subscription.endDate ? new Date(subscription.endDate).toDateString() : "N/A"}`);
         }
         doc.text(` Active: ${subscription.isActive ? "Yes" : "No"}`).moveDown();
-
 
         // College Info
         if (subscription.collegeId) {
@@ -539,13 +530,6 @@ export const generateQuotationpdf = async (req, res) => {
             subscription.package.forEach((pkg, index) => {
                 doc.text(`${index + 1}. ${pkg.academicYear} ${pkg.category} Total Books : ${pkg.booksIncluded.length} , Price - ${String.fromCharCode(8377)} ${pkg.prices[0].Price} `);
             })
-            // subscription.package.forEach((pkg, index) => {
-
-            //     const packagePrice = Array.isArray(pkg.prices) && pkg.prices.length > 0 
-            //     ? pkg.prices[0].price 
-            //     : "N/A";            
-
-            //doc.fontSize(12).text(` ${index + 1}. ${pkg.academicYear} - ${pkg.category}  ${packagePrice}`);
 
             doc.moveDown();
         }
@@ -566,14 +550,13 @@ export const generateQuotationpdf = async (req, res) => {
                 subscriptionQuotation: pdfFilePath
             }, { new: true });
 
-
             res.json({ message: "PDF generated successfully", pdfUrl: pdfFilePath });
         });
-
     } catch (error) {
         console.error("Error generating PDF:", error.message);
     }
 }
+
 
 export const sendQuotation = async (req, res) => {
     try {
