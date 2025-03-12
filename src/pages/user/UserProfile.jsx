@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Box,
   Button,
@@ -13,7 +13,9 @@ import { LineChart } from "@mui/x-charts/LineChart";
 import { logout } from "../../reduxwork/UserSlice";
 import { userlogout, getreadingdatabytuserid } from "../../apiCalls/UserApi";
 import { useAlert } from "../../custom/CustomAlert";
-import { useQuery , useMutation} from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import UpdatePasswordModal from "../../custom/UpdatePassword";
+
 
 const UserProfile = () => {
   const { showAlert } = useAlert();
@@ -23,6 +25,8 @@ const UserProfile = () => {
   // Access user data from Redux store
   const { UserData, islogin } = useSelector((state) => state.user);
 
+  const [updatePasswordModalOpen, setUpdatePasswordModalOpen] = useState(false);
+
   // React Query to fetch reading data
   const fetchReadingData = async (userId) => {
     const response = await getreadingdatabytuserid({ userId });
@@ -30,7 +34,7 @@ const UserProfile = () => {
   };
 
   const { data: readingData = [], error } = useQuery({
-    queryKey: ["readingData", UserData?.user_id?._id], 
+    queryKey: ["readingData", UserData?.user_id?._id],
     queryFn: () => fetchReadingData(UserData.user_id._id),
     enabled: !!UserData?.user_id?._id, // Fetch only if user ID exists
   });
@@ -85,8 +89,11 @@ const UserProfile = () => {
           <strong>Role:</strong> {UserData.user_id.role}
         </Typography>
         <Box sx={{ mt: 3 }}>
-          <Button variant="contained" color="primary" sx={{ mr: 2 }} onClick={() => navigate("/edit-profile")}>
-            Edit Profile
+          <Button 
+            variant="contained"
+           color="primary" sx={{ mr: 2 }}
+           onClick={() => setUpdatePasswordModalOpen(true)} >
+           Update Password
           </Button>
           <Button variant="outlined" color="secondary" onClick={handleLogout}>
             Logout
@@ -127,6 +134,13 @@ const UserProfile = () => {
           </Typography>
         )}
       </Paper>
+
+      {/* Update Password Modal */}
+      <UpdatePasswordModal
+        open={updatePasswordModalOpen}
+        onClose={() => setUpdatePasswordModalOpen(false)}
+        email={UserData.user_id.email}
+      />
     </Box>
   );
 };

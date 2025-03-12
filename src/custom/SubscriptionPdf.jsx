@@ -1,57 +1,73 @@
 import React from "react";
-import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import { Document, Page, Text, View, StyleSheet, Image } from "@react-pdf/renderer";
 
-const SubscriptionPDF = ({ data = [] }) => (
-    <Document>
-        <Page size="A4" style={styles.page}>
-            <View style={styles.header}>
-                <Text style={styles.title}>All Subscriptions</Text>
-            </View>
-            {Array.isArray(data) && data.length > 0 ? (
-                data.map((sub, index) => (
-                    <View key={index} style={styles.subscription}>
-                        <Text style={styles.label}>
-                            College: <Text style={styles.value}>{sub.college?.[0]?.clgName || "N/A"}</Text>
-                        </Text>
-                        <Text style={styles.label}>
-                            Librarian: <Text style={styles.value}>{sub.college?.[0]?.librarianName || "N/A"}</Text>
-                        </Text>
-                        <Text style={styles.label}>
-                            Mobile: <Text style={styles.value}>{sub.college?.[0]?.librarianMobile || "N/A"}</Text>
-                        </Text>
-                        <Text style={styles.label}>
-                            Total Books: <Text style={styles.value}>{sub.totalBooks || "0"}</Text>
-                        </Text>
-                        <Text style={styles.label}>
-                            Total Amount (₹): <Text style={styles.value}>{sub.totalAmount || "0"}</Text>
-                        </Text>
-                        <Text style={styles.label}>
-                            Status: <Text style={styles.value}>{sub.status}</Text>
-                        </Text>
-                        <Text style={styles.separator}>
-                            --------------------------------------
-                        </Text>
-                    </View>
-                ))
-            ) : (
-                <Text>No Subscription Data Available</Text>
-            )}
-        </Page>
-    </Document>
-);
+const SubscriptionPDF = ({ data = [] }) => {
+    console.log("data : ", data);
+
+    return (
+        <Document>
+            <Page size="A4" style={styles.page}>
+                <View style={styles.header}>
+                    <Text style={styles.title}>College Subscriptions Quotation</Text>
+                    <Text style={styles.separator}>────────────────────────────────────</Text>
+                </View>
+                {Array.isArray(data) && data.length > 0 ? (
+                    data.map((sub, index) => (
+                        <View key={index} style={styles.subscriptionContainer}>
+                            <View style={styles.subscriptionDetails}>
+                                <Text style={styles.label}>College: <Text style={styles.value}>{sub.college?.[0]?.clgName || "N/A"}</Text></Text>
+                                <Text style={styles.label}>Librarian: <Text style={styles.value}>{sub.college?.[0]?.librarianName || "N/A"}</Text></Text>
+                                <Text style={styles.label}>Mobile: <Text style={styles.value}>{sub.college?.[0]?.librarianMobile || "N/A"}</Text></Text>
+                                <Text style={styles.label}>Total Books: <Text style={styles.value}>{sub.totalBooks || "0"}</Text></Text>
+                                <Text style={styles.label}>Total Amount (₹): <Text style={styles.value}>{sub.totalAmount || "0"}</Text></Text>
+                                <Text style={styles.label}>Status: <Text style={styles.value}>{sub.status}</Text></Text>
+                            </View>
+                            <Text style={styles.separator}>────────────────────────────</Text>
+                            <View style={styles.booksContainer}>
+                                {sub.books?.map((book, bookIndex) => (
+                                    <View key={bookIndex} style={styles.bookCard}>
+                                        {book.coverImage && (
+                                            <Image
+                                                src={book.coverImage.replace("\\", "/")}
+                                                style={styles.bookImage}
+                                            />
+                                        )}
+                                        <Text style={styles.bookTitle}>{book.name}</Text>
+                                        <Text style={styles.bookInfo}>Author: {book.author}</Text>
+                                        <Text style={styles.bookInfo}>Category: {book.category}</Text>
+                                        <Text style={styles.bookInfo}>Price: ₹{book.price}</Text>
+                                        <Text style={styles.bookInfo}>Year Published: {book.yearPublished}</Text>
+                                    </View>
+                                ))}
+                            </View>
+                        </View>
+                    ))
+                ) : (
+                    <Text>No Subscription Data Available</Text>
+                )}
+            </Page>
+        </Document>
+    );
+};
 
 const styles = StyleSheet.create({
-    page: { padding: 20 },
-    header: { marginBottom: 10 },
-    title: { fontSize: 20, fontWeight: "bold", marginBottom: 10 },
-    subscription: { marginBottom: 10 },
-    label: { fontSize: 12, marginBottom: 4 },
-    value: { fontWeight: "bold" },
-    separator: { marginVertical: 8, fontSize: 10, color: "gray" },
+    page: { padding: 20, backgroundColor: '#f5f5f5' },
+    header: { marginBottom: 20, textAlign: 'center' },
+    title: { fontSize: 24, fontWeight: 'bold', marginBottom: 10 },
+    separator: { marginVertical: 10, fontSize: 12, color: "gray" },
+    subscriptionContainer: { marginBottom: 20, padding: 10, border: '1px solid #ddd', borderRadius: 5 },
+    subscriptionDetails: { marginBottom: 10 },
+    label: { fontSize: 14, marginBottom: 4 },
+    value: { fontWeight: 'bold' },
+    booksContainer: { display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+    bookCard: { width: '30%', padding: 5, border: '1px solid #ddd', borderRadius: 5, textAlign: 'center' },
+    bookImage: { width: '100%', height: 80, objectFit: 'cover', marginBottom: 5 },
+    bookTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 5 },
+    bookInfo: { fontSize: 12, marginBottom: 2 }
 });
 
 export default SubscriptionPDF;
-
+ 
 
 
 // import React from 'react'
