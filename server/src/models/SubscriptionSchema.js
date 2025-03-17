@@ -46,18 +46,18 @@ const SubscriptionSchema = mongoose.Schema({
 });
 
 
- SubscriptionSchema.post("update", async function (doc, next) {
-     try {
+// SubscriptionSchema.post("update", async function (doc, next) {
+//      try {
 
-         console.log("doc",doc);
-         await updateSubscriptionStatus(_id);
+//          console.log("doc",doc);
+//          await updateSubscriptionStatus(_id);
 
-     } catch (error) {
-         console.error("Error in post-save subscription trigger:", error);
-         return next(error);
-     }
-     next();
- });
+//      } catch (error) {
+//          console.error("Error in post-save subscription trigger:", error);
+//          return next(error);
+//      }
+//      next();
+// });
 
 
 export const Subscription = mongoose.model("Subscription", SubscriptionSchema) 
