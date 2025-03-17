@@ -6,8 +6,19 @@ import mongoose from "mongoose";
 import { sendMessage } from "../middleware/MessageMiddleware.js";
 
 import PDFDocument from "pdfkit"
+import PdfPrinter from "pdfmake"
 import fs from "fs"
 import path from "path";
+
+const printer = new PdfPrinter({
+    Roboto: {
+        normal: "Helvetica",
+        bold: "Helvetica-Bold",
+        italics: "Helvetica-Oblique",
+        bolditalics: "Helvetica-BoldOblique",
+    },
+});
+
 
 const cancelSubscription = async (req, res) => {
     try {
@@ -116,22 +127,13 @@ const getBooksByCollegeId = async (req, res) => {
 };
 
 
-const updateSubscriptionStatus = async (subscriptionId) => {
+const updateSubscriptionStatus = async (req, res) => {
     try {
+        const { subscriptionId } = req.body;
         const startDate = new Date();
         let endDate = new Date(startDate);
 
-        endDate.setFullYear(endDate.getFullYear() + 1);
-        /*switch (plan) {
-            case "6months":
-                endDate.setMonth(endDate.getMonth() + 6);
-                break;
-            case "2year":
-                endDate.setFullYear(endDate.getFullYear() + 2);
-                break;
-            case "1year":
-                endDate.setFullYear(endDate.getFullYear() + 1);
-        }*/
+        endDate.setFullYear(endDate.getFullYear()+1);
 
         const subscription = await Subscription.findOneAndUpdate(
             { _id: subscriptionId },
@@ -406,7 +408,6 @@ const fetchBooksByCollegeId = async (req, res) => {
             }
         ]);
         res.status(200).json(new APiResponse(true, 200, booksData, "Books Data"))
-
     } catch (error) {
         console.log(error);
     }
@@ -485,7 +486,7 @@ export const generateQuotationpdf = async (req, res) => {
             return res.status(404).json({ message: "Subscription not found" });
         }
 
-        
+
         const folderPath = path.join("uploads", "quotations");
         if (!fs.existsSync(folderPath)) {
             fs.mkdirSync(folderPath, { recursive: true });
@@ -494,58 +495,179 @@ export const generateQuotationpdf = async (req, res) => {
         // Define file path
         const pdfFilePath = path.join(folderPath, `quotation_${subscriptionId}.pdf`).replace(/\\/g, "/");
 
-        const doc = new PDFDocument({ size: "A4", margin: 50 });
+        // Header Section 
+        const headerSection = {
+            columns: [
+                {
+                    stack: [
+                        { text: "Prashant Book House", style: "header", alignment: "center" },
+                        { text: "Office: 3 Pratap Nagar, Dynaneshwar Mandir Road,", fontSize: 10, alignment: "center", margin: [0, 5] },
+                        { text: "Near Nutan Maratha College Jalgaon 425 001,", fontSize: 10, alignment: "center", margin: [0, 5] },
+                        { text: "Ph: (0257) 223 5520, 223 2800 | Mb: 9421636460", fontSize: 10, alignment: "center", margin: [0, 5] },
+                        { text: "Email: prashantbookhouse@gmail.com", fontSize: 10, alignment: "center", margin: [0, 5] },
+                        { text: "Website: prashantpublications.com", fontSize: 10, alignment: "center", margin: [0, 5] },
+                    ],
+                    width: "60%",
+                },
+                {
+                    stack: [
+                        { text: "To,", bold: true, alignment: "left" },
+                        { text: `${subscription.collegeId.clgName}`, style: "subheader", alignment: "left", margin: [0, 5] },
+                        { text: `${subscription.collegeId.clgAddress}`, fontSize: 10, alignment: "left", margin: [0, 5] },
+                        { text: `Librarian: ${subscription.collegeId.librarianName}`, fontSize: 10, alignment: "left", margin: [0, 5] },
+                        { text: `Email: ${subscription.collegeId.librarianEmail}`, fontSize: 10, alignment: "left", margin: [0, 5] },
+                        { text: `Mobile: ${subscription.collegeId.librarianMobile}`, fontSize: 10, alignment: "left", margin: [0, 5] },
+                    ],
+                    alignment: "right",
+                    width: "50%",
+                },
+            ],
+            margin: [0, 20, 0, 10],
+        };
 
-        const writeStream = fs.createWriteStream(pdfFilePath);
-        doc.pipe(writeStream);
-       doc.font("Times-Roman");
-        doc.font("Helvetica-Bold").fontSize(20).text("Quotation Details", { align: "center", underline: true }).moveDown(2);
+        const orderTitle = {
+            table: {
+                widths: ["100%"],
+                body: [
+                    [
+                        {
+                            text: "Q U O T A T I O N   F O R M",
+                            style: "orderHeader",
+                            alignment: "center",
+                            bold: true,
+                            margin: [0, 5, 0, 5],
+                            fillColor: "#e0e0e0", // Light Grey Background
+                        },
+                    ],
+                ],
+            },
+            layout: "noBorders",
+            margin: [0, 10, 0, 10],
+        };
 
-        // Subscription Info
-        doc.fontSize(12).text(` Status: ${subscription.status}`);
-        doc.text(` Total Amount: ₹${subscription.totalAmount}`);
 
-        // Display Start Date & End Date only if subscription is active
+        const orderDate = {
+            columns: [
+                { text: `Date: ${new Date().toLocaleDateString()}`, alignment: "left", margin: [0, 0, 0, 8], },
+            ],
+        };
+
+        // **Subscription Details**
+        let totalAmount = 0;
+        const maintenanceCost = subscription.maintenanceCost || 0;
+
+        subscription.package.forEach((pkg) => {
+            totalAmount += pkg.prices.length > 0 ? pkg.prices[0].Price : 0;
+        });
+        const finalAmount = totalAmount + maintenanceCost;
+
+
+        const subscriptionDetailsBody = [
+            [{ text: "Subscription Details", style: "subheader", colSpan: 2, fillColor: "#f3f3f3" }, {}],
+            [{ text: "Active:", bold: true }, { text: subscription.isActive ? "Yes" : "No" }],
+            [{ text: "Max Readers:", bold: true }, { text: subscription.maxReaders }],
+            [{ text: "Total Amount:", bold: true }, { text: `${subscription.totalAmount}` }],
+        ];
+
+        // Add Start Date & End Date only if subscription is active
         if (subscription.isActive) {
-            doc.text(` Max Readers: ${subscription.maxReaders}`);
-            doc.text(` Start Date: ${subscription.startDate ? new Date(subscription.startDate).toDateString() : "N/A"}`);
-            doc.text(` End Date: ${subscription.endDate ? new Date(subscription.endDate).toDateString() : "N/A"}`);
-        }
-        doc.text(` Active: ${subscription.isActive ? "Yes" : "No"}`).moveDown();
-
-        // College Info
-        if (subscription.collegeId) {
-            doc.fontSize(14).text(" College Details:", { underline: true }).moveDown(0.5);
-            doc.fontSize(12).text(` Name: ${subscription.collegeId.clgName}`);
-            doc.text(` Address: ${subscription.collegeId.clgAddress}`);
-            doc.text(` Librarian Name: ${subscription.collegeId.librarianName}`);
-            doc.text(` Librarian Email: ${subscription.collegeId.librarianEmail}`)
-            doc.text(` Librarian Mobile No.: ${subscription.collegeId.librarianMobile}`).moveDown();
+            subscriptionDetailsBody.splice(2, 0, // Insert after "Active" field
+                [{ text: "Start Date:", bold: true }, { text: new Date(subscription.startDate).toDateString() }],
+                [{ text: "End Date:", bold: true }, { text: new Date(subscription.endDate).toDateString() }]
+            );
         }
 
-        // Package Info
-        if (subscription.package.length) {
-            doc.fontSize(14).text(" Subscribed Packages:", { underline: true }).moveDown(0.5);
+        const subscriptionDetails = {
+            table: {
+                widths: ["30%", "70%"], // Adjusted column width for better alignment
+                body: subscriptionDetailsBody,
+            },
+            layout: "lightHorizontalLines",
+            margin: [0, 15, 0, 15], // Adds spacing before and after the section
+        };
+
+
+        let packageTable = { text: "No Packages Available", style: "content", margin: [0, 10, 0, 10] };
+
+        if (subscription.package.length > 0) {
+            packageTable = {
+                table: {
+                    headerRows: 1,
+                    widths: ["15%", "25%", "30%", "30%"],
+                    body: [
+                        [{ text: "S.No", style: "tableHeader" },
+                        { text: "Academic Year", style: "tableHeader" },
+                        { text: "Category", style: "tableHeader" },
+                        { text: "Price (₹)", style: "tableHeader" }]
+                    ],
+                },
+                margin: [0, 10, 0, 10],
+            };
 
             subscription.package.forEach((pkg, index) => {
-                doc.text(`${index + 1}. ${pkg.academicYear} ${pkg.category} Total Books : ${pkg.booksIncluded.length} `);
-                // doc.text(`${index + 1}. ${pkg.academicYear} ${pkg.category} Total Books : ${pkg.booksIncluded.length} , Price - ${String.fromCharCode(8377)} ${pkg.prices[0].Price} `);
-            })
+                const price = pkg.prices.length > 0 ? pkg.prices[0].Price : 0;
 
-            doc.moveDown();
-        }
-
-        // Subscribed Books Info
-        if (subscription.subscribedBooks.length) {
-            doc.fontSize(14).text(" Subscribed Books:", { underline: true }).moveDown(0.5);
-            subscription.subscribedBooks.forEach((book, index) => {
-                doc.fontSize(12).text(` ${index + 1}. ${book.name} by ${book.author}`);
+                packageTable.table.body.push([
+                    index + 1,
+                    pkg.academicYear,
+                    pkg.category,
+                    `₹${price}`
+                ]);
             });
-            doc.moveDown();
+
+            packageTable.table.body.push(
+                [{ text: "Total", bold: true, colSpan: 3, alignment: "right" }, {}, {}, { text: `₹${totalAmount}`, alignment: "left" }],
+                [{ text: "Maintenance Cost", bold: true, colSpan: 3, alignment: "right" }, {}, {}, { text: `₹${maintenanceCost}`, alignment: "left" }],
+                [{ text: "Final Amount", bold: true, colSpan: 3, alignment: "right" }, {}, {}, { text: `₹${finalAmount}`, alignment: "left" }]
+            );
         }
+
+        const stampFilePath = path.resolve(process.cwd(), "../public/stamp.png");
+        let stampBase64 = "";
+        if (fs.existsSync(stampFilePath)) {
+            const imageBuffer = fs.readFileSync(stampFilePath);
+            stampBase64 = `data:image/png;base64,${imageBuffer.toString("base64")}`;
+        }
+
+        const stampSection = stampBase64
+            ? {
+                image: stampBase64, // Use Base64 instead of file path
+                width: 150,
+                height: 100,
+                alignment: "right",
+                margin: [0, 40, 0, 0],
+            }
+            : { text: "Stamp not available", alignment: "right", margin: [0, 40, 0, 0] };
+
+
+        //Document Definition
+        const docDefinition = {
+            content: [
+                headerSection,
+                orderTitle,
+                orderDate,
+                subscriptionDetails,
+                { text: "Package Details", style: "subheader", fillColor: "#f3f3f3", margin: [0, 10, 0, 5] },
+                packageTable,
+                stampSection,
+
+            ],
+            styles: {
+                header: { fontSize: 16, bold: true, margin: [0, 5, 0, 10] },
+                subheader: { fontSize: 14, margin: [0, 0, 0, 10] },
+                orderHeader: { fontSize: 16, bold: true, alignment: "center", margin: [0, 5, 0, 10] },
+                tableHeader: { bold: true, fontSize: 12, fillColor: "#f3f3f3" },
+                content: { fontSize: 12, margin: [0, 5, 0, 5] },
+            },
+        };
+
+        //generate and save pdf
+        const pdfDoc = printer.createPdfKitDocument(docDefinition);
+        const writeStream = fs.createWriteStream(pdfFilePath);
+        pdfDoc.pipe(writeStream);
 
         // Finalize PDF
-        doc.end();
+        pdfDoc.end();
         writeStream.on("finish", async () => {
             await Subscription.findByIdAndUpdate(subscriptionId, {
                 subscriptionQuotation: pdfFilePath

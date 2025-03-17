@@ -25,7 +25,7 @@ const getAllPackages = async (req, res) => {
 
 const updateAllPackagesPrice = async (req, res) => {
   try {
-    const { maxReaders, price } = req.body;
+    const { price } = req.body;
 
     const result = await Package.updateMany(
       {},

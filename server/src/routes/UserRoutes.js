@@ -2,7 +2,7 @@ import express from "express";
 import { activateUser, registerUser, getUser, userLogin, userLogout, addBookToShelf, getBookShelfByUserId, sendOtp, resetPassword, getUserByClgId, updatePassword, deleteBookFromShelfByUserId, uploadBulkStudents } from "../controllers/UserController.js";
 import { updatePageCounter, getReadCounterByUserId, getTotalPagesReadByMonth } from "../controllers/SessionController.js";
 import { authenticate } from "../middleware/auth.js";
-import { addCollege, updateCollege, getCollegesData } from "../controllers/CollegeController.js";
+import { addCollege, updateCollege, getCollegesData, getNotifications } from "../controllers/CollegeController.js";
 import { StartReadingSession, stopReadingSession, getCurrentReaders } from "../controllers/ReadingController.js";
 import { createPackage, getPackagesByCategory, updateAllPackagesPrice, getAllPackages } from "../controllers/PackageController.js";
 
@@ -20,7 +20,7 @@ userRouter.post("/deleteBookFromShelfByUserId", authenticate, deleteBookFromShel
 userRouter.post("/sendOTP", sendOtp)
 userRouter.post("/resetPassword", resetPassword)
 userRouter.post("/getUserByClgId", authenticate ,getUserByClgId)
-userRouter.post("/updatePassword", updatePassword)
+userRouter.post("/updatePassword",authenticate, updatePassword)
 
 
 //session routes
@@ -33,6 +33,7 @@ userRouter.get("/getTotalPagesByMonth", getTotalPagesReadByMonth)
 userRouter.post("/addCollege", addCollege)
 userRouter.post("/updateCollege", updateCollege)
 userRouter.get("/fetchCollegeData", getCollegesData)
+userRouter.get("/getNotification",getNotifications);
 
 
 //ReadingSession routes

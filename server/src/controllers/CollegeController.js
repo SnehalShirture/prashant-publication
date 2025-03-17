@@ -2,6 +2,7 @@ import { generatePassword } from "../middleware/generatePassword.js";
 import { sendMessage } from "../middleware/MessageMiddleware.js";
 import { College } from "../models/CollegeSchema.js";
 import { User } from "../models/UserSchema.js";
+import { Notification } from "../models/NotificationSchema.js";
 import { APiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from '../utils/ApiError.js';
 import bcrypt from 'bcrypt';
@@ -18,7 +19,7 @@ const addCollege = async (req, res) => {
         const newCollege = await College.create(req.body);
         // Generate password
         const generatedPassword = generatePassword();
-        
+
         let salt = await bcrypt.genSalt(10)
         let hashedPassword = await bcrypt.hash(generatedPassword, salt)
 
@@ -45,10 +46,10 @@ const addCollege = async (req, res) => {
 
 const updateCollege = async (req, res) => {
     try {
-        
+
         const { updateData } = req.body;
 
-        const updatedCollege = await College.findByIdAndUpdate(id, {updateData}, {
+        const updatedCollege = await College.findByIdAndUpdate(id, { updateData }, {
             new: true,
             runValidators: true
         });
@@ -59,9 +60,7 @@ const updateCollege = async (req, res) => {
 
         res.status(200).json(new APiResponse(true, 200, updatedCollege, "College updated successfully."));
     } catch (error) {
-        const status = error.statusCode || 500;
-        const message = error.message || "An unexpected error occurred.";
-        res.status(status).json(new APiResponse(false, status, null, message));
+        res.status(500).json(new APiResponse(false, 500, null, error.message));
     }
 };
 
@@ -72,12 +71,23 @@ const getCollegesData = async (req, res) => {
 
         res.status(200).json(new APiResponse(true, 200, fetchCollegeData, "College Data"))
     } catch (error) {
-        const status = error.statusCode || 500;
-        const message = error.message || "An unexpected error occurred.";
-        res.status(status).json(new APiResponse(false, status, null, message));
+
+        res.status(500).json(new APiResponse(false, 500, null, error.message));
     }
 }
 
 
+const getNotifications = async (req, res) => {
+    try {
+        const { collegeId } = req.body;
 
-export { addCollege, updateCollege ,getCollegesData}
+        const notifications = await Notification.find({ collegeId })
+            .sort({ createdAt: -1 });
+
+        res.status(200).json(new APiResponse(true, 200, notifications, "fetched notification successfully"));
+    } catch (error) {
+        res.status(500).json(new APiResponse(false, 500, null, error.message));
+    }
+};
+
+export { addCollege, updateCollege, getCollegesData, getNotifications }

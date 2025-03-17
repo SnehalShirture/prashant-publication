@@ -6,6 +6,8 @@ import { SubscriptionRouter } from './src/routes/SubscriptionRoutes.js';
 import cors from 'cors'
 import bodyParser from 'body-parser';
 import { ConnectDB } from './src/DB/connectDB.js';
+
+import { scheduleSubscriptionNotifications } from './src/middleware/cronJob.js';
 import dotenv from 'dotenv'
 dotenv.config();
 
@@ -23,6 +25,8 @@ Server.use(cors({
 }));
 Server.use(bodyParser.json());
 Server.use(express.json())
+
+scheduleSubscriptionNotifications();
 
 Server.use("/uploads", express.static("uploads"));
 

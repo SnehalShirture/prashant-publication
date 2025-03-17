@@ -38,7 +38,16 @@ const getCurrentReaders = async (req, res) => {
             {
                 $group: {
                     _id: { bookId: "$bookId", collegeId: "$collegeId" },
-                    activeReaders: { $sum: 1 }
+                    activeReaders: { $sum: 1 },
+                    users: { $push: "$user_id" } 
+                }
+            },
+            {
+                $lookup: {
+                    from: "users", 
+                    localField: "users",
+                    foreignField: "_id",
+                    as: "userDetails"
                 }
             },
             {
@@ -46,7 +55,14 @@ const getCurrentReaders = async (req, res) => {
                     _id: 0,
                     bookId: "$_id.bookId",
                     collegeId: "$_id.collegeId",
-                    activeReaders: 1
+                    activeReaders: 1,
+                    users: {
+                        $map: {
+                            input: "$userDetails",
+                            as: "user",
+                            in: { _id: "$$user._id", name: "$$user.name", email: "$$user.email" }
+                        }
+                    }
                 }
             }
         ]);

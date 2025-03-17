@@ -8,18 +8,18 @@ import { authenticate } from '../middleware/auth.js';
 
 const SubscriptionRouter = express.Router();
 
-SubscriptionRouter.post("/createsubscription", authenticate,createSubscription);
+SubscriptionRouter.post("/createsubscription",authenticate,createSubscription);
 SubscriptionRouter.post("/removeBooksFromSubscription", removeBooksFromSubscription);
 SubscriptionRouter.post("/getBooksByCollegeId",authenticate, getBooksByCollegeId);
 SubscriptionRouter.post("/updateSubscriptionStatus",authenticate, updateSubscriptionStatus);
 SubscriptionRouter.get("/getAllSubscription",authenticate, getAllSubscription);
 SubscriptionRouter.get("/getActiveSubscription", getActiveSubscription);
 SubscriptionRouter.post("/getSubscriptionsByStatus", getSubscriptionsByStatus);
-SubscriptionRouter.get("/getExpiredSubscription", getExpiredSubscription);
+SubscriptionRouter.get("/getExpiredSubscription",authenticate, getExpiredSubscription);
 
 SubscriptionRouter.post("/cancelsubscription", cancelSubscription);
 SubscriptionRouter.post("/fetchBooksByCollegeId",authenticate, fetchBooksByCollegeId);
-SubscriptionRouter.post("/getSubscriptionByCollegeId", getSubscriptionByCollegeId);
+SubscriptionRouter.post("/getSubscriptionByCollegeId",authenticate, getSubscriptionByCollegeId);
 SubscriptionRouter.post("/sendQuotation",authenticate, sendQuotation);
 SubscriptionRouter.post("/generateQuotationpdf",authenticate, generateQuotationpdf);
 
