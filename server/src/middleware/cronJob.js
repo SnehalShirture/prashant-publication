@@ -5,7 +5,7 @@ import { Notification } from '../models/NotificationSchema.js';
 import { College } from '../models/CollegeSchema.js'
 
 const scheduleSubscriptionNotifications = () => {
-    cron.schedule("0 0 * * *", async () => {  // Runs every day at midnight
+    cron.schedule("0 0 * * *", async () => {  
         try {
             const today = new Date();
             const next30Days = new Date();

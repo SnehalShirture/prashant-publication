@@ -23,5 +23,4 @@ SubscriptionRouter.post("/getSubscriptionByCollegeId",authenticate, getSubscript
 SubscriptionRouter.post("/sendQuotation",authenticate, sendQuotation);
 SubscriptionRouter.post("/generateQuotationpdf",authenticate, generateQuotationpdf);
 
-
 export { SubscriptionRouter }

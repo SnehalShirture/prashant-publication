@@ -10,14 +10,33 @@ import PdfPrinter from "pdfmake"
 import fs from "fs"
 import path from "path";
 
+
+const fontsPath = path.resolve(process.cwd(),"../server/fonts/static");
+// const printer = new PdfPrinter({
+//     Roboto: {
+//         normal: "Helvetica",
+//         bold: "Helvetica-Bold",
+//         italics: "Helvetica-Oblique",
+//         bolditalics: "Helvetica-BoldOblique",
+//     },
+// });
+
+["NotoSans-Regular.ttf", "NotoSans-Bold.ttf", "NotoSans-Italic.ttf", "NotoSans-BoldItalic.ttf"].forEach(file => {
+    const filePath = path.join(fontsPath, file);
+    if (!fs.existsSync(filePath)) {
+        console.error(`Font file missing: ${filePath}`);
+    }
+});
+
 const printer = new PdfPrinter({
-    Roboto: {
-        normal: "Helvetica",
-        bold: "Helvetica-Bold",
-        italics: "Helvetica-Oblique",
-        bolditalics: "Helvetica-BoldOblique",
+    NotoSans: {
+        normal: path.join(fontsPath, "NotoSans-Regular.ttf"),
+        bold: path.join(fontsPath, "NotoSans-Bold.ttf"),
+        italics: path.join(fontsPath, "NotoSans-Italic.ttf"),
+        bolditalics: path.join(fontsPath, "NotoSans-BoldItalic.ttf"),
     },
 });
+
 
 
 const cancelSubscription = async (req, res) => {
@@ -501,28 +520,28 @@ export const generateQuotationpdf = async (req, res) => {
                 {
                     stack: [
                         { text: "Prashant Book House", style: "header", alignment: "center" },
-                        { text: "Office: 3 Pratap Nagar, Dynaneshwar Mandir Road,", fontSize: 10, alignment: "center", margin: [0, 5] },
-                        { text: "Near Nutan Maratha College Jalgaon 425 001,", fontSize: 10, alignment: "center", margin: [0, 5] },
-                        { text: "Ph: (0257) 223 5520, 223 2800 | Mb: 9421636460", fontSize: 10, alignment: "center", margin: [0, 5] },
-                        { text: "Email: prashantbookhouse@gmail.com", fontSize: 10, alignment: "center", margin: [0, 5] },
-                        { text: "Website: prashantpublications.com", fontSize: 10, alignment: "center", margin: [0, 5] },
+                        { text: "Office: 3 Pratap Nagar, Dynaneshwar Mandir Road,", fontSize: 10, alignment: "center", margin: [0, 2] },
+                        { text: "Near Nutan Maratha College Jalgaon 425 001,", fontSize: 10, alignment: "center", margin: [0, 2] },
+                        { text: "Ph: (0257) 223 5520, 223 2800 | Mb: 9421636460", fontSize: 10, alignment: "center", margin: [0, 2] },
+                        { text: "Email: prashantbookhouse@gmail.com", fontSize: 10, alignment: "center", margin: [0, 2] },
+                        { text: "Website: prashantpublications.com", fontSize: 10, alignment: "center", margin: [0, 2] },
                     ],
                     width: "60%",
                 },
                 {
                     stack: [
                         { text: "To,", bold: true, alignment: "left" },
-                        { text: `${subscription.collegeId.clgName}`, style: "subheader", alignment: "left", margin: [0, 5] },
-                        { text: `${subscription.collegeId.clgAddress}`, fontSize: 10, alignment: "left", margin: [0, 5] },
-                        { text: `Librarian: ${subscription.collegeId.librarianName}`, fontSize: 10, alignment: "left", margin: [0, 5] },
-                        { text: `Email: ${subscription.collegeId.librarianEmail}`, fontSize: 10, alignment: "left", margin: [0, 5] },
-                        { text: `Mobile: ${subscription.collegeId.librarianMobile}`, fontSize: 10, alignment: "left", margin: [0, 5] },
+                        { text: `${subscription.collegeId.clgName}`, style: "subheader", alignment: "left", margin: [0, 2] },
+                        { text: `${subscription.collegeId.clgAddress}`, fontSize: 10, alignment: "left", margin: [0, 2] },
+                        { text: `Librarian: ${subscription.collegeId.librarianName}`, fontSize: 10, alignment: "left", margin: [0, 2] },
+                        { text: `Email: ${subscription.collegeId.librarianEmail}`, fontSize: 10, alignment: "left", margin: [0, 2] },
+                        { text: `Mobile: ${subscription.collegeId.librarianMobile}`, fontSize: 10, alignment: "left", margin: [0, 2] },
                     ],
                     alignment: "right",
                     width: "50%",
                 },
             ],
-            margin: [0, 20, 0, 10],
+            margin: [0, 15, 0, 7],
         };
 
         const orderTitle = {
@@ -535,20 +554,20 @@ export const generateQuotationpdf = async (req, res) => {
                             style: "orderHeader",
                             alignment: "center",
                             bold: true,
-                            margin: [0, 5, 0, 5],
+                            margin: [0, 3, 0, 3],
                             fillColor: "#e0e0e0", // Light Grey Background
                         },
                     ],
                 ],
             },
             layout: "noBorders",
-            margin: [0, 10, 0, 10],
+            margin: [0, 7, 0, 7],
         };
 
 
         const orderDate = {
             columns: [
-                { text: `Date: ${new Date().toLocaleDateString()}`, alignment: "left", margin: [0, 0, 0, 8], },
+                { text: `Date: ${new Date().toLocaleDateString()}`, alignment: "left", margin: [0, 0, 0, 6], },
             ],
         };
 
@@ -560,13 +579,13 @@ export const generateQuotationpdf = async (req, res) => {
             totalAmount += pkg.prices.length > 0 ? pkg.prices[0].Price : 0;
         });
         const finalAmount = totalAmount + maintenanceCost;
-
+        const rupeeSymbol='\u20B9';
 
         const subscriptionDetailsBody = [
             [{ text: "Subscription Details", style: "subheader", colSpan: 2, fillColor: "#f3f3f3" }, {}],
             [{ text: "Active:", bold: true }, { text: subscription.isActive ? "Yes" : "No" }],
             [{ text: "Max Readers:", bold: true }, { text: subscription.maxReaders }],
-            [{ text: "Total Amount:", bold: true }, { text: `${subscription.totalAmount}` }],
+            [{ text: "Total Amount:", bold: true }, { text: `${rupeeSymbol} ${subscription.totalAmount}` }],
         ];
 
         // Add Start Date & End Date only if subscription is active
@@ -583,11 +602,11 @@ export const generateQuotationpdf = async (req, res) => {
                 body: subscriptionDetailsBody,
             },
             layout: "lightHorizontalLines",
-            margin: [0, 15, 0, 15], // Adds spacing before and after the section
+            margin: [0, 12, 0, 12], // Adds spacing before and after the section
         };
 
 
-        let packageTable = { text: "No Packages Available", style: "content", margin: [0, 10, 0, 10] };
+        let packageTable = { text: "No Packages Available", style: "content", margin: [0, 8, 0, 8] };
 
         if (subscription.package.length > 0) {
             packageTable = {
@@ -601,7 +620,7 @@ export const generateQuotationpdf = async (req, res) => {
                         { text: "Price (₹)", style: "tableHeader" }]
                     ],
                 },
-                margin: [0, 10, 0, 10],
+                margin: [0, 8, 0, 8],
             };
 
             subscription.package.forEach((pkg, index) => {
@@ -635,9 +654,9 @@ export const generateQuotationpdf = async (req, res) => {
                 width: 150,
                 height: 100,
                 alignment: "right",
-                margin: [0, 40, 0, 0],
+                margin: [0, 30, 0, 0],
             }
-            : { text: "Stamp not available", alignment: "right", margin: [0, 40, 0, 0] };
+            : { text: "Stamp not available", alignment: "right", margin: [0, 30, 0, 0] };
 
 
         //Document Definition
@@ -647,18 +666,21 @@ export const generateQuotationpdf = async (req, res) => {
                 orderTitle,
                 orderDate,
                 subscriptionDetails,
-                { text: "Package Details", style: "subheader", fillColor: "#f3f3f3", margin: [0, 10, 0, 5] },
+                { text: "Package Details", style: "subheader", fillColor: "#f3f3f3", margin: [0, 7, 0, 3] },
                 packageTable,
                 stampSection,
 
             ],
             styles: {
-                header: { fontSize: 16, bold: true, margin: [0, 5, 0, 10] },
-                subheader: { fontSize: 14, margin: [0, 0, 0, 10] },
-                orderHeader: { fontSize: 16, bold: true, alignment: "center", margin: [0, 5, 0, 10] },
-                tableHeader: { bold: true, fontSize: 12, fillColor: "#f3f3f3" },
-                content: { fontSize: 12, margin: [0, 5, 0, 5] },
+                header: {font: "NotoSans", fontSize: 16, bold: true, margin: [0, 3, 0, 7] },
+                subheader: {font: "NotoSans", fontSize: 14, margin: [0, 0, 0, 7] },
+                orderHeader: {font: "NotoSans", fontSize: 16, bold: true, alignment: "center", margin: [0, 3, 0, 7] },
+                tableHeader: {font: "NotoSans", bold: true, fontSize: 12, fillColor: "#f3f3f3" },
+                content: {font: "NotoSans", fontSize: 12, margin: [0, 5, 0, 5] },
             },
+            defaultStyle: {
+                font: "NotoSans" 
+            }
         };
 
         //generate and save pdf
