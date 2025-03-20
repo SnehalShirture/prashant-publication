@@ -64,7 +64,6 @@ export const createRazorpayOrder = async (req, res) => {
             receipt: shortid.generate(),
             payment_capture: 1,
         };
-
         // Razorpay order is created
         const razorpayOrder = await razorpay.orders.create(options);
         console.log("razorpayOrder : ", razorpayOrder);
@@ -75,7 +74,7 @@ export const createRazorpayOrder = async (req, res) => {
             paymentMethod: "UPI",
             transactionId: razorpayOrder.id, 
             subscriptionId: subscriptionId,
-            status: "paid"
+            status: "pending"
         });
         console.log("payment created successfully", payment);
         //return { razorpayOrder, payment };
@@ -90,8 +89,6 @@ export const createRazorpayOrder = async (req, res) => {
 const verifyRazorPay = async (req, res) => {
     try {
         const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
-
-        
         const shasum = crypto.createHmac("sha256", secret);
         shasum.update(JSON.stringify(req.body));
         const digest = shasum.digest("hex");
