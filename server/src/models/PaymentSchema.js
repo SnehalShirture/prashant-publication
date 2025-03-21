@@ -15,7 +15,7 @@ const PaymentSchema = mongoose.Schema({
     },
     paymentMethod: {
         type: String,
-        enum: ['Credit Card', 'Debit Card', 'UPI'],
+        enum: ['Credit Card', 'Debit Card', 'UPI',"byCheque"],
         required: true
     },
     transactionId: {
@@ -28,7 +28,11 @@ const PaymentSchema = mongoose.Schema({
     subscriptionId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Subscription"
+    },
+    chequeNo:{
+        type:String
     }
+    
 });
 
 // PaymentSchema.post("save",async function (doc,next) {

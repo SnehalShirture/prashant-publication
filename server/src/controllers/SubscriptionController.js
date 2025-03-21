@@ -12,14 +12,6 @@ import path from "path";
 
 
 const fontsPath = path.resolve(process.cwd(), "../server/fonts/static");
-// const printer = new PdfPrinter({
-//     Roboto: {
-//         normal: "Helvetica",
-//         bold: "Helvetica-Bold",
-//         italics: "Helvetica-Oblique",
-//         bolditalics: "Helvetica-BoldOblique",
-//     },
-// });
 
 ["NotoSans-Regular.ttf", "NotoSans-Bold.ttf", "NotoSans-Italic.ttf", "NotoSans-BoldItalic.ttf"].forEach(file => {
     const filePath = path.join(fontsPath, file);
@@ -36,8 +28,6 @@ const printer = new PdfPrinter({
         bolditalics: path.join(fontsPath, "NotoSans-BoldItalic.ttf"),
     },
 });
-
-
 
 const cancelSubscription = async (req, res) => {
     try {
@@ -572,7 +562,6 @@ export const generateQuotationpdf = async (req, res) => {
         };
 
         // **Subscription Details
-
         // Define pricing based on max readers
         const readerPrices = { 5: 2000, 10: 2500, 15: 3000, 20: 3500 };
         const packagePrice = readerPrices[subscription.maxReaders] || 0;
@@ -692,24 +681,13 @@ export const generateQuotationpdf = async (req, res) => {
                 subscriptionQuotation: pdfFilePath
             }, { new: true });
 
+            //send quotation
+            const message = "your Quotation is : ";
+            await sendMessage(subscription.collegeId.librarianEmail, message, pdfFilePath)
             res.json({ message: "PDF generated successfully", pdfUrl: pdfFilePath });
         });
     } catch (error) {
         console.error("Error generating PDF:", error.message);
-    }
-}
-
-
-export const sendQuotation = async (req, res) => {
-    try {
-        const { email, pdfurl } = req.body;
-        const quotation = await Subscription.findOneAndUpdate(req.body);
-
-        const message = "your Quotation is : ";
-        await sendMessage(email, message, pdfurl);
-        res.status(200).json(new APiResponse(true, 200, quotation, "quotation send successfully"))
-    } catch (error) {
-        res.status(500).json(new APiResponse(false, 500, null, error.message))
     }
 }
 
