@@ -11,7 +11,7 @@ import fs from "fs"
 import path from "path";
 
 
-const fontsPath = path.resolve(process.cwd(),"../server/fonts/static");
+const fontsPath = path.resolve(process.cwd(), "../server/fonts/static");
 // const printer = new PdfPrinter({
 //     Roboto: {
 //         normal: "Helvetica",
@@ -152,7 +152,7 @@ const updateSubscriptionStatus = async (req, res) => {
         const startDate = new Date();
         let endDate = new Date(startDate);
 
-        endDate.setFullYear(endDate.getFullYear()+1);
+        endDate.setFullYear(endDate.getFullYear() + 1);
 
         const subscription = await Subscription.findOneAndUpdate(
             { _id: subscriptionId },
@@ -571,21 +571,16 @@ export const generateQuotationpdf = async (req, res) => {
             ],
         };
 
-        // **Subscription Details**
-        let totalAmount = 0;
-        const maintenanceCost = subscription.maintenanceCost || 0;
+        // **Subscription Details
 
-        subscription.package.forEach((pkg) => {
-            totalAmount += pkg.prices.length > 0 ? pkg.prices[0].Price : 0;
-        });
-        const finalAmount = totalAmount + maintenanceCost;
-        const rupeeSymbol='\u20B9';
-
+        // Define pricing based on max readers
+        const readerPrices = { 5: 2000, 10: 2500, 15: 3000, 20: 3500 };
+        const packagePrice = readerPrices[subscription.maxReaders] || 0;
         const subscriptionDetailsBody = [
             [{ text: "Subscription Details", style: "subheader", colSpan: 2, fillColor: "#f3f3f3" }, {}],
             [{ text: "Active:", bold: true }, { text: subscription.isActive ? "Yes" : "No" }],
             [{ text: "Max Readers:", bold: true }, { text: subscription.maxReaders }],
-            [{ text: "Total Amount:", bold: true }, { text: `${rupeeSymbol} ${subscription.totalAmount}` }],
+            [{ text: "Total Amount:", bold: true }, { text: ` ₹ ${subscription.totalAmount}` }],
         ];
 
         // Add Start Date & End Date only if subscription is active
@@ -607,7 +602,7 @@ export const generateQuotationpdf = async (req, res) => {
 
 
         let packageTable = { text: "No Packages Available", style: "content", margin: [0, 8, 0, 8] };
-
+        let totalAmount = 0;
         if (subscription.package.length > 0) {
             packageTable = {
                 table: {
@@ -624,16 +619,18 @@ export const generateQuotationpdf = async (req, res) => {
             };
 
             subscription.package.forEach((pkg, index) => {
-                const price = pkg.prices.length > 0 ? pkg.prices[0].Price : 0;
+                totalAmount += packagePrice;
 
                 packageTable.table.body.push([
                     index + 1,
                     pkg.academicYear,
                     pkg.category,
-                    `₹${price}`
+                    `₹${packagePrice}`
                 ]);
             });
 
+            const maintenanceCost = subscription.maintenanceCost || 0;
+            const finalAmount = totalAmount + maintenanceCost;
             packageTable.table.body.push(
                 [{ text: "Total", bold: true, colSpan: 3, alignment: "right" }, {}, {}, { text: `₹${totalAmount}`, alignment: "left" }],
                 [{ text: "Maintenance Cost", bold: true, colSpan: 3, alignment: "right" }, {}, {}, { text: `₹${maintenanceCost}`, alignment: "left" }],
@@ -672,14 +669,14 @@ export const generateQuotationpdf = async (req, res) => {
 
             ],
             styles: {
-                header: {font: "NotoSans", fontSize: 16, bold: true, margin: [0, 3, 0, 7] },
-                subheader: {font: "NotoSans", fontSize: 14, margin: [0, 0, 0, 7] },
-                orderHeader: {font: "NotoSans", fontSize: 16, bold: true, alignment: "center", margin: [0, 3, 0, 7] },
-                tableHeader: {font: "NotoSans", bold: true, fontSize: 12, fillColor: "#f3f3f3" },
-                content: {font: "NotoSans", fontSize: 12, margin: [0, 5, 0, 5] },
+                header: { font: "NotoSans", fontSize: 16, bold: true, margin: [0, 3, 0, 7] },
+                subheader: { font: "NotoSans", fontSize: 14, margin: [0, 0, 0, 7] },
+                orderHeader: { font: "NotoSans", fontSize: 16, bold: true, alignment: "center", margin: [0, 3, 0, 7] },
+                tableHeader: { font: "NotoSans", bold: true, fontSize: 12, fillColor: "#f3f3f3" },
+                content: { font: "NotoSans", fontSize: 12, margin: [0, 5, 0, 5] },
             },
             defaultStyle: {
-                font: "NotoSans" 
+                font: "NotoSans"
             }
         };
 
