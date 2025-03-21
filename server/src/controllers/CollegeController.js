@@ -84,6 +84,11 @@ const getNotifications = async (req, res) => {
         const notifications = await Notification.find({ collegeId })
             .sort({ createdAt: -1 });
 
+        
+            await Notification.updateMany(
+                { collegeId, isRead: false }, 
+                { $set: { isRead: true } }
+            );
         res.status(200).json(new APiResponse(true, 200, notifications, "fetched notification successfully"));
     } catch (error) {
         res.status(500).json(new APiResponse(false, 500, null, error.message));
