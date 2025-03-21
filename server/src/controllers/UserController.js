@@ -36,6 +36,8 @@ const activateUser = async (req, res) => {
 
         let salt = await bcrypt.genSalt(10)
         let hashedPassword = await bcrypt.hash(generatedPassword, salt)
+        console.log("generated pass : " ,generatedPassword )
+
 
         const newUser = await User.findOneAndUpdate(
             { email: email },

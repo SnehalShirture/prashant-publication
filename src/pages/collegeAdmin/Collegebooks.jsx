@@ -78,18 +78,34 @@ const Collegebooks = () => {
   console.log("subscriptionData : ", subscriptionData)
 
 
-  // Fetch Current Readers
-    const { data: readersData = [] } = useQuery( useQuery({
-      queryKey: ["currentReaders", collegeId],
-      queryFn: () => fetchCurrentReaders(collegeId)
-      }));
-  
-  
-    const handleFetchReaders = (studentEmail) => {
-      const studentReaders = readersData.find((reader) => reader.email === studentEmail);
-      setCurrentReaders(studentReaders ? studentReaders.users : []);
-      setOpenReadersModal(true);
-    };
+  /// Fetch Current Readers  
+const { data: readersData = [], isLoading, error } = useQuery({
+  queryKey: ["currentReaders", collegeId],
+  queryFn: () => fetchCurrentReaders(collegeId),
+});
+
+console.log("Fetched Readers Data:", readersData);
+
+const handleFetchReaders = (studentEmail) => {
+  if (!Array.isArray(readersData)) {
+    console.log("Error: readersData is not an array. Check API response.");
+    return;
+  }
+
+  if (!readersData.length) {
+    console.log("No readers found!");
+    return;
+  }
+
+  // Ensure `readersData` contains expected structure
+  const studentReaders = readersData.find((reader) => reader.email === studentEmail);
+
+  console.log(`Readers for ${studentEmail}:`, studentReaders);
+
+  setCurrentReaders(studentReaders ? studentReaders.users : []);
+  setOpenReadersModal(true);
+};
+
   
     // Stop Reading Session
     const stopReadingMutation = useMutation({
