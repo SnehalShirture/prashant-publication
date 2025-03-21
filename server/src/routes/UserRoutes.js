@@ -39,7 +39,7 @@ userRouter.get("/getNotification",getNotifications);
 //ReadingSession routes
 userRouter.post("/StartReadingSession", StartReadingSession)
 userRouter.post("/stopReadingSession", stopReadingSession)
-userRouter.get("/getCurrentReaders", getCurrentReaders)
+userRouter.post("/getCurrentReaders", getCurrentReaders)
 
 
 //Package Routes

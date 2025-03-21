@@ -33,10 +33,15 @@ export const getBooks = async () => {
 };
 
 //delete book
-export const deleteBook = async (reqdeldata) => {
-  const aInstance = createInstance(); // Ensure `createInstance` initializes Axios.
+export const deleteBook = async ({_id , token}) => {
+  const aInstance = createInstance(); 
+  console.log("delete data : " ,_id , token )
   try {
-    const response = await aInstance.post('deleteBook', reqdeldata); // Use DELETE with ID in the URL.
+    const response = await aInstance.post('deleteBook', {_id} , {
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
+    }); 
     return response.data; // Return the response data.
   } catch (error) {
     console.error("Error deleting book:", error.message);
@@ -102,10 +107,16 @@ export const fetchShelfBooks = async (user , token) => {
 };
 
 //fetch books by college id
-export const fetchBooksByCollegeId = async (collegeId) => {
+export const fetchBooksByCollegeId = async ({collegeId , token}) => {
   const aInstance = createInstance();
   try {
-    const response = await aInstance.post("getBooksByCollegeId", collegeId );
+    const response = await aInstance.post("getBooksByCollegeId", {collegeId} , 
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }
+      }
+     );
     return response.data;
     
   } catch (error) {
@@ -151,10 +162,16 @@ export const stopBookReadingCounter = async ({bookId, collegeId}) => {
 }
 
 // fetch books for user 
-export const fetchBooksForUser = async (collegeId) => {
+export const fetchBooksForUser = async ({collegeId , token}) => {
   const aInstance = createInstance();
   try {
-    const response = await aInstance.post("fetchBooksByCollegeId", collegeId);
+    const response = await aInstance.post("fetchBooksByCollegeId", {collegeId} , 
+      {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      }
+    );
     console.log("response : " , response)
     return response.data;
     

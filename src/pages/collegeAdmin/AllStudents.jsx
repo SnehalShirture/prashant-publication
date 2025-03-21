@@ -14,8 +14,8 @@ import {
 } from "@mui/material";
 import CustomTable from "../../custom/CustomTable";
 import { useSelector } from "react-redux";
-import { useMutation , useQueryClient } from "@tanstack/react-query";
-import { registeruser, getstudentbyclgid  , uploadBulkStudents , activateUser } from "../../apiCalls/UserApi";
+import { useMutation, useQueryClient , useQuery } from "@tanstack/react-query";
+import { registeruser, getstudentbyclgid, uploadBulkStudents, activateUser  } from "../../apiCalls/UserApi";
 import * as XLSX from "xlsx";
 import { useAlert } from "../../custom/CustomAlert";
 
@@ -25,6 +25,7 @@ const AllStudents = () => {
   const { UserData } = useSelector((state) => state.user);
   const collegeId = UserData.user_id.collegeId;
   const queryClient = useQueryClient();
+  const token = UserData.token;
 
 
   const [addStudent, setAddStudent] = useState({
@@ -39,9 +40,9 @@ const AllStudents = () => {
   const [open, setOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
 
-
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+
 
   // Mutation for adding a new student
   const addStudentMutation = useMutation({
@@ -49,6 +50,7 @@ const AllStudents = () => {
     onSuccess: (newStudent) => {
       setStudents((prevStudents) => [...prevStudents, newStudent]);
       queryClient.invalidateQueries(["students", collegeId]);
+      fetchStudentsMutation.mutate({ collegeId, token });
       setAddStudent({
         name: "",
         lastName: "",
@@ -66,9 +68,8 @@ const AllStudents = () => {
 
   // Mutation for fetching students
   const fetchStudentsMutation = useMutation({
-    mutationFn: ({ collegeId }) => getstudentbyclgid({ collegeId }),
+    mutationFn: ({ collegeId, token }) => getstudentbyclgid({ collegeId, token }),
     onSuccess: (studentsData) => {
-      console.log("studentsData : " , studentsData)
       setStudents(studentsData.data);
     },
     onError: (error) => {
@@ -77,8 +78,8 @@ const AllStudents = () => {
   });
 
   useEffect(() => {
-    fetchStudentsMutation.mutate({ collegeId });
-  }, [collegeId]);
+    fetchStudentsMutation.mutate({ collegeId, token });
+  }, [collegeId, token]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -102,9 +103,10 @@ const AllStudents = () => {
 
   //active students
   const activateStudentMutation = useMutation({
-    mutationFn: (email) => activateUser({ email: email }),
+    mutationFn: ({ email, token }) => activateUser({ email: email, token }),
     onSuccess: () => {
       queryClient.invalidateQueries(["students", collegeId]);
+      fetchStudentsMutation.mutate({ collegeId, token });
       showAlert("Student activated successfully", "success");
     },
     onError: (error) => {
@@ -114,96 +116,112 @@ const AllStudents = () => {
   });
 
   const handleActivateStudent = (email) => {
-    activateStudentMutation.mutate(email);
+    activateStudentMutation.mutate({ email, token });
   };
 
   // Handle file upload and parsing Excel data with validation
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      setUploading(true);
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        try {
-          const data = new Uint8Array(event.target.result);
-          const workbook = XLSX.read(data, { type: "array" });
-          const sheetName = workbook.SheetNames[0];
-          const worksheet = workbook.Sheets[sheetName];
-          const excelData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+    if (!file) return;
 
-          // Required fields validation
-          const requiredKeys = ["name", "lastName", "email", "mobile"];
-          const isValid = excelData.every((row) =>
-            requiredKeys.every((key) => key in row)
+    if (!token) {
+      showAlert("Authentication Error: Token is missing.", "error");
+      return;
+    }
+
+    setUploading(true);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const data = new Uint8Array(event.target.result);
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const excelData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+        // Validate required fields (ensure non-empty after trimming)
+        const requiredKeys = ["name", "lastName", "email", "mobile"];
+        const isValid = excelData.every((row) =>
+          requiredKeys.every(
+            (key) => row[key] && row[key].toString().trim() !== ""
+          )
+        );
+
+        if (!isValid) {
+          showAlert(
+            "Invalid Excel format. Required columns (non-empty): name, lastName, email, mobile",
+            "warning"
           );
+          setUploading(false);
+          return;
+        }
 
-          if (!isValid) {
-            alert(
-              "Invalid Excel format. Make sure columns: name, lastName, email, mobile are present."
-            );
-            setUploading(false);
-            return;
-          }
-
-          // Map the data with fixed keys and avoid duplicates
-          const formattedData = excelData.map((row) => ({
-            name: row["name"] || "",
-            lastName: row["lastName"] || "",
-            email: row["email"] || "",
-            mobile: row["mobile"] || "",
+        // Format data: combine first and last names into a single "name" field
+        const formattedData = excelData.map((row) => {
+          const firstName = row["name"].toString().trim();
+          const lastName = row["lastName"].toString().trim();
+          return {
+            name: (firstName + " " + lastName).trim(),
+            email: row["email"].toString().trim(),
+            mobile: row["mobile"].toString().trim(),
             role: "user",
             collegeId: collegeId,
-          }));
-          const existingEmails = new Set(students.map((student) => student.email));
+          };
+        });
+        console.log("Formatted Data to Send:", JSON.stringify(formattedData, null, 2)); // Debugging log
 
-          const uniqueStudents = formattedData.filter(
-            (student) => !existingEmails.has(student.email)
-          );
-          
-          if (uniqueStudents.length === 0) {
-            showAlert("All students already exist!", "warning");
-            setUploading(false);
-            return;
-          }
-          
-          addBulkStudentsMutation.mutate(uniqueStudents);
-          fetchStudentsMutation.mutate({ collegeId });
-          
-          const newStudents = formattedData.filter(
-            (newStudent) =>
-              !students.some((existing) => existing.email === newStudent.email)
-          );
+        const existingEmails = new Set(students.map((s) => s.email));
+        const uniqueStudents = formattedData.filter(
+          (student) => !existingEmails.has(student.email)
+        );
 
-          setStudents((prevStudents) => [...prevStudents, ...newStudents]);
-          showAlert("Students uploaded successfully!" , "success");
-          console.log("formattedData : " , formattedData)
-        } catch (error) {
-          console.error("Error reading Excel file:", error);
-          showAlert("Failed to read Excel file. Please upload a valid file." , "error");
-        } finally {
+        if (uniqueStudents.length === 0) {
+          showAlert("All students already exist!", "warning");
           setUploading(false);
-          e.target.value = null;
+          return;
         }
-      };
-      reader.readAsArrayBuffer(file);
-    }
+
+        // Pass token and uniqueStudents inside the mutation
+        addBulkStudentsMutation.mutate(
+          { students: uniqueStudents, token },
+          {
+            onSuccess: () => {
+              fetchStudentsMutation.mutate({ collegeId, token });
+            },
+            onError: (error) => {
+              showAlert(`Upload Error: ${error.message}`, "error");
+            },
+          }
+        );
+      } catch (error) {
+        console.log("Error reading Excel file:", error.message);
+        showAlert("Failed to read Excel file. Please upload a valid file.", "error");
+      } finally {
+        setUploading(false);
+        e.target.value = null;
+      }
+    };
+
+    reader.readAsArrayBuffer(file);
   };
 
-  //mutation for uploadBulkStudents
-  const addBulkStudentsMutation =  useMutation({
-    mutationFn: (newStudent) => uploadBulkStudents(newStudent),
-    onSuccess: () => {
-      showAlert("Students uploaded successfully!" , "success");
-      setStudents([]);
-      fetchStudentsMutation.mutate({ collegeId });
-      },
-      onError: (error) => {
-        console.error("Error uploading students:", error.message);
-        showAlert("Failed to upload students. Please try again." , "error");
-        },
-    });
 
-    
+
+  //mutation for uploadBulkStudents
+  const addBulkStudentsMutation = useMutation({
+    mutationFn: ({ students, token }) => uploadBulkStudents({ students, token }),
+    onSuccess: (uploadedStudents) => {
+      showAlert("Students uploaded successfully!", "success");
+      setStudents((prevStudents) => [...prevStudents, uploadedStudents]);
+      fetchStudentsMutation.mutate({ collegeId, token });
+    },
+    onError: (error) => {
+      console.log("Error uploading students:", error.message);
+      showAlert("Failed to upload students. Please try again.", "error");
+    },
+  });
+
+
   const tableColumns = [
     { accessorKey: "name", header: "Student Name", size: 200 },
     { accessorKey: "email", header: "Email Address", size: 250 },
@@ -216,9 +234,9 @@ const AllStudents = () => {
           control={
             <Switch
               checked={row.original.password}
-              onChange={(e) =>
-                handleActivateStudent(row.original.email, e.target.checked)
-              }
+              onChange={(e) => {
+                handleActivateStudent(row.original.email, e.target.checked);
+              }}
               color="success"
             />
           }
@@ -226,9 +244,7 @@ const AllStudents = () => {
         />
       ),
     },
-    
   ];
-  //njl864ho
 
   return (
     <Box sx={{ padding: 3, bgcolor: "#f5f5f5" }}>
@@ -236,11 +252,7 @@ const AllStudents = () => {
         All Students
       </Typography>
       <Paper elevation={3} sx={{ padding: 2, borderRadius: 2 }}>
-        {fetchStudentsMutation.isLoading ? (
-          <Typography>Loading students...</Typography>
-        ) : (
           <CustomTable data={students} columns={tableColumns} />
-        )}
 
         <Box sx={{ textAlign: "right", marginTop: 2 }}>
           <Button
@@ -268,8 +280,8 @@ const AllStudents = () => {
           </Button>
         </Box>
       </Paper>
-         {/* Add Student Modal */}
-         <Modal open={open} onClose={handleClose}>
+      {/* Add Student Modal */}
+      <Modal open={open} onClose={handleClose}>
         <Box
           sx={{
             position: "absolute",
@@ -319,7 +331,7 @@ const AllStudents = () => {
                   required
                 />
               </Grid>
-             
+
               <Grid item xs={12}>
                 <TextField
                   fullWidth
@@ -345,6 +357,8 @@ const AllStudents = () => {
           </Box>
         </Box>
       </Modal>
+
+
     </Box>
   );
 };

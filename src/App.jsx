@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, Suspense, lazy } from "react";
 import { useSelector } from "react-redux";
 import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import { User_Routes, Librarian_Routes, SAdmin_Routes } from "./utility/RouteList";
@@ -66,7 +66,24 @@ const App = () => {
   return (
     <>
       <Header />
-      {isFetching > 0 && <Loading />}
+      {isFetching > 0 && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 9999,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+          }}
+        >
+          <Loading />
+        </div>
+      )}
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Login />} />

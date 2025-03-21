@@ -1,21 +1,26 @@
 import React from "react";
-import { Container, Typography, Button } from "@mui/material";
-import { useQuery  , useMutation} from "@tanstack/react-query";
+import { Container, Typography, Button, Box } from "@mui/material";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import CustomTable from "../../custom/CustomTable";
-import { getAllSubscriptions , updateSubscriptionQuotation , generateQuotationpdf } from "../../apiCalls/SubscriptionApi";
+import { getAllSubscriptions, updateSubscriptionQuotation, generateQuotationpdf } from "../../apiCalls/SubscriptionApi";
 import { PDFDownloadLink, pdf } from "@react-pdf/renderer";
 import SubscriptionPDF from "../../custom/SubscriptionPdf";
 import { useAlert } from "../../custom/CustomAlert";
+import { useSelector } from "react-redux";
+
 
 const AllSubscriptions = () => {
   const navigate = useNavigate();
   const { showAlert } = useAlert();
+  const { UserData } = useSelector((state) => state.user);
+  const token= UserData.token;
+
 
   // Fetch subscriptions using React Query
   const { data: subscriptionsData } = useQuery({
     queryKey: ["subscriptions.data"],
-    queryFn: getAllSubscriptions,
+    queryFn: () => getAllSubscriptions(token),
   });
 
   const subscriptions = subscriptionsData?.data || [];
@@ -30,7 +35,7 @@ const AllSubscriptions = () => {
       const base64URL = reader.result;
       console.log("Base64 PDF URL:", base64URL);
       try {
-         const response = await updateSubscriptionQuotation({
+        const response = await updateSubscriptionQuotation({
           _id: row._id,
           subscriptionQuotation: base64URL,
         });
@@ -59,12 +64,12 @@ const AllSubscriptions = () => {
   //generateQuotationMutation
   const generateQuotationMutation = useMutation({
     mutationFn: async ({ subscriptionId }) => {
-      console.log("Sending Subscription ID to API:", subscriptionId); // Debugging
-      return await generateQuotationpdf({ subscriptionId });
+      console.log("Sending Subscription ID to API:", subscriptionId , token); // Debugging
+      return await generateQuotationpdf({ subscriptionId, token });
     },
     onSuccess: (response) => {
       showAlert("Quotation PDF generated successfully!", "success");
-      console.log("Quotation PDF generated successfully!" , response);
+      console.log("Quotation PDF generated successfully!", response);
     },
     onError: (error) => {
       showAlert("Failed to generate PDF. Try again.", "error");
@@ -131,13 +136,15 @@ const AllSubscriptions = () => {
   ];
 
   return (
-    <Container sx={{ mt: 4 }}>
+    <Box sx={{ height: "80vh"}}>
+      <Container sx={{ mt: 4 }}>
       <Typography variant="h4" fontWeight={550} sx={{ mb: 2 }}>
         All Subscriptions
       </Typography>
 
       <CustomTable data={subscriptions} columns={columns} enablePagination={true} pageSize={5} />
     </Container>
+    </Box>
   );
 };
 

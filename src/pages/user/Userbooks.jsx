@@ -43,8 +43,8 @@ const UserBooks = () => {
 
 
   const { data: userBooks = [] } = useQuery({
-    queryKey: ["userBooks.data", collegeId],
-    queryFn: () => fetchBooksForUser({ collegeId }),
+    queryKey: ["userBooks.data", collegeId , token],
+    queryFn: () => fetchBooksForUser({ collegeId , token }),
   });
 
   const booksData = userBooks?.data?.[0]?.books || [];
@@ -140,7 +140,7 @@ const UserBooks = () => {
   return (
     <Box sx={{ flexGrow: 1, minHeight: "80vh", p: 3, bgcolor: "#F9FAFB" }}>
       {/* Search & Filter */}
-      <Box sx={{ display: "flex", gap: 2, backgroundColor: "#E4F1FD", p: 2, borderRadius: 2 }}>
+      <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 2, backgroundColor: "#E4F1FD", p: 2, borderRadius: 2 }}>
         <TextField
           label="Search"
           variant="outlined"

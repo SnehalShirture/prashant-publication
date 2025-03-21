@@ -45,7 +45,7 @@ const CAdminProfile = () => {
   }
 
   return (
-    <Box sx={{ flexGrow: 1, p: 3 }}>
+    <Box sx={{ flexGrow: 1, p: 3 , height :"70vh" }}>
       {/* User Header Section */}
       <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 3 }}>
         <Grid container spacing={3} alignItems="center">

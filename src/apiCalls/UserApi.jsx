@@ -16,40 +16,47 @@ export const registeruser = async (userReqData) => {
     }
 }
 //activateUser
-export const activateUser = async (userReqData) => {
+export const activateUser = async ({ email, token }) => {
     let aInstance = createInstance()
     try {
-        const response = await aInstance.post("activateUser", userReqData, { headers: {
-            "Content-Type": "application/json"
-            } });
-            console.log(response)
-            return response.data;
-        
+        const response = await aInstance.post("activateUser", { email }, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            }
+        });
+        console.log(response)
+        return response.data;
+
     } catch (error) {
         // Log the full error response for debugging
         console.log("Activation Error:", error.message);
         throw new Error(error.response?.data?.message || "An error occurred during activation.");
-        
+
     }
 }
 
 //uploadBulkStudents 
-export const uploadBulkStudents = async (studentReqData) => {
+export const uploadBulkStudents = async ({ students, token }) => {
     let aInstance = createInstance()
+    console.log("Students being sent to API:", JSON.stringify(students, null, 2));
     try {
-        const response = await aInstance.post("uploadBulkStudents", studentReqData, 
-            { headers:
-            { "Content-Type": "application/json" } 
+        const response = await aInstance.post("uploadBulkStudents", students,
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                }
             });
-            console.log(response)
-            return response.data;
-        
+        console.log("Upload Response:", response.data);
+        return response.data;
+
     } catch (error) {
         // Log the full error response for debugging
         console.log("Upload Bulk Students Error:", error.message);
         throw new Error(error.response?.data?.message || "An error occurred during uploading bulk students.");
 
-        
+
     }
 }
 
@@ -99,84 +106,90 @@ export const sendotp = async (data) => {
 //reset new password
 export const resetPassword = async (data) => {
     let aInstance = createInstance()
-   try {
-    const response = await aInstance.post("resetPassword", data);
-    return response.data;
-    
-   } catch (error) {
-    console.error("Error Response:", error.response?.data);
-    throw new Error(error.response?.data?.message || "An error occurred during password reset.");
-    
-   }
-  };
+    try {
+        const response = await aInstance.post("resetPassword", data);
+        return response.data;
 
-  //get book reading data by user id
-  export const getreadingdatabytuserid = async(getreqdata) =>{
+    } catch (error) {
+        console.error("Error Response:", error.response?.data);
+        throw new Error(error.response?.data?.message || "An error occurred during password reset.");
+
+    }
+};
+
+//get book reading data by user id
+export const getreadingdatabytuserid = async (getreqdata) => {
     let aInstance = createInstance()
     console.log(getreqdata)
     try {
-        const response = await aInstance.post("getUserReadData" , getreqdata);
+        const response = await aInstance.post("getUserReadData", getreqdata);
         return response.data;
     } catch (error) {
         console.error("Error Response:", error.response?.data);
         throw new Error(error.response?.data?.message || "An error occurred during reading data retrieval.");
 
     }
-  }
+}
 
-  //fetch student data by college id
-export const getstudentbyclgid = async(collegeId)=>{
+//fetch student data by college id
+export const getstudentbyclgid = async ({ collegeId, token }) => {
     let aInstance = createInstance()
-    console.log(collegeId)
+    console.log("students by clg id : ", { collegeId, token })
     try {
-        const response = await aInstance.post("getUserByClgId", collegeId);
+        const response = await aInstance.post("getUserByClgId", { collegeId },
+            {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            }
+        );
         console.log(response)
         return response.data;
-        
+
     } catch (error) {
         console.error("Error Response:", error.response?.data);
         throw new Error(error.response?.data?.message || "An error occurred during student retrieval.");
-        
+
     }
 }
 
 //add new college
-export const createCollege = async(reqClgData) =>{
+export const createCollege = async (reqClgData) => {
     let aInstance = createInstance()
-    console.log("Request college data : " , reqClgData)
+    console.log("Request college data : ", reqClgData)
     try {
-        const response = await aInstance.post("addCollege" , reqClgData);
+        const response = await aInstance.post("addCollege", reqClgData);
         return response.data;
     } catch (error) {
         console.error("Error Response:", error.response?.data);
         throw new Error(error.response?.data?.message || "An error occurred during College creation.");
     }
-} 
+}
 
 //fetch college data
 export const getColleges = async () => {
     let aInstance = createInstance()
     try {
-      const response = await aInstance.get("fetchCollegeData");
-      console.log(response)
-      return response.data;
+        const response = await aInstance.get("fetchCollegeData");
+        console.log(response)
+        return response.data;
     } catch (error) {
         console.error("Error Response:", error.response?.data);
         throw new Error(error.response?.data?.message || "An error occurred during College retrieval.");
     }
-  };
+};
 
 //upadate password 
 export const updatePassword = async (email, oldPassword, newPassword) => {
     let aInstance = createInstance()
     try {
-        const response = await aInstance.post("updatePassword", {email, oldPassword, newPassword});
+        const response = await aInstance.post("updatePassword", { email, oldPassword, newPassword });
         return response.data;
-        
+
     } catch (error) {
         console.error("Error Response:", error.response?.data);
-        throw new Error(error.response?.data?.message || "An error occurred during password update.");  
-        
+        throw new Error(error.response?.data?.message || "An error occurred during password update.");
+
     }
 }
 // fetch total book read data by month
@@ -185,11 +198,24 @@ export const getBookReadData = async () => {
     try {
         const response = await aInstance.get("getTotalPagesByMonth");
         return response.data;
-        
+
     } catch (error) {
         console.error("Error Response:", error.response?.data);
         throw new Error(error.response?.data?.message || "An error occurred during book read data retrieval");
+
+    }
+}
+//fetchCurrentReaders
+export const fetchCurrentReaders = async (collegeId) => {
+    let aInstance = createInstance()
+    try {
+        const response = await aInstance.post("getCurrentReaders" , collegeId);
+        return response.data;
+        
+    } catch (error) {
+        console.error("Error Response:", error.response?.data);
+        throw new Error(error.response?.data?.message || "An error occurred during current readers retrieval");
         
     }
 }
-  
+

@@ -6,21 +6,20 @@ import {
   Paper,
   Typography,
   Divider,
+  useMediaQuery,
+  useTheme
 } from "@mui/material";
-import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { LineChart } from "@mui/x-charts/LineChart";
-import { logout } from "../../reduxwork/UserSlice";
-import { userlogout, getreadingdatabytuserid } from "../../apiCalls/UserApi";
+import { getreadingdatabytuserid } from "../../apiCalls/UserApi";
 import { useAlert } from "../../custom/CustomAlert";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import UpdatePasswordModal from "../../custom/UpdatePassword";
-
 
 const UserProfile = () => {
   const { showAlert } = useAlert();
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   // Access user data from Redux store
   const { UserData, islogin } = useSelector((state) => state.user);
@@ -38,29 +37,6 @@ const UserProfile = () => {
     queryFn: () => fetchReadingData(UserData.user_id._id),
     enabled: !!UserData?.user_id?._id, // Fetch only if user ID exists
   });
-
-  // Mutation for logout
-  const logoutMutation = useMutation({
-    mutationFn: async () => {
-      let userdata = {
-        userId: UserData.user_id._id,
-      };
-      return await userlogout(userdata);
-    },
-    onSuccess: () => {
-      dispatch(logout());
-      showAlert("You have been logged out successfully", "success");
-      navigate("/");
-    },
-    onError: (error) => {
-      console.log(error.message);
-      showAlert("Error while logging out. Please try again", "error");
-    },
-  });
-
-  const handleLogout = () => {
-    logoutMutation.mutate();
-  };
 
   if (!islogin || !UserData) {
     return (
@@ -91,12 +67,10 @@ const UserProfile = () => {
         <Box sx={{ mt: 3 }}>
           <Button 
             variant="contained"
-           color="primary" sx={{ mr: 2 }}
-           onClick={() => setUpdatePasswordModalOpen(true)} >
-           Update Password
-          </Button>
-          <Button variant="outlined" color="secondary" onClick={handleLogout}>
-            Logout
+            color="primary"
+            onClick={() => setUpdatePasswordModalOpen(true)}
+          >
+            Update Password
           </Button>
         </Box>
       </Card>
@@ -125,7 +99,7 @@ const UserProfile = () => {
                 label: "Total Pages Read",
               },
             ]}
-            width={700}
+            width={isMobile ? 350 : 700} // Responsive width
             height={300}
           />
         ) : (

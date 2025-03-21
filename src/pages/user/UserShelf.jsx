@@ -154,76 +154,95 @@ const Shelf = () => {
       </Box>
 
       {/* Book Grid */}
-      <Grid container spacing={3} sx={{ mt: 3 }}>
-        {filteredBooks.map((book, index) => (
-          <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
-            <Card
-              sx={{
-                height: 450,
-                display: "flex",
-                flexDirection: "column",
-                boxShadow: 5,
-                transition: "transform 0.3s, box-shadow 0.3s",
-                "&:hover": { transform: "scale(1.05)", boxShadow: 8 },
-                borderRadius: 3,
-              }}
-            >
-              <CardMedia
-                component="img"
-                height="200"
-                image={`http://localhost:5000/${book.coverImage}`}
-                alt={book.name}
-                sx={{ objectFit: "cover", borderTopLeftRadius: 12, borderTopRightRadius: 12 }}
-              />
-              <CardContent sx={{ flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                <Box>
-                  <Typography variant="h6" fontWeight="bold" sx={{ color: "#333" }}>
-                    {book.name}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    <strong>Author:</strong> {book.author}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    <strong>Category:</strong> {book.category}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    <strong>Price:</strong> ${book.price}
-                  </Typography>
-                </Box>
-                <Box sx={{
+       {/* Empty Shelf Message */}
+       {filteredBooks.length === 0 ? (
+        <Box  sx={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "60vh", // Adjust height to center within viewport
+          textAlign: "center",
+        }}>
+          <Typography variant="h6" color="text.secondary">
+            📚 Your shelf is empty!
+          </Typography>
+        </Box>
+      ) : (
+        <Grid container spacing={3} sx={{ mt: 3 }}>
+          {filteredBooks.map((book, index) => (
+            <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+              <Card
+                sx={{
+                  height: 450,
                   display: "flex",
-                  justifyContent: "space-between",
-                }}>
-                <Button
-                  size="small"
-                  variant="contained"
+                  flexDirection: "column",
+                  boxShadow: 5,
+                  transition: "transform 0.3s, box-shadow 0.3s",
+                  "&:hover": { transform: "scale(1.05)", boxShadow: 8 },
+                  borderRadius: 3,
+                }}
+              >
+                <CardMedia
+                  component="img"
+                  height="200"
+                  image={`http://localhost:5000/${book.coverImage}`}
+                  alt={book.name}
+                  sx={{ objectFit: "cover", borderTopLeftRadius: 12, borderTopRightRadius: 12 }}
+                />
+                <CardContent
                   sx={{
-                    bgcolor: "#F37A24",
-                    mt: 2,
-                    fontWeight: "bold",
-                    borderRadius: 2,
-                    "&:hover": { bgcolor: "#d96520" },
+                    flexGrow: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
                   }}
-                  onClick={() => handleStartBookReadingCounter(book)}
                 >
-                  View PDF
-                </Button>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  color="error"
-                  sx={{ mt: 1, fontWeight: "bold", borderRadius: 2 }}
-                  onClick={() => handleDeleteBook(book)}
-                >
-                  Delete from Shelf
-                </Button>
-
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
+                  <Box>
+                    <Typography variant="h6" fontWeight="bold" sx={{ color: "#333" }}>
+                      {book.name}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      <strong>Author:</strong> {book.author}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      <strong>Category:</strong> {book.category}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      <strong>Price:</strong> ${book.price}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                    <Button
+                      size="small"
+                      variant="contained"
+                      sx={{
+                        bgcolor: "#F37A24",
+                        mt: 2,
+                        fontWeight: "bold",
+                        borderRadius: 2,
+                        "&:hover": { bgcolor: "#d96520" },
+                      }}
+                      onClick={() => setSelectedBook(book)}
+                    >
+                      View PDF
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      color="error"
+                      sx={{ mt: 1, fontWeight: "bold", borderRadius: 2 }}
+                      onClick={() => handleDeleteBook(book)}
+                    >
+                      Delete from Shelf
+                    </Button>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      )}
 
       {/* PDF Reader Modal */}
       {selectedBook && (

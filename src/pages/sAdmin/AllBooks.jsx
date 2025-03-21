@@ -6,12 +6,15 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import CustomTable from "../../custom/CustomTable";
 import { getBooks, deleteBook } from "../../apiCalls/BooksApi";
 import { useAlert } from "../../custom/CustomAlert";
+import { useSelector } from "react-redux";
 
 const AllBooks = () => {
+    const { UserData } = useSelector((state) => state.user);
     const { showAlert } = useAlert();
     const queryClient = useQueryClient();
     const [tabValue, setTabValue] = useState(0);
     const categories = ["All", "Science", "Commerce", "Arts", "Engineering"];
+    const token = UserData.token;
 
     const { data: bookData = [], error } = useQuery({
         queryKey: ["books"],
@@ -19,7 +22,7 @@ const AllBooks = () => {
     });
 
     const deleteMutation = useMutation({
-        mutationFn: (bookId) => deleteBook({ _id: bookId }),
+        mutationFn: (bookId) => deleteBook({ _id: bookId , token }),
         onSuccess: () => {
             queryClient.invalidateQueries(["books"]);
             showAlert("Book deleted successfully", "success");

@@ -2,11 +2,17 @@ import { createInstance } from "./axiosInstance";
 
 
 //create subscription
-export const createsubscription = async (subData) => {
+export const createsubscription = async ({subscriptionData , token}) => {
+  console.log("craete sub : " , {subscriptionData , token})
   const aInstance = createInstance();
   try {
-    console.log("Data:", subData);
-    const response = await aInstance.post('createsubscription', subData);
+    console.log("Data:", {subscriptionData , token});
+    const response = await aInstance.post('createsubscription', subscriptionData , {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        "Content-Type": "application/json",
+      }
+    });
     return response.data;
 
   } catch (error) {
@@ -18,10 +24,14 @@ export const createsubscription = async (subData) => {
 }
 
 //get all subscriptions 
-export const getAllSubscriptions = async () => {
+export const getAllSubscriptions = async (token) => {
   const aInstance = createInstance();
   try {
-    const response = await aInstance.get('getAllSubscription');
+    const response = await aInstance.get('getAllSubscription' , {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
     return response.data;
 
   } catch (error) {
@@ -33,10 +43,15 @@ export const getAllSubscriptions = async () => {
 }
 
 //update subscription status
-export const updateSubscriptionStatus = async (data) => {
+export const updateSubscriptionStatus = async ({data , token}) => {
   const aInstance = createInstance();
+  console.log("updated data: " , data , token)
   try {
-    const response = await aInstance.post("updateSubscriptionStatus", data);
+    const response = await aInstance.post("updateSubscriptionStatus", data , {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      }
+    });
     return response.data;
   } catch (error) {
     console.error("Error updating subscription status:", error.message);
@@ -47,10 +62,14 @@ export const updateSubscriptionStatus = async (data) => {
 };
 
 //get subscription by clg id
-export const getSubscriptionByClgId = async (collegeId) => {
+export const getSubscriptionByClgId = async ({collegeId , token}) => {
   const aInstance = createInstance();
   try {
-    const response = await aInstance.post("getSubscriptionByCollegeId",collegeId )
+    const response = await aInstance.post("getSubscriptionByCollegeId",{collegeId}  , {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
       return response.data;
     
   } catch (error) {
@@ -62,10 +81,15 @@ export const getSubscriptionByClgId = async (collegeId) => {
 }
 
 //sendQuotation 
-export const sendQuotation = async (quotationData) => {
+export const sendQuotation = async ({ email, pdfurl, token }) => {
   const aInstance = createInstance();
+  console.log("data : " , { email, pdfurl, token } )
   try {
-    const response = await aInstance.post("sendQuotation", quotationData);
+    const response = await aInstance.post("sendQuotation", {email, pdfurl} , {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
     return response.data;
     
   } catch (error) {
@@ -77,10 +101,15 @@ export const sendQuotation = async (quotationData) => {
 }
 
 //generateQuotationpdf
-export const generateQuotationpdf = async (quotationData) => {
+export const generateQuotationpdf = async ({subscriptionId , token}) => {
   const aInstance = createInstance();
+  console.log("data : " ,subscriptionId , token )
   try {
-    const response = await aInstance.post("generateQuotationpdf", quotationData);
+    const response = await aInstance.post("generateQuotationpdf", {subscriptionId} , {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
     return response.data;
     
   } catch (error) {
@@ -104,6 +133,23 @@ export const updateSubscriptionQuotation = async (quotationData) => {
     console.error("Error updating subscription quotation:", error.message);
     throw new Error(
       error.response?.data?.message || "An error occurred while updating subscription quotation"
+      );
+    
+  }
+}
+
+//get notifications 
+export const getNotifications = async ({collegeId}) => {
+  const aInstance = createInstance();
+  console.log("collegeId : " , collegeId)
+  try {
+    const response = await aInstance.get("getNotification" , collegeId);
+    return response.data;
+    
+  } catch (error) {
+    console.error("Error getting notifications:", error.message);
+    throw new Error(
+      error.response?.data?.message || "An error occurred while getting notifications"
       );
     
   }

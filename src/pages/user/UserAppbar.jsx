@@ -80,7 +80,7 @@ const handleLogout = () => {
   return (
     <>
       {/* Header Section */}
-      <AppBar position="sticky" sx={{background: "linear-gradient(135deg,rgb(133, 164, 231), #292929)" }}>
+      <AppBar position="static" sx={{background: "linear-gradient(135deg,rgb(133, 164, 231), #292929)" }}>
       <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
 
         {/* Mobile Menu Button */}
