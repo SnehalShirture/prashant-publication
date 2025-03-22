@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Box, Tabs, Tab, Typography, Container, IconButton, Tooltip } from "@mui/material";
-import EastIcon from "@mui/icons-material/East";
+import MenuBookIcon from '@mui/icons-material/MenuBook';
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import CustomTable from "../../custom/CustomTable";
@@ -46,26 +46,27 @@ const AllBooks = () => {
         tabValue === 0 ? bookData.data : bookData.data.filter((book) => book.category === categories[tabValue]);
 
     const columns = [
-        { header: "Sr. No", accessorFn: (row, index) => index + 1 },
-        { header: "Title", accessorKey: "name" },
-        { header: "Author", accessorKey: "author" },
-        { header: "Category", accessorKey: "category" },
-        { header: "Price", accessorKey: "price" },
-        { header: "Publisher", accessorKey: "publisher" },
-        { header: "Year Published", accessorKey: "yearPublished" },
+        { header: "Sr. No", accessorFn: (row, index) => index + 1  , size:100},
+        { header: "Title", accessorKey: "name" , size:250 },
+        { header: "Author", accessorKey: "author", size:150 },
+        { header: "Category", accessorKey: "category" , size:100},
+        { header: "Price", accessorKey: "price" , size:100},
+        { header: "Publisher", accessorKey: "publisher" , size:200},
+        { header: "Year Published", accessorKey: "yearPublished" , size:100},
         {
             header: "Actions",
+            size:100,
             accessorFn: (row) => row,
             Cell: ({ cell }) => (
-                <Box>
+                <Box sx={{ display: "flex", justifyContent: "center", gap: 1 }}>
                     <Tooltip title="Details">
                         <a href={`http://localhost:5000/${cell.getValue().bookPdf}`} target="_blank" rel="noopener noreferrer">
-                            <EastIcon fontSize="small" />
+                            <MenuBookIcon />
                         </a>
                     </Tooltip>
                     <Tooltip title="Delete">
                         <IconButton onClick={() => handleDeleteBook(cell.getValue()._id)} color="error">
-                            <DeleteForeverIcon fontSize="small" />
+                            <DeleteForeverIcon/>
                         </IconButton>
                     </Tooltip>
                 </Box>

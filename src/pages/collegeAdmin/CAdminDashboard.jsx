@@ -296,7 +296,7 @@
 
 
 import React, { useEffect, useState } from 'react';
-import { Box, Grid,IconButton,Badge, Typography, Paper, Avatar, Button, Dialog, DialogTitle, DialogContent, DialogActions, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
+import { Box, Grid, IconButton, Badge, Typography, Paper, Avatar, Button, Dialog, DialogTitle, DialogContent, DialogActions, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import Groups2Icon from '@mui/icons-material/Groups2';
 import ReceiptIcon from '@mui/icons-material/Receipt';
@@ -330,7 +330,7 @@ const LibraryAdminDashboard = () => {
         queryKey: ['notifications'],
         queryFn: () => getNotifications({ collegeId: UserData?.user_id?.collegeId }),
     });
-    console.log("notifications : " , notifications.data)
+    console.log("notifications : ", notifications.data)
 
 
     // State for stepper
@@ -399,10 +399,9 @@ const LibraryAdminDashboard = () => {
             <Box>
                 <IconButton color="primary">
                     <Badge badgeContent={notifications.length} color="secondary">
-                        <NotificationsIcon />
                         <Typography variant="body2" color="inherit">
-                                {notifications.length > 0 ? `${notifications.length} New Notifications` : "No Notifications"}
-                            </Typography>
+                            {notifications.length > 0 ? `${notifications.length} New Notifications` : ""}
+                        </Typography>
                     </Badge>
                 </IconButton>
             </Box>

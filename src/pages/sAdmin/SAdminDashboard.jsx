@@ -1,62 +1,63 @@
 import React, { useState } from "react";
 import { Box, Typography, Grid, Card, CardContent, Avatar, useMediaQuery, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem, Checkbox, FormControlLabel } from "@mui/material";
-import { Book, Add,  AttachMoney, LibraryBooks  } from "@mui/icons-material";
+import { Book, Add, AttachMoney, LibraryBooks, Edit } from "@mui/icons-material";
 import { BarChart } from '@mui/x-charts/BarChart';
-import { useQuery , useMutation, useQueryClient  } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getBookReadData } from "../../apiCalls/UserApi";
 import CustomTable from "../../custom/CustomTable";
-import { fetchAllPackages , createPackage } from "../../apiCalls/PackageApi";
+import { fetchAllPackages, createPackage } from "../../apiCalls/PackageApi";
 import { useAlert } from "../../custom/CustomAlert";
 
 const SAdminDashboard = () => {
   const { showAlert } = useAlert();
-  
+  // Price options based on maxReaders
+  const readerPrices = { 5: 2000, 10: 2500, 15: 3000, 20: 3500 };
+
   const isMobile = useMediaQuery("(max-width:600px)");
   const [open, setOpen] = useState(false);
   const [newPackage, setNewPackage] = useState({
     category: "arts",
     academicYear: "FY",
     price: "",
-    booksIncluded:""
+    booksIncluded: ""
   });
   const queryClient = useQueryClient();
 
-
   //createPackage
-  const { mutate: addPackage }  = useMutation({
-    mutationFn : createPackage,
+  const { mutate: addPackage } = useMutation({
+    mutationFn: createPackage,
     onSuccess: () => {
-      queryClient.invalidateQueries(["packagedata.data"]); 
-      showAlert("Package Added Successfully","success")
+      queryClient.invalidateQueries(["packagedata.data"]);
+      showAlert("Package Added Successfully", "success")
       setOpen(false);
     },
     onError: (error) => {
       console.error("Failed to add package:", error.message);
-      showAlert("Failed to add package. Please try again","error")
+      showAlert("Failed to add package. Please try again", "error")
     },
   });
-  
+
   const handleSubmit = () => {
-    if (!newPackage.category || !newPackage.academicYear  || !newPackage.price) {
-      showAlert("Please fill all required fields." , "error");
+    if (!newPackage.category || !newPackage.academicYear || !newPackage.price) {
+      showAlert("Please fill all required fields.", "error");
       return;
     }
-  
+
     const packageData = {
       category: newPackage.category,
       academicYear: newPackage.academicYear,
-      prices: [{ Price: Number(newPackage.price) }], 
+      prices: [{ Price: Number(newPackage.price) }],
       // booksIncluded: newPackage.booksIncluded
-    };  
+    };
     addPackage(packageData);
   };
 
   //getAllPackages 
-  const { data : packagedata=[] } = useQuery({
+  const { data: packagedata = [] } = useQuery({
     queryKey: ["packagedata.data"],
     queryFn: fetchAllPackages,
   })
-  console.log("pachage data : " ,  packagedata.data)
+  console.log("pachage data : ", packagedata.data)
 
   //fetch bookReadData
   const { data } = useQuery({
@@ -67,19 +68,20 @@ const SAdminDashboard = () => {
   const chartData = data?.data || [];
 
   const packageColumns = [
-    { header: "Sr. No", accessorFn: (row, index) => index + 1 },
-    { header: "Category", accessorFn: (row) => row.category },
-    { header: "Academic Year", accessorFn: (row) => row.academicYear },
-    { 
-      header: "Price (₹)", 
-      accessorFn: (row) => row.prices?.[0]?.Price || "N/A" 
+    { header: "Sr. No", accessorFn: (row, index) => index + 1, size: 10 },
+    { header: "Category", accessorFn: (row) => row.category, size: 25 },
+    { header: "Academic Year", accessorFn: (row) => row.academicYear, size: 25 },
+    {
+      header: "Price (₹)",
+      size: 20,
+      accessorFn: (row) => row.prices?.[0]?.Price || "N/A"
     },
-    { 
-      header: "Books Included", 
-      accessorFn: (row) => row.booksIncluded?.length || 0 
+    {
+      header: "Books Included",
+      size: 20,
+      accessorFn: (row) => row.booksIncluded?.length || 0
     },
   ];
-  
 
   const handleChange = (e) => {
     setNewPackage({ ...newPackage, [e.target.name]: e.target.value });
@@ -164,14 +166,10 @@ const SAdminDashboard = () => {
         </Box>
       </Box>
 
-      <Box sx={{ mt: 4 }}>
+      <Box sx={{ mt: 2, overflow: "hidden" }}>
         <CustomTable columns={packageColumns} data={packagedata?.data || []} />
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-          <Button sx={{marginTop:"10px"}}
-           variant="contained"
-           color="primary" 
-           startIcon={<Add />} 
-           onClick={() => setOpen(true)}>
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mt: 2 }}>
+          <Button variant="contained" color="primary" startIcon={<Add />} onClick={() => setOpen(true)}>
             Add Package
           </Button>
         </Box>
@@ -198,6 +196,8 @@ const SAdminDashboard = () => {
           <Button onClick={handleSubmit} color="primary" variant="contained">Create</Button>
         </DialogActions>
       </Dialog>
+
+     
     </Box>
   );
 };

@@ -86,22 +86,22 @@ const AllSubscriptions = () => {
     { header: "Total Books", accessorFn: (row) => row.totalBooks || "0" },
     { header: "Total Amount (₹)", accessorFn: (row) => row.totalAmount || "0" },
     { header: "Status", accessorKey: "status" },
-    {
-      header: "Generate Quotation",
-      accessorFn: (row) => (
-        <Button
-          variant="outlined"
-          color="primary"
-          size="small"
-          onClick={() => {
-            console.log("Subscription ID for PDF:", row._id); // Debugging log
-            generateQuotationMutation.mutate({ subscriptionId: row._id });
-          }}
-        >
-          {generateQuotationMutation.isLoading ? "Generating..." : "Generate PDF"}
-        </Button>
-      ),
-    },
+    // {
+    //   header: "Generate Quotation",
+    //   accessorFn: (row) => (
+    //     <Button
+    //       variant="outlined"
+    //       color="primary"
+    //       size="small"
+    //       onClick={() => {
+    //         console.log("Subscription ID for PDF:", row._id); // Debugging log
+    //         generateQuotationMutation.mutate({ subscriptionId: row._id });
+    //       }}
+    //     >
+    //       {generateQuotationMutation.isLoading ? "Generating..." : "Generate PDF"}
+    //     </Button>
+    //   ),
+    // },
     {
       header: "View Details",
       accessorFn: (row) => (
@@ -136,7 +136,7 @@ const AllSubscriptions = () => {
   ];
 
   return (
-    <Box sx={{ height: "80vh"}}>
+    <Box>
       <Container sx={{ mt: 4 }}>
       <Typography variant="h4" fontWeight={550} sx={{ mb: 2 }}>
         All Subscriptions
