@@ -6,7 +6,7 @@ import React, { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import CustomTable from "../../custom/CustomTable";
-import { updateSubscriptionStatus, sendQuotation } from "../../apiCalls/SubscriptionApi";
+import { updateSubscriptionStatus, sendQuotation, generateQuotationpdf } from "../../apiCalls/SubscriptionApi";
 import { useAlert } from "../../custom/CustomAlert";
 import { useSelector } from "react-redux";
 
@@ -17,6 +17,7 @@ const OrderDetail = () => {
   const location = useLocation();
   const subscription = location?.state;
   const queryClient = useQueryClient();
+  console.log("subscription : " ,subscription)
 
   if (!subscription) {
     return (
@@ -54,8 +55,8 @@ const OrderDetail = () => {
     mutation.mutate(selectedStatus);
   };
 
-   // Handle Send Quotation
-   const handleSendPdf = async () => {
+  // Handle Send Quotation
+  const handleSendPdf = async () => {
     const collegeEmail = collegeDetails?.librarianEmail;
     if (!collegeEmail) {
       showAlert("College email not found!", "warning");
@@ -81,32 +82,48 @@ const OrderDetail = () => {
     }
   };
 
-    // Mutation to send quotation email
-    const sendQuotationMutation = useMutation({
-      mutationFn: async () => {
-        if (!subscription.subscriptionQuotation) {
-          showAlert("Please generate the quotation first!", "warning");
-          return;
-        }
-        setIsSending(true);
-        const payload = {
-          email: collegeDetails?.librarianEmail,
-          pdfurl: subscription.subscriptionQuotation,
-          token,
-        };
-        console.log("payload : ", payload)
-  
-        return await sendQuotation(payload);
-      },
-      onSuccess: (response) => {
-        showAlert("Quotation sent successfully!", "success");
-        console.log("Quotation response : ", response);
-      },
-      onError: (error) => {
-        showAlert("Failed to send quotation. Try again.", "error");
-        console.error("Error sending quotation:", error.message);
-      },
-    });
+  // Mutation to send quotation email
+  const sendQuotationMutation = useMutation({
+    mutationFn: async () => {
+      if (!subscription.subscriptionQuotation) {
+        showAlert("Please generate the quotation first!", "warning");
+        return;
+      }
+      setIsSending(true);
+      const payload = {
+        email: collegeDetails?.librarianEmail,
+        pdfurl: subscription.subscriptionQuotation,
+        token,
+      };
+      console.log("payload : ", payload)
+
+      return await sendQuotation(payload);
+    },
+    onSuccess: (response) => {
+      showAlert("Quotation sent successfully!", "success");
+      console.log("Quotation response : ", response);
+    },
+    onError: (error) => {
+      showAlert("Failed to send quotation. Try again.", "error");
+      console.error("Error sending quotation:", error.message);
+    },
+  });
+
+  //generateQuotationMutation
+  const generateQuotationMutation = useMutation({
+    mutationFn: async ({ subscriptionId }) => {
+      console.log("Sending Subscription ID to API:", subscriptionId, token); // Debugging
+      return await generateQuotationpdf({ subscriptionId, token });
+    },
+    onSuccess: (response) => {
+      showAlert("Quotation PDF generated successfully!", "success");
+      console.log("Quotation PDF generated successfully!", response);
+    },
+    onError: (error) => {
+      showAlert("Failed to generate PDF. Try again.", "error");
+      console.error("Error generating PDF:", error.message);
+    },
+  });
   const collegeDetails = subscription.college?.[0] || {};
   const librarianData = {
     userName: collegeDetails.librarianName || "N/A",
@@ -143,12 +160,12 @@ const OrderDetail = () => {
 
       <Paper sx={{ p: 3, mb: 3, borderRadius: 2, boxShadow: 3 }}>
         <Typography variant="h6" fontWeight={600} sx={{ mb: 2 }}>Librarian Details</Typography>
-        {subscription.isActive  && (
-            <>
-              <Grid item xs={12} sm={6}><Typography><strong>Start Date : </strong>{new Date(subscription.startDate).toLocaleDateString()}</Typography></Grid>
-              <Grid item xs={12} sm={6}><Typography><strong>End Date : </strong> {new Date(subscription.endDate).toLocaleDateString()}</Typography></Grid>
-            </>
-          )}
+        {subscription.isActive && (
+          <>
+            <Grid item xs={12} sm={6}><Typography><strong>Start Date : </strong>{new Date(subscription.startDate).toLocaleDateString()}</Typography></Grid>
+            <Grid item xs={12} sm={6}><Typography><strong>End Date : </strong> {new Date(subscription.endDate).toLocaleDateString()}</Typography></Grid>
+          </>
+        )}
         <Divider sx={{ mb: 2 }} />
         <Grid container spacing={2}>
           <Grid item xs={12} sm={4}><Typography><strong>Name:</strong> {librarianData.userName}</Typography></Grid>
@@ -193,15 +210,17 @@ const OrderDetail = () => {
       <CustomTable data={bookData} columns={bookColumns} enablePagination pageSize={5} />
 
       <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-      <Button
+        <Button
           variant="contained"
           color="warning"
           sx={{ mt: 2, mb: 3 }}
-          onClick={() => sendQuotationMutation.mutate()}
+          onClick={() => {
+            generateQuotationMutation.mutate({ subscriptionId : subscription._id })
+          }}
           disabled={isSending}
         >
           {isSending ? "Processing..." : "Send Quotation"}
-          </Button>
+        </Button>
       </Box>
     </Container>
   );

@@ -34,9 +34,9 @@ export const fetchAllPackages = async () => {
 }
 
 //create razorpay order 
-export const createRazorpayOrder = async (razorpayOrderData) => {
+export const createRazorpayOrder = async ({ price, maxReaders }) => {
     try {
-        const response = await aInstance.post("createRazorpayOrder", razorpayOrderData);
+        const response = await aInstance.post("createRazorpayOrder", { price, maxReaders });
         console.log("createRazorpayOrder response : " , response.data )
         return response.data;
         

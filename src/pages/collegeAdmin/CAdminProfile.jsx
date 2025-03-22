@@ -113,6 +113,7 @@ const CAdminProfile = () => {
         open={updatePasswordModalOpen}
         onClose={() => setUpdatePasswordModalOpen(false)}
         email={UserData.user_id.email}
+        token={UserData.token}
       />
     </Box>
   );

@@ -17,7 +17,7 @@ import { useMutation } from "@tanstack/react-query";
 import { updatePassword } from "../apiCalls/UserApi";
 import { useAlert } from "../custom/CustomAlert";
 
-const UpdatePasswordModal = ({ open, onClose, email }) => {
+const UpdatePasswordModal = ({ open, onClose, email , token  }) => {
   const { showAlert } = useAlert();
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -31,7 +31,7 @@ const UpdatePasswordModal = ({ open, onClose, email }) => {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const updatePasswordMutation = useMutation({
-    mutationFn: () => updatePassword(email, oldPassword, newPassword),
+    mutationFn: () => updatePassword(email, oldPassword, newPassword , token ),
     onSuccess: (response) => {
       showAlert(response.message, "success");
       onClose();

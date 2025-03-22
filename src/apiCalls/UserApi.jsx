@@ -180,10 +180,14 @@ export const getColleges = async () => {
 };
 
 //upadate password 
-export const updatePassword = async (email, oldPassword, newPassword) => {
+export const updatePassword = async (email, oldPassword, newPassword , token) => {
     let aInstance = createInstance()
     try {
-        const response = await aInstance.post("updatePassword", { email, oldPassword, newPassword });
+        const response = await aInstance.post("updatePassword", { email, oldPassword, newPassword } , {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
         return response.data;
 
     } catch (error) {
