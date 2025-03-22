@@ -29,52 +29,14 @@ const updateAllPackagesPrice = async (req, res) => {
 
     const result = await Package.updateMany(
       {},
-      [
-        {
-          $set: {
-            prices: {
-              $let: {
-                vars: {
-                  filtered: {
-                    $filter: {
-                      input: { $ifNull: ["$prices", []] },
-                      as: "item",
-                      cond: { $eq: ["$$item.maxReaders", maxReaders] }
-                    }
-                  }
-                },
-                in: {
-                  $cond: [
-                    { $gt: [{ $size: "$$filtered" }, 0] },
-                    {
-                      $map: {
-                        input: { $ifNull: ["$prices", []] },
-                        as: "item",
-                        in: {
-                          $cond: [
-                            { $eq: ["$$item.maxReaders", maxReaders] },
-                            { maxReaders: maxReaders, Price: price },
-                            "$$item"
-                          ]
-                        }
-                      }
-                    },
-                    "$prices"
-                  ]
-                }
-              }
-            }
-          }
-        }
-      ]
+      { $set: { "prices.$[].Price": price } } // Updates all elements in the prices array
     );
 
-    res.status(200).json(new APiResponse(true, 200, result, "All packages updated"));
+    res.status(200).json(new APiResponse(true, 200, result, "All package prices updated successfully"));
   } catch (error) {
     res.status(500).json(new APiResponse(false, 500, null, error.message));
   }
 };
-
 
 
 const getPackagesByCategory = async (req, res) => {

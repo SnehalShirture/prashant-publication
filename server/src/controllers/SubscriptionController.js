@@ -471,7 +471,6 @@ const getSubscriptionByCollegeId = async (req, res) => {
         if (!subscriptions.length) {
             return res.status(404).json(new APiResponse(false, 404, null, "No subscriptions found for this college"));
         }
-
         res.status(200).json(new APiResponse(true, 200, subscriptions, "Fetched Subscriptions for College"));
     } catch (error) {
         res.status(500).json(new APiResponse(false, 500, null, error.message));

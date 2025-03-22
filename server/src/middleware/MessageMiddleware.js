@@ -15,7 +15,7 @@ const sendMessage = async (email, message, pdfurl = null) => {
   const mailOptions = {
     from: 'prashantbooks2025@gmail.com',
     to: email,
-    subject: 'Your Pass Code',
+    subject: pdfurl ? 'Your Quotation is :' : 'Your Pass Code',
     text: message,
     attachments: pdfurl
       ? [
