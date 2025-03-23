@@ -1,0 +1,41 @@
+version: "3"
+services:
+  prashant-client-app:
+    image:  8888813277/prashant-digital-client
+    stdin_open: true
+    ports:
+      - "3000:3000"
+    networks:
+      - prashant-digital
+
+  prashant-client-app-api:
+    image: 8888813277/prashant-digital-server
+    ports:
+      - "5000:5000"
+    networks:
+      - prashant-digital
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:7.0.16
+    ports:
+      - "27017:27017"
+    networks:
+      - prashant-digital
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      retries: 5
+      start_period: 10s
+      timeout: 10s
+
+networks:
+  prashant-digital:
+    driver: bridge
+
+volumes:
+  mongo-data:
+    driver: local

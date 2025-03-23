@@ -2,7 +2,7 @@ import { User } from '../models/UserSchema.js'
 import { createSession } from './SessionController.js';
 import jwt from 'jsonwebtoken'
 import { Session } from '../models/SessionSchema.js';
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcryptjs'
 import { sendMessage } from '../middleware/MessageMiddleware.js';
 import { ApiError } from '../utils/ApiError.js';
 import { BadReqError } from '../utils/BadReqError.js';
