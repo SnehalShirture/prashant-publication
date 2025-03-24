@@ -326,8 +326,6 @@ const LibraryAdminDashboard = () => {
 
 
     const packegeprice = packagedata?.data || [];
-    console.log("packegeprice ", packegeprice)
-
     const finalPrice = packegeprice?.prices?.[0]?.Price || 0
     console.log("finalPrice ", finalPrice)
     const { data: allBooks } = useQuery({
@@ -336,7 +334,6 @@ const LibraryAdminDashboard = () => {
     });
     const referenceBooks = allBooks?.data?.filter(book => book.type === 'reference') || []; // Ensure safe access
 
-    console.log("referenceBooks : ", packagedata)
 
     const [activeStep, setActiveStep] = useState(0);
     const [selectedPackages, setSelectedPackages] = useState([]);
@@ -352,7 +349,18 @@ const LibraryAdminDashboard = () => {
         return sum + (pkg.prices?.[0]?.Price || 0);
     }, 0);
 
-    const totalPrice = maintanenceCost + selectedPackagePrices + readerPrices[selectedReaders]* selectedPackages.length;
+    // Calculate the total discounted price for selected reference books (70% off)
+    const referenceBooksDiscountedPrice = selectedReferenceBooks.reduce((sum, book) => {
+        const bookPrice = book.price || 0;  // access to book price
+        return sum + Math.round(bookPrice * 0.3); // 70% discount means paying only 30%
+    }, 0);
+    console.log("Discounted Reference Books Price: ₹", referenceBooksDiscountedPrice); // Debugging console log
+
+
+    console.log("referenceBooks : ", referenceBooks)
+
+
+    const totalPrice = Math.round(maintanenceCost + selectedPackagePrices + readerPrices[selectedReaders] * selectedPackages.length + referenceBooksDiscountedPrice);
 
     const handleNext = async () => {
         if (activeStep === 0) {
@@ -462,13 +470,26 @@ const LibraryAdminDashboard = () => {
             <Dialog open={openModal} onClose={() => setOpenModal(false)} fullWidth maxWidth="md">
                 <DialogTitle>Create Subscription</DialogTitle>
                 <DialogContent>
+                    {/* Stepper */}
+                    <Stepper activeStep={activeStep} alternativeLabel sx={{ marginBottom: 3 }}>
+                        {steps.map((label, index) => (
+                            <Step key={index}>
+                                <StepLabel>{label}</StepLabel>
+                            </Step>
+                        ))}
+                    </Stepper>
                     {activeStep === 0 && (
-                        <CustomTable
-                            data={referenceBooks} // Use referenceBooks directly
-                            columns={[{ header: 'Book Name', accessorFn: row => row.name }]}
-                            enableSelection={true}
-                            onSelectedBooksChange={setSelectedReferenceBooks}
-                        />
+                        <>
+                            <Typography variant="h6" sx={{ marginBottom: 2 }}>
+                                Select Reference Books (70% Discount Applied)
+                            </Typography>
+                            <CustomTable
+                                data={referenceBooks} // Use referenceBooks directly
+                                columns={[{ header: 'Book Name', accessorFn: row => row.name }]}
+                                enableSelection={true}
+                                onSelectedBooksChange={setSelectedReferenceBooks}
+                            />
+                        </>
                     )}
 
                     {activeStep === 1 && (
@@ -480,12 +501,16 @@ const LibraryAdminDashboard = () => {
                                 </Select>
                             </FormControl>
 
-                            <Typography>
-                                <strong>Maintenance Cost:</strong> ₹ {maintanenceCost}
-                            </Typography>
-                            <Typography variant="h6" sx={{ marginTop: 2 }}>
-                                Total Price: ₹{totalPrice}
-                            </Typography>
+                            {/* Price Breakdown */}
+                            <Box sx={{ marginTop: 3 }}>
+                                <Typography variant="h6">Price Breakdown:</Typography>
+                                <Typography><strong>Maintenance Cost:</strong> ₹{maintanenceCost}</Typography>
+                                <Typography><strong>Reference Books Total Price (Before Discount):</strong> ₹{selectedReferenceBooks.reduce((sum, book) => sum + (Number(book.price) || 0), 0)}</Typography>
+                                <Typography><strong>Reference Books Price After 70% Discount:</strong> ₹{referenceBooksDiscountedPrice}</Typography>
+                                <Typography variant="h6" sx={{ marginTop: 2, color: 'green' }}>
+                                    Total Price: ₹{totalPrice}
+                                </Typography>
+                            </Box>
                         </>
                     )}
                 </DialogContent>
