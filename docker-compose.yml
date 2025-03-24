@@ -1,7 +1,7 @@
 version: "3"
 services:
   prashant-client-app:
-    image:  8888813277/prashant-digital-client
+    image: snehalshirture/prashant-digital-client
     stdin_open: true
     ports:
       - "3000:3000"
@@ -9,7 +9,7 @@ services:
       - prashant-digital
 
   prashant-client-app-api:
-    image: 8888813277/prashant-digital-server
+    image: snehalshirture/prashant-digital-server
     ports:
       - "5000:5000"
     networks:
@@ -39,3 +39,4 @@ networks:
 volumes:
   mongo-data:
     driver: local
+
