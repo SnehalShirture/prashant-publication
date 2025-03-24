@@ -1,4 +1,5 @@
 version: "3"
+
 services:
   prashant-client-app:
     image: snehalshirture/prashant-digital-client
@@ -7,6 +8,7 @@ services:
       - "3000:3000"
     networks:
       - prashant-digital
+    restart: unless-stopped
 
   prashant-client-app-api:
     image: snehalshirture/prashant-digital-server
@@ -16,6 +18,9 @@ services:
       - prashant-digital
     depends_on:
       - mongo
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/prashantDB
+    restart: unless-stopped
 
   mongo:
     image: mongo:7.0.16
@@ -25,8 +30,9 @@ services:
       - prashant-digital
     volumes:
       - mongo-data:/data/db
+    restart: unless-stopped
     healthcheck:
-      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 30s
       retries: 5
       start_period: 10s
