@@ -5,7 +5,7 @@ import { User } from "../models/UserSchema.js";
 import { Notification } from "../models/NotificationSchema.js";
 import { APiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from '../utils/ApiError.js';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 const addCollege = async (req, res) => {
     try {

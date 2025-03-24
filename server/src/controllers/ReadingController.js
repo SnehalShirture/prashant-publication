@@ -1,16 +1,17 @@
 import { ReadingSession } from "../models/ReadingSession.js";
 import { APiResponse } from "../utils/ApiResponse.js";
+import { Subscription } from "../models/SubscriptionSchema.js";
 
 const StartReadingSession = async (req, res) => {
     try {
         const { bookId, collegeId } = req.body;
+        const subscription = await Subscription.findOne({ collegeId });
+        const maxReaders = subscription.maxReaders;
         const activeReaders = await ReadingSession.countDocuments({ bookId, collegeId });
 
-        if (activeReaders >= 3) {
+        if (activeReaders >= maxReaders) {
             return res.status(403).json({ message: "Maximum reading limit reached. Try later!" });
-
         }
-
         const read = await ReadingSession.create({ bookId, collegeId });
 
         return res.json({ message: `Student ${collegeId} started reading book ${bookId}` });
@@ -39,12 +40,12 @@ const getCurrentReaders = async (req, res) => {
                 $group: {
                     _id: { bookId: "$bookId", collegeId: "$collegeId" },
                     activeReaders: { $sum: 1 },
-                    users: { $push: "$user_id" } 
+                    users: { $push: "$user_id" }
                 }
             },
             {
                 $lookup: {
-                    from: "users", 
+                    from: "users",
                     localField: "users",
                     foreignField: "_id",
                     as: "userDetails"
@@ -67,10 +68,10 @@ const getCurrentReaders = async (req, res) => {
             }
         ]);
 
-         res.status(200).json(readers);
+        res.status(200).json(readers);
     } catch (error) {
         return res.status(500).json({ message: "Internal Server Error" });
     }
 }
 
-export{getCurrentReaders,stopReadingSession,StartReadingSession}
+export { getCurrentReaders, stopReadingSession, StartReadingSession }
