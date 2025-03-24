@@ -296,60 +296,68 @@
 
 
 import React, { useEffect, useState } from 'react';
-import { Box, Grid, IconButton, Badge, Typography, Paper, Avatar, Button, Dialog, DialogTitle, DialogContent, DialogActions, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
+import {
+    Box, Grid, IconButton, Badge, Typography, Paper, Avatar, Button,
+    Dialog, DialogTitle, DialogContent, DialogActions, MenuItem, Select,
+    FormControl, InputLabel, Stepper, Step, StepLabel
+} from '@mui/material';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import Groups2Icon from '@mui/icons-material/Groups2';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
+import NotificationsIcon from '@mui/icons-material/Notifications';
 import CustomTable from '../../custom/CustomTable';
 import { useSelector } from 'react-redux';
 import { useQuery } from '@tanstack/react-query';
 import { fetchAllPackages } from '../../apiCalls/PackageApi';
 import { createsubscription, getNotifications } from '../../apiCalls/SubscriptionApi';
 import { useAlert } from '../../custom/CustomAlert';
-import Stepper from '@mui/material/Stepper';
-import Step from '@mui/material/Step';
-import StepLabel from '@mui/material/StepLabel';
-import NotificationsIcon from '@mui/icons-material/Notifications';
+import { getBooks } from '../../apiCalls/BooksApi';
 
-const steps = ['Choose Readers and Create Subscription'];
+const steps = ['Select Reference Books', 'Choose Readers and Create Subscription'];
 
 const LibraryAdminDashboard = () => {
     const { showAlert } = useAlert();
     const { UserData } = useSelector((state) => state.user);
     const token = UserData.token;
 
-    // Fetch packages
-    const { data: packagedata = [] } = useQuery({
-        queryKey: ['packagedata.data'],
-        queryFn: fetchAllPackages,
+    const { data: packagedata = [] } = useQuery({ queryKey: ['packagedata'], queryFn: fetchAllPackages });
+    const { data: notifications = [] } = useQuery({ queryKey: ['notifications'], queryFn: () => getNotifications({ collegeId: UserData?.user_id?.collegeId }) });
+
+
+    const packegeprice = packagedata?.data || [];
+    console.log("packegeprice ", packegeprice)
+
+    const finalPrice = packegeprice?.prices?.[0]?.Price || 0
+    console.log("finalPrice ", finalPrice)
+    const { data: allBooks } = useQuery({
+        queryKey: ["allBooks"],
+        queryFn: getBooks
     });
+    const referenceBooks = allBooks?.data?.filter(book => book.type === 'reference') || []; // Ensure safe access
 
-    //get notifications 
-    const { data: notifications = [] } = useQuery({
-        queryKey: ['notifications'],
-        queryFn: () => getNotifications({ collegeId: UserData?.user_id?.collegeId }),
-    });
-    console.log("notifications : ", notifications.data)
+    console.log("referenceBooks : ", packagedata)
 
-
-    // State for stepper
     const [activeStep, setActiveStep] = useState(0);
     const [selectedPackages, setSelectedPackages] = useState([]);
-    const [openModal, setOpenModal] = useState(false);
+    const [selectedReferenceBooks, setSelectedReferenceBooks] = useState([]);
     const [selectedReaders, setSelectedReaders] = useState(5);
-    const [createdSubscriptionId, setCreatedSubscriptionId] = useState(null); // Store subscriptionId
+    const [openModal, setOpenModal] = useState(false);
 
-
-    const readerPrices = { 5: 2000, 10: 2500, 15: 3000, 20: 3500 };
+    const readerPrices = { 5: finalPrice, 10: Number(finalPrice + 500), 15: Number(finalPrice + 1000), 20: Number(finalPrice + 1500) };
     const maintanenceCost = 6000;
 
-    // Calculate total price dynamically
-    const totalPrice = maintanenceCost + readerPrices[selectedReaders] * selectedPackages.length;
+    // Extract prices from selected packages
+    const selectedPackagePrices = selectedPackages.reduce((sum, pkg) => {
+        return sum + (pkg.prices?.[0]?.Price || 0);
+    }, 0);
 
-    // Stepper handlers
+    const totalPrice = maintanenceCost + selectedPackagePrices + readerPrices[selectedReaders]* selectedPackages.length;
+
     const handleNext = async () => {
         if (activeStep === 0) {
+            setActiveStep(1);
+        } else {
             try {
                 const subscribedBooks = selectedPackages.flatMap(pkg => pkg.booksIncluded || []);
                 const subscriptionData = {
@@ -358,38 +366,35 @@ const LibraryAdminDashboard = () => {
                     totalAmount: totalPrice,
                     maxReaders: selectedReaders,
                     maintenanceCost: maintanenceCost,
-                    subscribedBooks,
+                    subscribedBooks: [...subscribedBooks, ...selectedReferenceBooks],
                 };
-                console.log("collegeId : ", UserData?.user_id?.collegeId)
-                console.log("Selected Packages:", selectedPackages);
-                console.log("Selected Books:", selectedPackages.flatMap(pkg => pkg.booksIncluded || []));
-                console.log("Final Subscription Data:", subscriptionData);
 
                 const res = await createsubscription({ subscriptionData, token });
-                console.log("subscription created : ", res)
                 if (res?.data?._id) {
-                    setCreatedSubscriptionId(res.data._id);
                     showAlert("Subscription created successfully!", 'success');
                     setOpenModal(false);
                     setActiveStep(0);
                     setSelectedPackages([]);
                     setSelectedReaders(5);
+                    setSelectedReferenceBooks([]);
                 } else {
                     showAlert("Failed to create subscription", "error");
                 }
-
             } catch (error) {
                 console.error("Subscription Error:", error);
                 showAlert("Error creating subscription: " + error.message, "error");
             }
         }
     };
+
     const dashboardData = [
         { title: 'Total Books', value: 1200, icon: <LibraryBooksIcon fontSize='large' />, color: '#3f51b5' },
         { title: 'Total Students', value: 350, icon: <Groups2Icon fontSize='large' />, color: '#4caf50' },
         { title: 'Recent Activities', value: 25, icon: <ReceiptIcon fontSize='large' />, color: '#ff9800' },
         { title: 'Total Revenue', value: '$15,000', icon: <MonetizationOnIcon fontSize='large' />, color: '#f44336' },
     ];
+
+
 
     return (
         <Box sx={{ padding: 4, bgcolor: '#f5f5f5', minHeight: '100vh' }}>
@@ -400,7 +405,7 @@ const LibraryAdminDashboard = () => {
                 <IconButton color="primary">
                     <Badge badgeContent={notifications.length} color="secondary">
                         <Typography variant="body2" color="inherit">
-                            {notifications.length > 0 ? `${notifications.length} New Notifications` : ""}
+                            {/* {notifications.length > 0 ? ${notifications.length} New Notifications : ""} */}
                         </Typography>
                     </Badge>
                 </IconButton>
@@ -434,10 +439,9 @@ const LibraryAdminDashboard = () => {
                 ))}
             </Grid>
 
+
             <Box sx={{ marginTop: 5 }}>
-                <Typography variant='h5' gutterBottom>
-                    Subscription Packages
-                </Typography>
+                <Typography variant='h5' gutterBottom>Subscription Packages</Typography>
                 <CustomTable
                     data={packagedata?.data || []}
                     columns={[
@@ -445,52 +449,51 @@ const LibraryAdminDashboard = () => {
                         { header: 'Category', size: 50, accessorFn: (row) => row.category },
                         { header: 'Academic Year', size: 50, accessorFn: (row) => row.academicYear },
                         { header: 'Books Included', size: 50, accessorFn: (row) => row.booksIncluded?.length || 0 },
+                        { header: 'Price', size: 50, accessorFn: (row) => row.prices?.[0]?.Price },
                     ]}
                     enableSelection={true}
                     onSelectedBooksChange={setSelectedPackages}
                 />
-
                 {selectedPackages.length > 0 && (
-                    <Box sx={{ textAlign: 'right', marginTop: 2 }}>
-                        <Button variant='contained' color='primary' onClick={() => setOpenModal(true)}>
-                            Continue
-                        </Button>
-                    </Box>
+                    <Button variant='contained' color='primary' onClick={() => setOpenModal(true)}>Continue</Button>
                 )}
             </Box>
 
-            <Dialog open={openModal} onClose={() => setOpenModal(false)} fullWidth maxWidth="sm">
+            <Dialog open={openModal} onClose={() => setOpenModal(false)} fullWidth maxWidth="md">
                 <DialogTitle>Create Subscription</DialogTitle>
                 <DialogContent>
-                    <Stepper activeStep={activeStep}>
-                        {steps.map((label) => (
-                            <Step key={label}>
-                                <StepLabel>{label}</StepLabel>
-                            </Step>
-                        ))}
-                    </Stepper>
+                    {activeStep === 0 && (
+                        <CustomTable
+                            data={referenceBooks} // Use referenceBooks directly
+                            columns={[{ header: 'Book Name', accessorFn: row => row.name }]}
+                            enableSelection={true}
+                            onSelectedBooksChange={setSelectedReferenceBooks}
+                        />
+                    )}
 
-                    <Box sx={{ marginTop: 2 }}>
-                        <FormControl fullWidth sx={{ marginTop: 2 }}>
-                            <InputLabel>Number of Readers</InputLabel>
-                            <Select value={selectedReaders} onChange={(e) => setSelectedReaders(e.target.value)}>
-                                {[5, 10, 15, 20].map((num) => (
-                                    <MenuItem key={num} value={num}>{num}</MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                        <Typography>
-                            <strong>Maintenance Cost:</strong> ₹ {maintanenceCost}
-                        </Typography>
-                        <Typography variant="h6" sx={{ marginTop: 2 }}>
-                            Total Price: ₹{totalPrice}
-                        </Typography>
-                    </Box>
+                    {activeStep === 1 && (
+                        <>
+                            <FormControl fullWidth sx={{ marginTop: 2 }}>
+                                <InputLabel>Number of Readers</InputLabel>
+                                <Select value={selectedReaders} onChange={(e) => setSelectedReaders(e.target.value)}>
+                                    {[5, 10, 15, 20].map(num => <MenuItem key={num} value={num}>{num}</MenuItem>)}
+                                </Select>
+                            </FormControl>
+
+                            <Typography>
+                                <strong>Maintenance Cost:</strong> ₹ {maintanenceCost}
+                            </Typography>
+                            <Typography variant="h6" sx={{ marginTop: 2 }}>
+                                Total Price: ₹{totalPrice}
+                            </Typography>
+                        </>
+                    )}
                 </DialogContent>
-
                 <DialogActions>
                     <Button onClick={() => setOpenModal(false)} color="secondary">Close</Button>
-                    <Button variant="contained" color="primary" onClick={handleNext}>Create Subscription</Button>
+                    <Button variant="contained" color="primary" onClick={handleNext}>
+                        {activeStep === 0 ? "Next" : "Create Subscription"}
+                    </Button>
                 </DialogActions>
             </Dialog>
         </Box>
@@ -498,4 +501,5 @@ const LibraryAdminDashboard = () => {
 };
 
 export default LibraryAdminDashboard;
+
 

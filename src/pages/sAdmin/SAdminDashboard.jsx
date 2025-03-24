@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Box, Typography, Grid, Card, CardContent, Avatar, useMediaQuery, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem, Checkbox, FormControlLabel } from "@mui/material";
-import { Book, Add, AttachMoney, LibraryBooks, Edit } from "@mui/icons-material";
+import { Book, Add, AttachMoney, LibraryBooks } from "@mui/icons-material";
 import { BarChart } from '@mui/x-charts/BarChart';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getBookReadData } from "../../apiCalls/UserApi";
@@ -10,8 +10,6 @@ import { useAlert } from "../../custom/CustomAlert";
 
 const SAdminDashboard = () => {
   const { showAlert } = useAlert();
-  // Price options based on maxReaders
-  const readerPrices = { 5: 2000, 10: 2500, 15: 3000, 20: 3500 };
 
   const isMobile = useMediaQuery("(max-width:600px)");
   const [open, setOpen] = useState(false);

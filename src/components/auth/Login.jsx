@@ -38,6 +38,7 @@ const Login = () => {
   let { UserData, islogin } = useSelector((state) => state.user)
   const userRole = UserData?.user_id?.role;
   console.log("islogin : " ,islogin)
+
   const { showAlert } = useAlert();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -101,19 +102,6 @@ const Login = () => {
 
   return (
     <>
-      {islogin ? (
-        userRole === "user" ? (
-          <Navigate to= "/user/dashboard"/>
-        ) : userRole === "CollegeAdmin" ? (
-          <Navigate to= "/librarydashboard"/>
-        ) : userRole === "SuperAdmin" ? (
-          <Navigate to= "sadmin/dashboard"/>
-        ) : (
-            navigate("/profile")
-          )
-            )
-          : (
-        <>
           <Grid container justifyContent="center" alignItems="center" sx={{ background: "#f3f4f6", padding: 3 }}>
             <Grid item xs={12} sm={8} md={6} lg={4}>
               <Card sx={{ borderRadius: "16px", boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)", padding: 3 }}>
@@ -204,8 +192,7 @@ const Login = () => {
               </Fade>
             </Modal>
           </Grid>
-        </>
-      )}
+       
     </>
   );
   

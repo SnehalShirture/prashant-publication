@@ -1,7 +1,5 @@
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { logout } from "../reduxwork/UserSlice";
 import Appbar from "../pages/user/UserAppbar"; // User AppBar
 import CollegeAppbar from "../pages/collegeAdmin/CollegeAppbar"; // College Admin AppBar
 import CommonAppBar from "../components/common/CommonAppbar"; // Common AppBar

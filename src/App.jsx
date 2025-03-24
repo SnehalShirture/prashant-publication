@@ -1,6 +1,6 @@
-import React, { useEffect, Suspense, lazy } from "react";
+import React, { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
-import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
+import { Navigate, BrowserRouter as Router, Route, Routes, useNavigate } from "react-router-dom";
 import { User_Routes, Librarian_Routes, SAdmin_Routes } from "./utility/RouteList";
 import Login from "./components/auth/Login";
 import SignUp from "./components/auth/Signup";
@@ -12,7 +12,43 @@ import { useIsFetching } from "@tanstack/react-query";
 import Loading from "./components/common/Loading";
 import { useAlert } from "./custom/CustomAlert";
 import Footer from "./components/common/Footer";
-import SubscriptionPDF from "./custom/SubscriptionPdf";
+import Home from "./components/common/Home";
+import AboutUs from "./components/common/AboutUs";
+import OurTeam from "./components/common/OurTeam";
+import ContactUs from "./components/common/ContactUs";
+import CommonAppBar from "./components/common/CommonAppbar";
+
+
+export const LandingPage = () => {
+  const sectionsRef = useRef({
+    home: React.createRef(),
+    about: React.createRef(),
+    ourteam: React.createRef(),
+    contact: React.createRef(),
+  });
+
+  const handleScroll = (section) => {
+    if (sectionsRef.current[section]?.current) {
+      sectionsRef.current[section].current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  return (
+    <>
+      {/* Include the CommonAppBar */}
+      {/* <CommonAppBar handleScroll={handleScroll} /> */}
+
+      {/* Sections */}
+      <div ref={sectionsRef.current.home}><Home /></div>
+      <div ref={sectionsRef.current.about}><AboutUs /></div>
+      <div ref={sectionsRef.current.ourteam}><OurTeam /></div>
+      <div ref={sectionsRef.current.contact}><ContactUs /></div>
+    </>
+  );
+};
+
+
+
 
 export const DisableScreenshot = () => {
   const { showAlert } = useAlert();
@@ -59,8 +95,9 @@ export const DisableScreenshot = () => {
 
 const App = () => {
   const navigate = useNavigate();
-  const { UserData } = useSelector((state) => state.user);
+  const { UserData, islogin } = useSelector((state) => state.user);
   const role = UserData?.user_id?.role;
+  console.log("islogin  : ", islogin)
   const isFetching = useIsFetching();
 
   return (
@@ -86,7 +123,23 @@ const App = () => {
       )}
       <Routes>
         {/* Public Routes */}
-        <Route path="/" element={<Login />} />
+        <Route
+          path="/"
+          element={
+            islogin ? (
+              role === "user" ? (
+                <Navigate to="/user/dashboard" />
+              ) : role === "CollegeAdmin" ? (
+                <Navigate to="/librarydashboard" />
+              ) : role === "SuperAdmin" ? (
+                <Navigate to="/sadmin/dashboard" />
+              ) : null
+            ) : (
+              <LandingPage />
+            )
+          }
+        />
+        <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/resetpassword" element={<ResetPassword />} />
         <Route path="*" element={<ErrorPage />} />
@@ -101,7 +154,7 @@ const App = () => {
         {role === "SuperAdmin" &&
           SAdmin_Routes.map(({ path, element }) => <Route key={path} path={path} element={element} />)}
       </Routes>
-      <Footer/>
+      <Footer />
     </>
   );
 };
